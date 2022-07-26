@@ -1,0 +1,643 @@
+package automod
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"time"
+
+	"sort"
+
+	"github.com/botlabs-gg/yagpdb/analytics"
+	"github.com/botlabs-gg/yagpdb/automod/models"
+	"github.com/botlabs-gg/yagpdb/bot"
+	"github.com/botlabs-gg/yagpdb/bot/eventsystem"
+	"github.com/botlabs-gg/yagpdb/commands"
+	"github.com/botlabs-gg/yagpdb/common"
+	"github.com/botlabs-gg/yagpdb/common/scheduledevents2"
+	schEventsModels "github.com/botlabs-gg/yagpdb/common/scheduledevents2/models"
+	"github.com/botlabs-gg/yagpdb/lib/discordgo"
+	"github.com/botlabs-gg/yagpdb/lib/dstate"
+	"github.com/volatiletech/null/v8"
+	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+)
+
+func (p *Plugin) BotInit() {
+
+	commands.MessageFilterFuncs = append(commands.MessageFilterFuncs, p.checkMessage)
+
+	eventsystem.AddHandlerAsyncLastLegacy(p, p.handleGuildMemberUpdate, eventsystem.EventGuildMemberUpdate)
+	eventsystem.AddHandlerAsyncLastLegacy(p, p.handleMsgUpdate, eventsystem.EventMessageUpdate)
+	eventsystem.AddHandlerAsyncLastLegacy(p, p.handleGuildMemberJoin, eventsystem.EventGuildMemberAdd)
+	eventsystem.AddHandlerAsyncLastLegacy(p, p.handleVoiceStateUpdate, eventsystem.EventVoiceStateUpdate)
+	//eventsystem.AddHandlerAsyncLastLegacy(p, p.handlePresenceUpdate, eventsystem.EventPresenceUpdate)
+
+	scheduledevents2.RegisterHandler("amod2_reset_channel_ratelimit", ResetChannelRatelimitData{}, handleResetChannelRatelimit)
+}
+
+type ResetChannelRatelimitData struct {
+	ChannelID int64
+}
+
+func (p *Plugin) handleMsgUpdate(evt *eventsystem.EventData) {
+	p.checkMessage(evt, evt.MessageUpdate().Message)
+}
+
+// called on new messages and edits
+func (p *Plugin) checkMessage(evt *eventsystem.EventData, msg *discordgo.Message) bool {
+	if !bot.IsNormalUserMessage(msg) {
+		return false
+	}
+
+	if !evt.HasFeatureFlag(featureFlagEnabled) || msg.GuildID == 0 {
+		return true
+	}
+
+	cs := evt.GS.GetChannelOrThread(msg.ChannelID)
+	if cs == nil {
+		return true
+	}
+
+	ms := dstate.MemberStateFromMember(msg.Member)
+
+	stripped := ""
+	return !p.CheckTriggers(nil, evt.GS, ms, msg, cs, func(trig *ParsedPart) (activated bool, err error) {
+		if stripped == "" {
+			stripped = PrepareMessageForWordCheck(msg.Content)
+		}
+
+		cast, ok := trig.Part.(MessageTrigger)
+		if !ok {
+			return
+		}
+
+		return cast.CheckMessage(&TriggerContext{GS: evt.GS, MS: ms, Data: trig.ParsedSettings}, cs, msg, stripped)
+	})
+}
+
+func (p *Plugin) checkViolationTriggers(ctxData *TriggeredRuleData, violationName string) {
+	// reset context data
+	ctxData.ActivatedTriggers = nil
+	ctxData.CurrentRule = nil
+	ctxData.TriggeredRules = nil
+
+	if ctxData.RecursionCounter > 2 {
+		logger.WithField("guild", ctxData.GS.ID).Warn("automod stopped infinite recursion")
+		return
+	}
+
+	rulesets, err := p.FetchGuildRulesets(ctxData.GS.ID)
+	if err != nil {
+		logger.WithError(err).WithField("guild", ctxData.GS.ID).Error("failed fetching guild rulesets")
+		return
+	}
+
+	if len(rulesets) < 1 {
+		return
+	}
+
+	// retrieve users violations
+	userViolations, err := models.AutomodViolations(qm.Where("guild_id = ? AND user_id = ? AND name = ?", ctxData.GS.ID, ctxData.MS.User.ID, violationName)).AllG(context.Background())
+	if err != nil {
+		logger.WithError(err).Error("automod failed retrieving user violations")
+		return
+	}
+
+	for _, rs := range rulesets {
+		if !rs.RSModel.Enabled {
+			continue
+		}
+
+		// Check for triggered rules in this ruleset
+		ctxData.Ruleset = rs
+		if !p.CheckConditions(ctxData, rs.ParsedConditions) {
+			continue
+		}
+
+		var activatedTriggers []*ParsedPart
+
+		for _, rule := range rs.Rules {
+			ctxData.CurrentRule = rule
+
+			// Check conditions
+			if !p.CheckConditions(ctxData, rule.Conditions) {
+				continue
+			}
+
+			// check if one of the triggers should be activated
+			for _, trig := range rule.Triggers {
+				violationTrigger, ok := trig.Part.(ViolationListener)
+				if !ok {
+					continue
+				}
+
+				tDataCast := trig.ParsedSettings.(*ViolationsTriggerData)
+				if tDataCast.Name != violationName {
+					continue
+				}
+
+				matched, err := violationTrigger.CheckUser(ctxData, userViolations, trig.ParsedSettings, false)
+				if err != nil {
+					logger.WithError(err).WithField("part_id", trig.RuleModel.ID).Error("failed checking violations trigger")
+					continue
+				}
+
+				if matched {
+					activatedTriggers = append(activatedTriggers, trig)
+					break
+				}
+			}
+		}
+
+		if len(activatedTriggers) < 1 {
+			// no matches :(
+			continue
+		}
+
+		// sort them in order from highest to lowest threshold
+		sort.Slice(activatedTriggers, func(i, j int) bool {
+			d1 := activatedTriggers[i].ParsedSettings.(*ViolationsTriggerData)
+			d2 := activatedTriggers[j].ParsedSettings.(*ViolationsTriggerData)
+
+			return d1.Threshold > d2.Threshold
+		})
+
+		// do a second pass with the triggers sorted, incase only the highest should be triggered
+		finalActivatedTriggers := make([]*ParsedPart, 0, len(activatedTriggers))
+		finalTriggeredRules := make([]*ParsedRule, 0, len(activatedTriggers))
+
+		triggeredOne := false
+		for _, t := range activatedTriggers {
+			ctxData.CurrentRule = t.ParentRule
+
+			violationTrigger := t.Part.(ViolationListener)
+			matched, err := violationTrigger.CheckUser(ctxData, userViolations, t.ParsedSettings, triggeredOne)
+			if err != nil {
+				logger.WithError(err).WithField("part_id", t.RuleModel.ID).Error("failed checking violations trigger")
+				continue
+			}
+
+			if matched {
+				finalActivatedTriggers = append(finalActivatedTriggers, t)
+				finalTriggeredRules = append(finalTriggeredRules, t.ParentRule)
+				triggeredOne = true
+			}
+		}
+
+		cClone := ctxData.Clone()
+		cClone.Ruleset = rs
+		cClone.TriggeredRules = finalTriggeredRules
+		cClone.ActivatedTriggers = finalActivatedTriggers
+		cClone.CurrentRule = nil
+
+		go p.RulesetRulesTriggered(cClone, true)
+		logger.WithField("guild", ctxData.GS.ID).Info("automod triggered ", len(finalTriggeredRules), " violation rules")
+	}
+}
+
+func (p *Plugin) handleGuildMemberUpdate(evt *eventsystem.EventData) {
+	evtData := evt.GuildMemberUpdate()
+	// ignore timed-out users
+	if evtData.Member.TimeoutExpiresAt != nil && evtData.Member.TimeoutExpiresAt.After(time.Now()) {
+		return
+	}
+
+	ms := dstate.MemberStateFromMember(evtData.Member)
+
+	p.checkName(ms)
+}
+
+func (p *Plugin) handleVoiceStateUpdate(evt *eventsystem.EventData) {
+
+	evtData := evt.VoiceStateUpdate()
+	voiceState := evtData.VoiceState
+
+	ms, err := bot.GetMember(voiceState.GuildID, voiceState.UserID)
+	if err != nil {
+		return
+	}
+
+	p.checkVoiceState(ms, voiceState.ChannelID)
+}
+
+func (p *Plugin) checkVoiceState(ms *dstate.MemberState, cID int64) { //, cs *dstate.ChannelState) {
+	gs := bot.State.GetGuild(ms.GuildID)
+	if gs == nil {
+		return
+	}
+
+	cs := gs.GetChannel(cID)
+
+	p.CheckTriggers(nil, gs, ms, nil, cs, func(trig *ParsedPart) (activated bool, err error) {
+		cast, ok := trig.Part.(VoiceStateListener)
+		if !ok {
+			return false, nil
+		}
+
+		return cast.CheckVoiceState(&TriggerContext{GS: gs, MS: ms, Data: trig.ParsedSettings}, cs)
+	})
+}
+
+/*
+func (p *Plugin) handlePresenceUpdate(evt *eventsystem.EventData) {
+
+	evtData := evt.PresenceUpdate()
+
+	presence := evtData.Presence
+	if len(presence.Activities) > 0 {
+		if presence.Activities[0].State == "" {
+			return
+		}
+	}
+
+	ms, err := bot.GetMember(evt.GS.GuildState.ID, presence.User.ID)
+	if err != nil {
+		return
+	}
+
+	p.checkUserStatus(ms)
+}
+
+func (p *Plugin) checkUserStatus(ms *dstate.MemberState) {
+	gs := bot.State.GetGuild(ms.GuildID)
+	if gs == nil {
+		return
+	}
+
+	p.CheckTriggers(nil, gs, ms, nil, nil, func(trig *ParsedPart) (activated bool, err error) {
+		cast, ok := trig.Part.(UserStatusListener)
+		if !ok {
+			return false, nil
+		}
+
+		return cast.CheckUserStatus(&TriggerContext{GS: gs, MS: ms, Data: trig.ParsedSettings})
+	})
+}*/
+
+func (p *Plugin) handleGuildMemberJoin(evt *eventsystem.EventData) {
+	evtData := evt.GuildMemberAdd()
+
+	ms := dstate.MemberStateFromMember(evtData.Member)
+
+	p.checkJoin(ms)
+	p.checkUsername(ms)
+}
+
+func (p *Plugin) checkName(ms *dstate.MemberState) {
+	gs := bot.State.GetGuild(ms.GuildID)
+	if gs == nil {
+		return
+	}
+
+	p.CheckTriggers(nil, gs, ms, nil, nil, func(trig *ParsedPart) (activated bool, err error) {
+		cast, ok := trig.Part.(NameListener)
+		if !ok {
+			return false, nil
+		}
+
+		return cast.CheckName(&TriggerContext{GS: gs, MS: ms, Data: trig.ParsedSettings})
+	})
+}
+
+func (p *Plugin) checkUsername(ms *dstate.MemberState) {
+	gs := bot.State.GetGuild(ms.GuildID)
+	if gs == nil {
+		return
+	}
+
+	p.CheckTriggers(nil, gs, ms, nil, nil, func(trig *ParsedPart) (activated bool, err error) {
+		cast, ok := trig.Part.(UsernameListener)
+		if !ok {
+			return false, nil
+		}
+
+		return cast.CheckUsername(&TriggerContext{GS: gs, MS: ms, Data: trig.ParsedSettings})
+	})
+}
+
+func (p *Plugin) checkJoin(ms *dstate.MemberState) {
+	gs := bot.State.GetGuild(ms.GuildID)
+	if gs == nil {
+		return
+	}
+
+	p.CheckTriggers(nil, gs, ms, nil, nil, func(trig *ParsedPart) (activated bool, err error) {
+		cast, ok := trig.Part.(JoinListener)
+		if !ok {
+			return false, nil
+		}
+
+		return cast.CheckJoin(&TriggerContext{GS: gs, MS: ms, Data: trig.ParsedSettings})
+	})
+}
+
+func (p *Plugin) CheckTriggers(rulesets []*ParsedRuleset, gs *dstate.GuildSet, ms *dstate.MemberState, msg *discordgo.Message, cs *dstate.ChannelState, checkF func(trp *ParsedPart) (activated bool, err error)) bool {
+
+	if rulesets == nil {
+		var err error
+		rulesets, err = p.FetchGuildRulesets(gs.ID)
+		if err != nil {
+			logger.WithError(err).WithField("guild", msg.GuildID).Error("failed fetching triggers")
+			return false
+		}
+
+		if len(rulesets) < 1 {
+			return false
+		}
+	}
+
+	activatededRules := false
+
+	for _, rs := range rulesets {
+		if !rs.RSModel.Enabled {
+			continue
+		}
+
+		ctxData := &TriggeredRuleData{
+			MS:      ms,
+			CS:      cs,
+			GS:      gs,
+			Plugin:  p,
+			Ruleset: rs,
+
+			Message: msg,
+		}
+
+		// check if we match all conditions, starting with the ruleset conditions
+		if !p.CheckConditions(ctxData, rs.ParsedConditions) {
+			continue
+		}
+
+		// Check for triggered rules in this ruleset
+		var triggeredRules []*ParsedRule
+		var activatedTriggers []*ParsedPart
+
+	OUTER:
+		for _, rule := range rs.Rules {
+
+			// Check the rule conditions
+			ctxData.CurrentRule = rule
+			if !p.CheckConditions(ctxData, rule.Conditions) {
+				continue OUTER
+			}
+			ctxData.CurrentRule = nil
+
+			for _, trig := range rule.Triggers {
+
+				activated, err := checkF(trig)
+				if err != nil {
+					logger.WithError(err).WithField("part_id", trig.RuleModel.ID).Error("failed checking trigger")
+					continue
+				}
+
+				if activated {
+					triggeredRules = append(triggeredRules, rule)
+					activatedTriggers = append(activatedTriggers, trig)
+					break
+				}
+
+			}
+
+		}
+
+		if len(triggeredRules) < 1 {
+			// no matches :(
+			continue
+		}
+
+		ctxData.TriggeredRules = triggeredRules
+		ctxData.ActivatedTriggers = activatedTriggers
+
+		if ctxData.Message != nil {
+			ctxData.StrippedMessageContent = PrepareMessageForWordCheck(ctxData.Message.Content)
+		}
+
+		go p.RulesetRulesTriggered(ctxData, true)
+		activatededRules = true
+
+		logger.WithField("guild", ctxData.GS.ID).Info("automod triggered ", len(triggeredRules), " rules")
+	}
+
+	return activatededRules
+}
+
+func (p *Plugin) RulesetRulesTriggered(ctxData *TriggeredRuleData, checkedConditions bool) {
+	ruleset := ctxData.Ruleset
+
+	if checkedConditions {
+		p.RulesetRulesTriggeredCondsPassed(ruleset, ctxData.TriggeredRules, ctxData)
+		return
+	}
+
+	// check if we match all conditions, starting with the ruleset conditions
+	if !p.CheckConditions(ctxData, ctxData.Ruleset.ParsedConditions) {
+		return
+	}
+
+	filteredRules := make([]*ParsedRule, 0, len(ctxData.TriggeredRules))
+
+	// Check the rule specific conditions
+	for _, rule := range ctxData.TriggeredRules {
+		ctxData.CurrentRule = rule
+
+		if !p.CheckConditions(ctxData, rule.Conditions) {
+			continue
+		}
+
+		// all conditions passed
+		filteredRules = append(filteredRules, rule)
+	}
+
+	if len(filteredRules) < 1 {
+		return // no rules passed
+	}
+
+	p.RulesetRulesTriggeredCondsPassed(ruleset, filteredRules, ctxData)
+}
+
+func (p *Plugin) CheckConditions(ctxData *TriggeredRuleData, conditions []*ParsedPart) bool {
+	// check if we match all conditions, starting with the ruleset conditions
+	for _, cond := range conditions {
+		met, err := cond.Part.(Condition).IsMet(ctxData, cond.ParsedSettings)
+		if err != nil {
+			logger.WithError(err).WithField("guild", ctxData.GS.ID).Error("failed checking if automod condition was met")
+			return false // assume the condition failed
+		}
+
+		if !met {
+			return false // condition was not met
+		}
+	}
+
+	return true
+}
+
+func (p *Plugin) RulesetRulesTriggeredCondsPassed(ruleset *ParsedRuleset, triggeredRules []*ParsedRule, ctxData *TriggeredRuleData) {
+
+	loggedModels := make([]*models.AutomodTriggeredRule, len(triggeredRules))
+
+	go analytics.RecordActiveUnit(ruleset.RSModel.GuildID, p, "rule_triggered")
+
+	// apply the effects
+	for i, rule := range triggeredRules {
+		ctxData.CurrentRule = rule
+
+		for _, effect := range rule.Effects {
+			go func(fx *ParsedPart, ctx *TriggeredRuleData) {
+				err := fx.Part.(Effect).Apply(ctx, fx.ParsedSettings)
+				if err != nil {
+					logger.WithError(err).WithField("guild", ruleset.RSModel.GuildID).WithField("part", fx.Part.Name()).Error("failed applying automod effect")
+				}
+			}(effect, ctxData.Clone())
+		}
+
+		// Log the rule activation
+		cname := ""
+		cid := int64(0)
+
+		if ctxData.CS != nil {
+			cname = ctxData.CS.Name
+			cid = ctxData.CS.ID
+		}
+
+		tID := int64(0)
+		tTypeID := 0
+		for _, v := range ctxData.ActivatedTriggers {
+			if v.RuleModel.RuleID == rule.Model.ID {
+				tID = v.RuleModel.ID
+				tTypeID = v.RuleModel.TypeID
+				break
+			}
+		}
+
+		serializedExtraData := []byte("{}")
+		if ctxData.Message != nil {
+			var err error
+			serializedExtraData, err = json.Marshal(ctxData.Message)
+			if err != nil {
+				logger.WithError(err).Error("automod failed serializing extra data")
+				serializedExtraData = []byte("{}")
+			}
+		}
+
+		loggedModels[i] = &models.AutomodTriggeredRule{
+			ChannelID:     cid,
+			ChannelName:   cname,
+			GuildID:       ctxData.GS.ID,
+			TriggerID:     null.Int64{Int64: tID, Valid: tID != 0},
+			TriggerTypeid: tTypeID,
+			RuleID:        null.Int64{Int64: rule.Model.ID, Valid: true},
+			RuleName:      rule.Model.Name,
+			RulesetName:   rule.Model.R.Ruleset.Name,
+			UserID:        ctxData.MS.User.ID,
+			UserName:      ctxData.MS.User.Username + "#" + ctxData.MS.User.Discriminator,
+			Extradata:     serializedExtraData,
+		}
+	}
+
+	tx, err := common.PQ.BeginTx(context.Background(), nil)
+	if err != nil {
+		logger.WithError(err).Error("failed creating transaction")
+		return
+	}
+
+	for _, v := range loggedModels {
+		err = v.Insert(context.Background(), tx, boil.Infer())
+		if err != nil {
+			logger.WithError(err).Error("failed inserting logged triggered rule")
+			tx.Rollback()
+			return
+		}
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		logger.WithError(err).Error("failed committing logging transaction")
+	}
+}
+
+var (
+	cachedRulesets = common.CacheSet.RegisterSlot("amod2_rulesets", nil, int64(0))
+	cachedLists    = common.CacheSet.RegisterSlot("amod2_lists", nil, int64(0))
+)
+
+func (p *Plugin) FetchGuildRulesets(guildID int64) ([]*ParsedRuleset, error) {
+	v, err := cachedRulesets.GetCustomFetch(guildID, func(key interface{}) (interface{}, error) {
+		rulesets, err := models.AutomodRulesets(qm.Where("guild_id=?", guildID),
+			qm.Load("RulesetAutomodRules.RuleAutomodRuleData"), qm.Load("RulesetAutomodRulesetConditions")).AllG(context.Background())
+
+		if err != nil {
+			return nil, err
+		}
+
+		parsedSets := make([]*ParsedRuleset, 0, len(rulesets))
+		for _, v := range rulesets {
+			parsed, err := ParseRuleset(v)
+			if err != nil {
+				return nil, err
+			}
+			parsedSets = append(parsedSets, parsed)
+		}
+
+		return parsedSets, nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	cast := v.([]*ParsedRuleset)
+	return cast, nil
+}
+
+func FetchGuildLists(guildID int64) ([]*models.AutomodList, error) {
+	v, err := cachedLists.GetCustomFetch(guildID, func(key interface{}) (interface{}, error) {
+		lists, err := models.AutomodLists(qm.Where("guild_id = ?", guildID)).AllG(context.Background())
+		if err != nil {
+			return nil, err
+		}
+
+		return []*models.AutomodList(lists), nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	cast := v.([]*models.AutomodList)
+	return cast, nil
+}
+
+var ErrListNotFound = errors.New("list not found")
+
+func FindFetchGuildList(guildID int64, listID int64) (*models.AutomodList, error) {
+	lists, err := FetchGuildLists(guildID)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, v := range lists {
+		if v.ID == listID {
+			return v, nil
+		}
+	}
+
+	return nil, ErrListNotFound
+}
+
+func handleResetChannelRatelimit(evt *schEventsModels.ScheduledEvent, data interface{}) (retry bool, err error) {
+	dataCast := data.(*ResetChannelRatelimitData)
+
+	rl := 0
+	edit := &discordgo.ChannelEdit{
+		RateLimitPerUser: &rl,
+	}
+
+	_, err = common.BotSession.ChannelEditComplex(dataCast.ChannelID, edit)
+	if err != nil {
+		return scheduledevents2.CheckDiscordErrRetry(err), err
+	}
+
+	return false, nil
+}

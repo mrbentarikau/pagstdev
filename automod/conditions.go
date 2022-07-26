@@ -1,0 +1,862 @@
+package automod
+
+import (
+	"net/url"
+	"strings"
+	"time"
+
+	"github.com/botlabs-gg/yagpdb/bot"
+	"github.com/botlabs-gg/yagpdb/common"
+)
+
+type Condition interface {
+	RulePart
+
+	// IsMet is called to check whether this condition is met or not
+	IsMet(data *TriggeredRuleData, parsedSettings interface{}) (bool, error)
+}
+
+/////////////////////////////////////////////////////////////////
+
+type MemberRolesConditionData struct {
+	Roles []int64
+}
+
+var _ Condition = (*MemberRolesCondition)(nil)
+
+type MemberRolesCondition struct {
+	Blacklist bool // if true, then blacklist mode, otherwise whitelist mode
+}
+
+func (mrc *MemberRolesCondition) Kind() RulePartType {
+	return RulePartCondition
+}
+
+func (mrc *MemberRolesCondition) DataType() interface{} {
+	return &MemberRolesConditionData{}
+}
+
+func (mrc *MemberRolesCondition) Name() string {
+	if mrc.Blacklist {
+		return "Ignore roles"
+	}
+
+	return "Require roles"
+}
+
+func (mrc *MemberRolesCondition) Description() string {
+	if mrc.Blacklist {
+		return "Ignore users with at least one of these roles from this rule"
+	}
+
+	return "Require at least one of these roles on the user"
+}
+
+func (mrc *MemberRolesCondition) UserSettings() []*SettingDef {
+	return []*SettingDef{
+		{
+			Name: "Roles",
+			Key:  "Roles",
+			Kind: SettingTypeMultiRole,
+		},
+	}
+}
+
+func (mrc *MemberRolesCondition) IsMet(data *TriggeredRuleData, settings interface{}) (bool, error) {
+	settingsCast := settings.(*MemberRolesConditionData)
+	for _, r := range settingsCast.Roles {
+		if common.ContainsInt64Slice(data.MS.Member.Roles, r) {
+			if mrc.Blacklist {
+				// Had a blacklist role, this condition is not met
+				return false, nil
+			} else {
+				// Had a whitelist role, this condition is met
+				return true, nil
+			}
+		}
+	}
+
+	if mrc.Blacklist {
+		// Did not have a blacklist role
+		return true, nil
+	}
+
+	// Did not have a whitelist role
+	return false, nil
+}
+
+func (mrc *MemberRolesCondition) MergeDuplicates(data []interface{}) interface{} {
+	totalRoles := make([]int64, 0, 100)
+	for _, dupe := range data {
+		cast := dupe.(*MemberRolesConditionData)
+	OUTER:
+		for _, r := range cast.Roles {
+			for _, existing := range totalRoles {
+				if r == existing {
+					continue OUTER
+				}
+			}
+
+			// not added
+			totalRoles = append(totalRoles, r)
+		}
+	}
+
+	return &MemberRolesConditionData{Roles: totalRoles}
+}
+
+/////////////////////////////////////////////////////////////////
+
+type ChannelsConditionData struct {
+	Channels []int64
+}
+
+var _ Condition = (*ChannelsCondition)(nil)
+
+type ChannelsCondition struct {
+	Blacklist bool // if true, then blacklist mode, otherwise whitelist mode
+}
+
+func (cd *ChannelsCondition) Kind() RulePartType {
+	return RulePartCondition
+}
+
+func (cd *ChannelsCondition) DataType() interface{} {
+	return &ChannelsConditionData{}
+}
+
+func (cd *ChannelsCondition) Name() string {
+	if cd.Blacklist {
+		return "Ignore channels"
+	}
+
+	return "Active in channels"
+}
+
+func (cd *ChannelsCondition) Description() string {
+	if cd.Blacklist {
+		return "Ignore the following channels"
+	}
+
+	return "Only check the following channels"
+}
+
+func (cd *ChannelsCondition) UserSettings() []*SettingDef {
+	return []*SettingDef{
+		{
+			Name: "Channels",
+			Key:  "Channels",
+			Kind: SettingTypeMultiChannel,
+		},
+	}
+}
+
+func (cd *ChannelsCondition) IsMet(data *TriggeredRuleData, settings interface{}) (bool, error) {
+	settingsCast := settings.(*ChannelsConditionData)
+	if data.CS == nil {
+		return true, nil
+	}
+
+	if common.ContainsInt64Slice(settingsCast.Channels, common.ChannelOrThreadParentID(data.CS)) {
+		if cd.Blacklist {
+			// Blacklisted channel
+			return false, nil
+		} else {
+			// Whilelisted channel
+			return true, nil
+		}
+	}
+
+	if cd.Blacklist {
+		// Not in a blacklisted channel
+		return true, nil
+	}
+
+	// Not in a whitelisted channel
+	return false, nil
+}
+
+func (cd *ChannelsCondition) MergeDuplicates(data []interface{}) interface{} {
+	totalChannels := make([]int64, 0, 100)
+	for _, dupe := range data {
+		cast := dupe.(*ChannelsConditionData)
+	OUTER:
+		for _, c := range cast.Channels {
+			for _, existing := range totalChannels {
+				if c == existing {
+					continue OUTER
+				}
+			}
+
+			// not added
+			totalChannels = append(totalChannels, c)
+		}
+	}
+
+	return &ChannelsConditionData{Channels: totalChannels}
+}
+
+/////////////////////////////////////////////////////////////////
+
+type VoiceChannelsConditionData struct {
+	Channels []int64
+}
+
+var _ Condition = (*VoiceChannelsCondition)(nil)
+
+type VoiceChannelsCondition struct {
+	Blacklist bool // if true, then blacklist mode, otherwise whitelist mode
+}
+
+func (cd *VoiceChannelsCondition) Kind() RulePartType {
+	return RulePartCondition
+}
+
+func (cd *VoiceChannelsCondition) DataType() interface{} {
+	return &VoiceChannelsConditionData{}
+}
+
+func (cd *VoiceChannelsCondition) Name() string {
+	if cd.Blacklist {
+		return "Ignore voice channels"
+	}
+
+	return "Active in voice channels"
+}
+
+func (cd *VoiceChannelsCondition) Description() string {
+	if cd.Blacklist {
+		return "Ignore the following voice channels"
+	}
+
+	return "Only check the following voice channels"
+}
+
+func (cd *VoiceChannelsCondition) UserSettings() []*SettingDef {
+	return []*SettingDef{
+		{
+			Name: "Channels",
+			Key:  "Channels",
+			Kind: SettingTypeMultiVoiceChannel,
+		},
+	}
+}
+
+func (cd *VoiceChannelsCondition) IsMet(data *TriggeredRuleData, settings interface{}) (bool, error) {
+	settingsCast := settings.(*VoiceChannelsConditionData)
+	if data.CS == nil {
+		return true, nil
+	}
+
+	if common.ContainsInt64Slice(settingsCast.Channels, common.ChannelOrThreadParentID(data.CS)) {
+		if cd.Blacklist {
+			// Blacklisted channel
+			return false, nil
+		} else {
+			// Whitelisted channel
+			return true, nil
+		}
+	}
+
+	if cd.Blacklist {
+		// Not in a blacklisted channel
+		return true, nil
+	}
+
+	// Not in a whitelisted channel
+	return false, nil
+}
+
+func (cd *VoiceChannelsCondition) MergeDuplicates(data []interface{}) interface{} {
+	totalChannels := make([]int64, 0, 100)
+	for _, dupe := range data {
+		cast := dupe.(*VoiceChannelsConditionData)
+	OUTER:
+		for _, c := range cast.Channels {
+			for _, existing := range totalChannels {
+				if c == existing {
+					continue OUTER
+				}
+			}
+
+			// not added
+			totalChannels = append(totalChannels, c)
+		}
+	}
+
+	return &VoiceChannelsConditionData{Channels: totalChannels}
+}
+
+/////////////////////////////////////////////////////////////////
+
+type ChannelCategoryConditionData struct {
+	Categories []int64
+}
+
+var _ Condition = (*ChannelCategoriesCondition)(nil)
+
+type ChannelCategoriesCondition struct {
+	Blacklist bool // if true, then blacklist mode, otherwise whitelist mode
+}
+
+func (cd *ChannelCategoriesCondition) Kind() RulePartType {
+	return RulePartCondition
+}
+
+func (cd *ChannelCategoriesCondition) DataType() interface{} {
+	return &ChannelCategoryConditionData{}
+}
+
+func (cd *ChannelCategoriesCondition) Name() string {
+	if cd.Blacklist {
+		return "Ignore categories"
+	}
+
+	return "Active in categories"
+}
+
+func (cd *ChannelCategoriesCondition) Description() string {
+	if cd.Blacklist {
+		return "Ignore channels in the following categories"
+	}
+
+	return "Only check channels in the following categories"
+}
+
+func (cd *ChannelCategoriesCondition) UserSettings() []*SettingDef {
+	return []*SettingDef{
+		{
+			Name: "Categories",
+			Key:  "Categories",
+			Kind: SettingTypeMultiChannelCategories,
+		},
+	}
+}
+
+func (cd *ChannelCategoriesCondition) IsMet(data *TriggeredRuleData, settings interface{}) (bool, error) {
+	settingsCast := settings.(*ChannelCategoryConditionData)
+	if data.CS == nil {
+		return true, nil
+	}
+
+	// fetch thread parent if needed
+	parentID := data.CS.ParentID
+	if data.CS.Type.IsThread() {
+		threadParent := data.GS.GetChannel(data.CS.ParentID)
+		if threadParent == nil {
+			return false, nil
+		}
+
+		parentID = threadParent.ID
+	}
+
+	if common.ContainsInt64Slice(settingsCast.Categories, parentID) {
+		if cd.Blacklist {
+			// blacklisted channel category
+			return false, nil
+		} else {
+			// whitelisted channel category
+			return true, nil
+		}
+	}
+
+	if cd.Blacklist {
+		// not in a blacklisted channel category
+		return true, nil
+	}
+
+	// not in a whitelisted channel category
+	return false, nil
+}
+
+func (cd *ChannelCategoriesCondition) MergeDuplicates(data []interface{}) interface{} {
+	totalCats := make([]int64, 0, 100)
+	for _, dupe := range data {
+		cast := dupe.(*ChannelCategoryConditionData)
+	OUTER:
+		for _, c := range cast.Categories {
+			for _, existing := range totalCats {
+				if c == existing {
+					continue OUTER
+				}
+			}
+
+			// not added
+			totalCats = append(totalCats, c)
+		}
+	}
+
+	return &ChannelCategoryConditionData{Categories: totalCats}
+}
+
+/////////////////////////////////////////////////////////////////
+
+type AccountAgeConditionData struct {
+	Threshold int
+}
+
+var _ Condition = (*AccountAgeCondition)(nil)
+
+type AccountAgeCondition struct {
+	Below bool // if true, then blacklist mode, otherwise whitelist mode
+}
+
+func (ac *AccountAgeCondition) Kind() RulePartType {
+	return RulePartCondition
+}
+
+func (ac *AccountAgeCondition) DataType() interface{} {
+	return &AccountAgeConditionData{}
+}
+
+func (ac *AccountAgeCondition) Name() string {
+	if ac.Below {
+		return "Account age below"
+	}
+
+	return "Account age above"
+}
+
+func (ac *AccountAgeCondition) Description() string {
+	if ac.Below {
+		return "Ignore users whose accounts age is greater than the specified threshold"
+	}
+
+	return "Ignore users whose accounts age is less than the specified threshold"
+}
+
+func (ac *AccountAgeCondition) UserSettings() []*SettingDef {
+	return []*SettingDef{
+		{
+			Name: "Age in minutes",
+			Key:  "Threshold",
+			Kind: SettingTypeInt,
+		},
+	}
+}
+
+func (ac *AccountAgeCondition) IsMet(data *TriggeredRuleData, settings interface{}) (bool, error) {
+	settingsCast := settings.(*AccountAgeConditionData)
+
+	created := bot.SnowflakeToTime(data.MS.User.ID)
+	minutes := int(time.Since(created).Minutes())
+	if minutes <= settingsCast.Threshold {
+		// account were made within threshold
+		if ac.Below {
+			return true, nil
+		} else {
+			return false, nil
+		}
+	}
+
+	// account is older than threshold
+	if ac.Below {
+		return false, nil
+	} else {
+		return true, nil
+	}
+}
+
+func (ac *AccountAgeCondition) MergeDuplicates(data []interface{}) interface{} {
+	return data[0] // no point in having duplicates of this
+}
+
+/////////////////////////////////////////////////////////////////
+
+type MemberAgeConditionData struct {
+	Threshold int
+}
+
+var _ Condition = (*MemberAgecondition)(nil)
+
+type MemberAgecondition struct {
+	Below bool // if true, then blacklist mode, otherwise whitelist mode
+}
+
+func (mc *MemberAgecondition) Kind() RulePartType {
+	return RulePartCondition
+}
+
+func (mc *MemberAgecondition) DataType() interface{} {
+	return &MemberAgeConditionData{}
+}
+
+func (mc *MemberAgecondition) Name() string {
+	if mc.Below {
+		return "Server Member duration below"
+	}
+
+	return "Server Member duration above"
+}
+
+func (mc *MemberAgecondition) Description() string {
+	if mc.Below {
+		return "Require members to have been on the server for less than x minutes"
+	}
+
+	return "Require members to have been on the server for more than x minutes"
+}
+
+func (mc *MemberAgecondition) UserSettings() []*SettingDef {
+	return []*SettingDef{
+		{
+			Name: "Age in minutes",
+			Key:  "Threshold",
+			Kind: SettingTypeInt,
+		},
+	}
+}
+
+func (mc *MemberAgecondition) IsMet(data *TriggeredRuleData, settings interface{}) (bool, error) {
+	settingsCast := settings.(*MemberAgeConditionData)
+
+	var joinedAt time.Time
+	if data.MS.Member != nil && data.MS.Member.JoinedAt != "" {
+		joinedAt, _ = data.MS.Member.JoinedAt.Parse()
+	} else {
+		newMS, err := bot.GetMember(data.GS.ID, data.MS.User.ID)
+		if err != nil {
+			return false, err
+		}
+
+		if newMS.Member != nil {
+			joinedAt, _ = newMS.Member.JoinedAt.Parse()
+		} else {
+			return false, nil
+		}
+	}
+
+	minutes := int(time.Since(joinedAt).Minutes())
+
+	if minutes <= settingsCast.Threshold {
+		// joined within threshold
+		if mc.Below {
+			return true, nil
+		} else {
+			return false, nil
+		}
+	}
+
+	// joined before threshold
+	if mc.Below {
+		return false, nil
+	} else {
+		return true, nil
+	}
+}
+
+func (mc *MemberAgecondition) MergeDuplicates(data []interface{}) interface{} {
+	return data[0] // no point in having duplicates of this
+}
+
+/////////////////////////////////////////////////////////////////
+
+var _ Condition = (*BotCondition)(nil)
+
+type BotCondition struct {
+	Ignore bool
+}
+
+func (bc *BotCondition) Kind() RulePartType {
+	return RulePartCondition
+}
+
+func (bc *BotCondition) DataType() interface{} {
+	return nil
+}
+
+func (bc *BotCondition) Name() string {
+	if bc.Ignore {
+		return "Ignore bots"
+	}
+
+	return "Only bots"
+}
+
+func (bc *BotCondition) Description() string {
+	if bc.Ignore {
+		return "Ignore all bots"
+	}
+
+	return "Ignore all other users than bots"
+}
+
+func (bc *BotCondition) UserSettings() []*SettingDef {
+	return []*SettingDef{}
+}
+
+func (bc *BotCondition) IsMet(data *TriggeredRuleData, settings interface{}) (bool, error) {
+	if bc.Ignore {
+		return !data.MS.User.Bot, nil
+	}
+
+	return data.MS.User.Bot, nil
+}
+
+func (bc *BotCondition) MergeDuplicates(data []interface{}) interface{} {
+	return data[0] // no point in having duplicates of this
+}
+
+/////////////////////////////////////////////////////////////////
+
+var _ Condition = (*MessageEditedCondition)(nil)
+
+type MessageEditedCondition struct {
+	NewMessage bool // if true, then blacklist mode, otherwise whitelist mode
+}
+
+func (mc *MessageEditedCondition) Kind() RulePartType {
+	return RulePartCondition
+}
+
+func (mc *MessageEditedCondition) DataType() interface{} {
+	return nil
+}
+
+func (mc *MessageEditedCondition) Name() string {
+	if mc.NewMessage {
+		return "New message"
+	}
+	return "Edited message"
+}
+
+func (mc *MessageEditedCondition) Description() string {
+	if mc.NewMessage {
+		return "Ignore edited messages"
+	}
+	return "Only examine edited messages"
+}
+
+func (mc *MessageEditedCondition) UserSettings() []*SettingDef {
+	return []*SettingDef{}
+}
+
+func (mc *MessageEditedCondition) IsMet(data *TriggeredRuleData, settings interface{}) (bool, error) {
+	if data.Message == nil {
+		// pass the condition if no message is found
+		return true, nil
+	}
+	if data.Message.EditedTimestamp == "" {
+		// new post
+		if mc.NewMessage {
+			return true, nil
+		}
+		return false, nil
+	}
+
+	// message was edited
+	if mc.NewMessage {
+		return false, nil
+	}
+	return true, nil
+}
+
+func (mc *MessageEditedCondition) MergeDuplicates(data []interface{}) interface{} {
+	return data[0] // no point in having duplicates of this
+}
+
+/////////////////////////////////////////////////////////////////
+
+type DomainConditionData struct {
+	ListID int64
+}
+
+var _ Condition = (*DomainCondition)(nil)
+
+type DomainCondition struct {
+}
+
+func (dmc *DomainCondition) Kind() RulePartType {
+	return RulePartCondition
+}
+
+func (dmc *DomainCondition) DataType() interface{} {
+	return &DomainConditionData{}
+}
+
+func (dmc *DomainCondition) Name() string {
+	return "Domain whitelist"
+}
+
+func (dmc *DomainCondition) Description() string {
+	return "Ignores messages containing links to domains in the specified list"
+}
+
+func (dmc *DomainCondition) UserSettings() []*SettingDef {
+	return []*SettingDef{
+		{
+			Name: "List",
+			Key:  "ListID",
+			Kind: SettingTypeList,
+		},
+	}
+}
+
+func (dmc *DomainCondition) IsMet(data *TriggeredRuleData, settings interface{}) (bool, error) {
+	settingsCast := settings.(*DomainConditionData)
+	if data.CS == nil {
+		return true, nil
+	}
+
+	list, err := FindFetchGuildList(data.GS.ID, settingsCast.ListID)
+	if err != nil {
+		return false, nil
+	}
+
+	if data.Message != nil {
+		matches := common.LinkRegex.FindAllString(forwardSlashReplacer.Replace(data.Message.Content), -1)
+
+		for _, v := range matches {
+			if contains, _ := dmc.containsDomain(v, list.Content); contains {
+				return false, nil
+			}
+		}
+
+		// Not in a whitelisted domains list
+		return true, nil
+	}
+
+	return false, nil
+}
+
+func (dmc *DomainCondition) containsDomain(link string, list []string) (bool, string) {
+	if !strings.HasPrefix(link, "http://") && !strings.HasPrefix(link, "https://") && !strings.HasPrefix(link, "steam://") {
+		link = "http://" + link
+	}
+
+	parsed, err := url.ParseRequestURI(link)
+	if err != nil {
+		logger.WithError(err).WithField("url", link).Error("Failed parsing request url matched with regex")
+		return false, ""
+	}
+
+	host := parsed.Host
+	if index := strings.Index(host, ":"); index > -1 {
+		host = host[:index]
+	}
+
+	host = strings.ToLower(host)
+
+	for _, v := range list {
+		if strings.HasSuffix(host, "."+v) {
+			return true, v
+		}
+
+		if v == host {
+			return true, v
+		}
+	}
+
+	return false, ""
+}
+
+func (cd *DomainCondition) MergeDuplicates(data []interface{}) interface{} {
+	return data[0]
+}
+
+/////////////////////////////////////////////////////////////////
+
+type ActiveTimeConditionData struct {
+	TimeHours    []int64
+	TimeWeekdays []int64
+}
+
+var _ Condition = (*ActiveTimeCondition)(nil)
+
+type ActiveTimeCondition struct {
+	Inactive bool // if true, then inactive mode, otherwise active mode
+}
+
+func (atc *ActiveTimeCondition) Kind() RulePartType {
+	return RulePartCondition
+}
+
+func (atc *ActiveTimeCondition) DataType() interface{} {
+	return &ActiveTimeConditionData{}
+}
+
+func (atc *ActiveTimeCondition) Name() string {
+	if atc.Inactive {
+		return "Time inactive"
+	}
+
+	return "Time active"
+}
+
+func (atc *ActiveTimeCondition) Description() string {
+	if atc.Inactive {
+		return "Inactive at set times"
+	}
+
+	return "Active at set times"
+}
+
+func (atc *ActiveTimeCondition) UserSettings() []*SettingDef {
+	return []*SettingDef{
+		{
+			Name: "Hours",
+			Key:  "TimeHours",
+			Kind: SettingTypeActiveHours,
+		},
+		{
+			Name: "Weekdays",
+			Key:  "TimeWeekdays",
+			Kind: SettingTypeActiveWeekdays,
+		},
+	}
+}
+
+func (atc *ActiveTimeCondition) IsMet(data *TriggeredRuleData, settings interface{}) (bool, error) {
+	settingsCast := settings.(*ActiveTimeConditionData)
+	if data.CS == nil {
+		return true, nil
+	}
+
+	timeHours := settingsCast.TimeHours
+	timeWeekdays := settingsCast.TimeWeekdays
+
+	containsHour := common.ContainsInt64Slice(timeHours, int64(time.Now().UTC().Hour()))
+	containsWeekday := common.ContainsInt64Slice(timeWeekdays, int64(time.Now().UTC().Weekday()))
+
+	if len(timeHours) > 0 && len(timeWeekdays) > 0 {
+		if containsHour && containsWeekday {
+			if atc.Inactive {
+				// Inactive time
+				return false, nil
+			} else {
+				// Active time
+				return true, nil
+			}
+		} else {
+			if atc.Inactive {
+				// Not in a blacklisted channel
+				return true, nil
+			}
+			return false, nil
+		}
+	}
+
+	if containsHour || containsWeekday {
+		if atc.Inactive {
+			// Inactive time
+			return false, nil
+		} else {
+			// Active time
+			return true, nil
+		}
+	}
+
+	if atc.Inactive {
+		// Not in a blacklisted channel
+		return true, nil
+	}
+
+	// Not in a whitelisted channel
+	return false, nil
+}
+
+func (atc *ActiveTimeCondition) MergeDuplicates(data []interface{}) interface{} {
+	return data[0]
+}
+
+/////////////////////////////////////////////////////////////////
