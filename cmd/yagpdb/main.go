@@ -44,6 +44,7 @@ import (
 	"github.com/botlabs-gg/yagpdb/timezonecompanion"
 	"github.com/botlabs-gg/yagpdb/twitter"
 	"github.com/botlabs-gg/yagpdb/verification"
+	"github.com/botlabs-gg/yagpdb/yageconomy"
 	"github.com/botlabs-gg/yagpdb/youtube"
 	// External plugins
 )
@@ -92,6 +93,7 @@ func main() {
 	timezonecompanion.RegisterPlugin()
 	twitter.RegisterPlugin()
 	verification.RegisterPlugin()
+	yageconomy.RegisterPlugin()
 	youtube.RegisterPlugin()
 
 	run.Run()
