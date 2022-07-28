@@ -214,7 +214,7 @@ func (p *Plugin) sendNewRSSFeedMessage(guildID, channelID, mentionRole int64, fe
 
 	webhookUsername := "RSS Feed • " + common.ConfBotName.GetString()
 	// not really good using current mqueue-webhooking
-	if feedName != "" && !announceMsg.Enabled {
+	if (feedName != "" && feedName != "No name") && !announceMsg.Enabled {
 		webhookUsername = "RSS Feed • " + feedName
 	}
 
