@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -141,7 +142,12 @@ func (p *Plugin) HandleNew(w http.ResponseWriter, r *http.Request) (web.Template
 
 	// validate URL
 	if !common.LinkRegexProtocolStrict.MatchString(url) {
-		return templateData.AddAlerts(web.ErrorAlert("This is not a valid HTTP(S) URL ...")), nil
+		return templateData.AddAlerts(web.ErrorAlert("This is not a valid HTTP(S) URL...")), nil
+	}
+
+	reReddit := regexp.MustCompile(`reddit.com/`)
+	if reReddit.MatchString(url) {
+		return templateData.AddAlerts(web.ErrorAlert("Use Reddit feeds plugin...")), nil
 	}
 
 	// search for the RSS feed
