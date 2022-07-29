@@ -17,6 +17,7 @@ import (
 	"github.com/botlabs-gg/yagpdb/lib/dcmd"
 	"github.com/botlabs-gg/yagpdb/lib/discordgo"
 	"github.com/botlabs-gg/yagpdb/moderation"
+	"github.com/botlabs-gg/yagpdb/streaming"
 
 	"github.com/mediocregopher/radix/v3"
 )
@@ -135,7 +136,17 @@ func onMemberJoin(evt *eventsystem.EventData) (retry bool, err error) {
 }
 
 func assignRole(config *GeneralConfig, guildID int64, targetID int64) (disabled bool, retry bool, err error) {
-	if config.Role != 0 {
+	streamingConf, err := streaming.GetConfig(guildID)
+	if err != nil {
+		return false, false, nil
+	}
+
+	var streamingRoleSame bool
+	if streamingConf.Enabled && streamingConf.GiveRole == config.Role {
+		streamingRoleSame = true
+	}
+
+	if config.Role != 0 && !streamingRoleSame {
 		analytics.RecordActiveUnit(guildID, &Plugin{}, "assigned_role")
 		err = common.BotSession.GuildMemberRoleAdd(guildID, targetID, config.Role)
 		if err != nil {
@@ -158,7 +169,17 @@ func assignRole(config *GeneralConfig, guildID int64, targetID int64) (disabled 
 }
 
 func removeRole(config *GeneralConfig, guildID int64, targetID int64) (disabled bool, retry bool, err error) {
-	if config.RemoveRole != 0 {
+	streamingConf, err := streaming.GetConfig(guildID)
+	if err != nil {
+		return false, false, nil
+	}
+
+	var streamingRoleSame bool
+	if streamingConf.Enabled && streamingConf.GiveRole == config.Role {
+		streamingRoleSame = true
+	}
+
+	if config.Role != 0 && !streamingRoleSame {
 		analytics.RecordActiveUnit(guildID, &Plugin{}, "removed_role")
 		err = common.BotSession.GuildMemberRoleRemove(guildID, targetID, config.RemoveRole)
 		if err != nil {

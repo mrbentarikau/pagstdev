@@ -19,13 +19,13 @@
                         {{checkbox "IgnoreBots" "autorole-ignore-bots" `Ignore bots` .Autorole.IgnoreBots}}
                         </div>
                         <div class="form-group">
-                            <label for="autorole-role">Automatically assign members this role</label>
+                            <label for="autorole-role">Automatically assign members this role (ignores streaming role)</label>
                             <select id="autorole-role" class="form-control" name="Role">
                                 {{roleOptions .ActiveGuild.Roles .HighestRole .Autorole.Role "None (disabled)"}}
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="autorole-remove-role">Automatically remove this role from members</label>
+                            <label for="autorole-remove-role">Automatically remove this role from members (ignores streaming role)</label>
                             <select id="autorole-remove-role" class="form-control" name="RemoveRole">
                             {{roleOptions .ActiveGuild.Roles .HighestRole .Autorole.RemoveRole "None (disabled)"}}
                             </select>
