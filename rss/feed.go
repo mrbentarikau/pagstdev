@@ -137,6 +137,11 @@ func (p *Plugin) CheckRSSFeed(feedByte []byte, directFeed *gofeed.Feed, feedURL 
 	}
 
 	parsedPublishedAt := feed.Items[0].PublishedParsed
+	if parsedPublishedAt == nil {
+		// the feed does not have any time information
+		return nil
+	}
+
 	if time.Since(*parsedPublishedAt) > time.Hour && lastRSSLink != "" {
 		// just a safeguard against empty parsedPublishedAt
 		return nil

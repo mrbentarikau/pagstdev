@@ -156,6 +156,14 @@ func (p *Plugin) HandleNew(w http.ResponseWriter, r *http.Request) (web.Template
 		return templateData.AddAlerts(web.ErrorAlert("RSS feed not found")), nil
 	}
 
+	if len(parsedURL.Items) == 0 {
+		return templateData.AddAlerts(web.ErrorAlert("RSS feed has no items")), nil
+	}
+
+	if parsedURL.Items[0].PublishedParsed == nil {
+		return templateData.AddAlerts(web.ErrorAlert("RSS feed has no valid formatting")), nil
+	}
+
 	feedTitle := parsedURL.Title
 
 	sub, err := p.AddRSSFeed(activeGuild.ID, formData.DiscordChannel, formData.MentionRole, strings.TrimSpace(formData.FeedName), feedTitle, url)
