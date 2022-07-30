@@ -197,7 +197,7 @@ func (p *Plugin) sendNewRSSFeedMessage(guildID, channelID, mentionRole int64, fe
 	}
 	err = json.Unmarshal(j, &rssFeedTemplate)
 	if err != nil {
-		logger.Error("rssFeed ubMarshalling error")
+		logger.Error("rssFeed unMarshalling error")
 		return
 	}
 
