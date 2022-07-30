@@ -41,9 +41,10 @@ const (
 var PageHTML string
 
 var (
-	panelLogKeyAddedFeed   = cplogs.RegisterActionFormat(&cplogs.ActionFormat{Key: "youtube_added_feed", FormatString: "Added youtube feed from %s"})
-	panelLogKeyRemovedFeed = cplogs.RegisterActionFormat(&cplogs.ActionFormat{Key: "youtube_removed_feed", FormatString: "Removed youtube feed from %s"})
-	panelLogKeyUpdatedFeed = cplogs.RegisterActionFormat(&cplogs.ActionFormat{Key: "youtube_updated_feed", FormatString: "Updated youtube feed from %s"})
+	panelLogKeyAddedFeed        = cplogs.RegisterActionFormat(&cplogs.ActionFormat{Key: "youtube_added_feed", FormatString: "Added YouTube feed %s"})
+	panelLogKeyFeedAnnouncement = cplogs.RegisterActionFormat(&cplogs.ActionFormat{Key: "youtube_feed_announcement", FormatString: "Updated YouTube feed announcement"})
+	panelLogKeyRemovedFeed      = cplogs.RegisterActionFormat(&cplogs.ActionFormat{Key: "youtube_removed_feed", FormatString: "Removed YouTube feed from %s"})
+	panelLogKeyUpdatedFeed      = cplogs.RegisterActionFormat(&cplogs.ActionFormat{Key: "youtube_updated_feed", FormatString: "Updated YouTube feed %s"})
 )
 
 type Form struct {
@@ -263,6 +264,9 @@ func (p *Plugin) HandleAnnouncement(w http.ResponseWriter, r *http.Request) (tem
 	announceMsg.AnnounceMsg = data.YoutubeAnnounceMsg
 	announceMsg.Enabled = data.AnnounceEnabled
 	err = common.SetRedisJson("youtube_announce_message:"+discordgo.StrID(guild.ID), announceMsg)
+
+	go cplogs.RetryAddEntry(web.NewLogEntryFromContext(r.Context(), panelLogKeyFeedAnnouncement, &cplogs.Param{}))
+
 	return
 }
 

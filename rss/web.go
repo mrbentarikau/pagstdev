@@ -34,9 +34,10 @@ Incoming RSS feed, **{{.RSSFeed.Title}}** just posted {{.RSSFeedItem.Link}} !`
 )
 
 var (
-	panelLogKeyAddedFeed   = cplogs.RegisterActionFormat(&cplogs.ActionFormat{Key: "rss_added_feed", FormatString: "Added RSS feed from %s"})
-	panelLogKeyRemovedFeed = cplogs.RegisterActionFormat(&cplogs.ActionFormat{Key: "rss_removed_feed", FormatString: "Removed RSS feed from %s"})
-	panelLogKeyUpdatedFeed = cplogs.RegisterActionFormat(&cplogs.ActionFormat{Key: "rss_updated_feed", FormatString: "Updated RSS feed from %s"})
+	panelLogKeyAddedFeed        = cplogs.RegisterActionFormat(&cplogs.ActionFormat{Key: "rss_added_feed", FormatString: "Added RSS feed %s"})
+	panelLogKeyFeedAnnouncement = cplogs.RegisterActionFormat(&cplogs.ActionFormat{Key: "rss_feed_announcement", FormatString: "Updated RSS feed announcement"})
+	panelLogKeyRemovedFeed      = cplogs.RegisterActionFormat(&cplogs.ActionFormat{Key: "rss_removed_feed", FormatString: "Removed RSS feed %s"})
+	panelLogKeyUpdatedFeed      = cplogs.RegisterActionFormat(&cplogs.ActionFormat{Key: "rss_updated_feed", FormatString: "Updated RSS feed %s"})
 )
 
 type Form struct {
@@ -120,6 +121,9 @@ func (p *Plugin) HandleAnnouncement(w http.ResponseWriter, r *http.Request) (tem
 	announceMsg.AnnounceMsg = data.RSSFeedAnnounceMsg
 	announceMsg.Enabled = data.AnnounceEnabled
 	err = common.SetRedisJson(RedisRSSAnnounceMessage+":"+discordgo.StrID(guild.ID), announceMsg)
+
+	go cplogs.RetryAddEntry(web.NewLogEntryFromContext(r.Context(), panelLogKeyFeedAnnouncement, &cplogs.Param{}))
+
 	return
 }
 
