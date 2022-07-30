@@ -14,6 +14,11 @@ import (
 	"regexp"
 	"strconv"
 	"time"
+	"unicode"
+
+	"golang.org/x/text/runes"
+	"golang.org/x/text/transform"
+	"golang.org/x/text/unicode/norm"
 
 	"github.com/botlabs-gg/yagpdb/common"
 	"github.com/botlabs-gg/yagpdb/common/cplogs"
@@ -162,27 +167,33 @@ func (p *Plugin) HandleNew(w http.ResponseWriter, r *http.Request) (web.Template
 	cURL := trimYouTubeURLParts(data.YoutubeCustomURL)
 	vURL := trimYouTubeURLParts(data.YoutubeVideoURL)
 
-	url := data.YoutubeURL
-	if !ytUrlRegex.MatchString(url) && cID == "" && username == "" && cURL == "" && vURL == "" {
+	urlYT := data.YoutubeURL
+	if !ytUrlRegex.MatchString(urlYT) && cID == "" && username == "" && cURL == "" && vURL == "" {
 		return templateData.AddAlerts(web.ErrorAlert("This is not a YouTube link...")), nil
 	}
 
 	var ytChannel, legacyYTChannel *youtube.Channel
 	var err error
-	if url != "" {
-		ytChannel, err = p.getYTChannel(url)
+	tChain := transform.Chain(norm.NFD, runes.Remove(runes.In(unicode.Mn)), norm.NFC)
+
+	if urlYT != "" {
+		urlYT, _ = url.QueryUnescape(urlYT)
+		urlYT, _, _ = transform.String(tChain, urlYT)
+		ytChannel, err = p.getYTChannel(urlYT)
 	} else {
+		customURL, _ := url.QueryUnescape(data.YoutubeCustomURL)
+		customURL, _, _ = transform.String(tChain, customURL)
 		legacyYT := LegacyYTStruct{
 			YTChannelID: data.YoutubeChannelID,
 			YTUsername:  data.YoutubeChannelUser,
-			YTCustomURL: data.YoutubeCustomURL,
+			YTCustomURL: customURL,
 			YTVideoURL:  data.YoutubeVideoURL,
 		}
 		legacyYTChannel, err = p.legacyGetYTChannel(legacyYT)
 	}
 
 	if err != nil {
-		logger.WithError(err).Errorf("error occurred fetching channel for URL %s", url)
+		logger.WithError(err).Errorf("error occurred fetching channel for URL %s", urlYT)
 		return templateData.AddAlerts(web.ErrorAlert("No channel found for that link")), err
 	}
 
