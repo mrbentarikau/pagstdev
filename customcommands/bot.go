@@ -129,7 +129,6 @@ var cmdEvalCommand = &commands.YAGCommand{
 	Arguments: []*dcmd.ArgDef{
 		{Name: "code", Type: dcmd.String},
 	},
-	RequireDiscordPerms: []int64{discordgo.PermissionManageServer},
 	SlashCommandEnabled: false,
 	DefaultEnabled:      true,
 	RunFunc: func(data *dcmd.Data) (interface{}, error) {
@@ -137,6 +136,24 @@ var cmdEvalCommand = &commands.YAGCommand{
 		// Disallow calling via exec / execAdmin
 		if data.Context().Value(commands.CtxKeyExecutedByCC) == true {
 			return "", nil
+		}
+
+		var hasCoreWriteRole bool
+		for _, r := range data.GuildData.MS.Member.Roles {
+			if common.ContainsInt64Slice((common.GetCoreServerConfCached(data.GuildData.GS.ID)).AllowedWriteRoles, r) {
+				// we have a core-config allowed write role!
+				hasCoreWriteRole = true
+				break
+			}
+		}
+
+		adminOrPerms, err := bot.AdminOrPermMS(data.GuildData.GS.ID, data.GuildData.CS.ID, data.GuildData.MS, discordgo.PermissionManageMessages)
+		if err != nil {
+			return nil, err
+		}
+
+		if !(adminOrPerms || hasCoreWriteRole) {
+			return "You need `Manage Messages` permissions or `Control Panel write access` for this command...", nil
 		}
 
 		channel := data.GuildData.CS
