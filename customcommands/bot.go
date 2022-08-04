@@ -132,6 +132,8 @@ var cmdEvalCommand = &commands.YAGCommand{
 	SlashCommandEnabled: false,
 	DefaultEnabled:      true,
 	RunFunc: func(data *dcmd.Data) (interface{}, error) {
+		guildData := data.GuildData
+		channel := guildData.CS
 
 		// Disallow calling via exec / execAdmin
 		if data.Context().Value(commands.CtxKeyExecutedByCC) == true {
@@ -140,14 +142,14 @@ var cmdEvalCommand = &commands.YAGCommand{
 
 		var hasCoreWriteRole bool
 		for _, r := range data.GuildData.MS.Member.Roles {
-			if common.ContainsInt64Slice((common.GetCoreServerConfCached(data.GuildData.GS.ID)).AllowedWriteRoles, r) {
+			if common.ContainsInt64Slice((common.GetCoreServerConfCached(guildData.GS.ID)).AllowedWriteRoles, r) {
 				// we have a core-config allowed write role!
 				hasCoreWriteRole = true
 				break
 			}
 		}
 
-		adminOrPerms, err := bot.AdminOrPermMS(data.GuildData.GS.ID, data.GuildData.CS.ID, data.GuildData.MS, discordgo.PermissionManageMessages)
+		adminOrPerms, err := bot.AdminOrPermMS(guildData.GS.ID, channel.ID, guildData.MS, discordgo.PermissionManageMessages)
 		if err != nil {
 			return nil, err
 		}
@@ -156,8 +158,7 @@ var cmdEvalCommand = &commands.YAGCommand{
 			return "You need `Manage Messages` permissions or `Control Panel write access` for this command...", nil
 		}
 
-		channel := data.GuildData.CS
-		ctx := templates.NewContext(data.GuildData.GS, channel, data.GuildData.MS)
+		ctx := templates.NewContext(guildData.GS, channel, guildData.MS)
 		ctx.IsExecedByEvalCC = true
 
 		maxRunes := 500
