@@ -48,7 +48,7 @@ import (
 var (
 	CCExecLock        = keylock.NewKeyLock()
 	DelayedCCRunLimit = multiratelimit.NewMultiRatelimiter(0.1, 10)
-	CCDataLimit       = 5000000
+	CCDataLimit       = 1048576
 )
 
 type DelayedRunLimitKey struct {
