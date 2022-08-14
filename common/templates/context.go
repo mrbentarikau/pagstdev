@@ -513,11 +513,16 @@ func (c *Context) SendResponse(content string) (*discordgo.Message, error) {
 		content = "Custom Command DM from the server **" + c.GS.Name + "**\n" + content
 	}
 
+	goErrs := make(chan error, 1)
 	m, err := common.BotSession.ChannelMessageSendComplex(channelID, c.MessageSend(content))
 	if err != nil {
-		/*KRAAKA that error printout!!!*/
-		common.BotSession.ChannelMessageSendComplex(channelID, c.MessageSend(fmt.Sprint(err)))
-		logger.WithError(err).Error("Failed sending message")
+		/* KRAAKA that error printout!!! */
+		//common.BotSession.ChannelMessageSendComplex(channelID, c.MessageSend(fmt.Sprint(err)))
+		//logger.WithError(err).Error("Failed sending message")
+		logger.WithField("guild", c.GS.ID).WithError(err).Error("Error sending response message: " + c.Name)
+		errOut := "\nAn error caused the execution of the custom command template to stop:\n"
+		errOut += "`" + err.Error() + "`"
+		return c.SendResponse(errOut)
 	} else {
 		if c.CurrentFrame.DelResponse {
 			MaybeScheduledDeleteMessage(c.GS.ID, channelID, m.ID, c.CurrentFrame.DelResponseDelay)
@@ -527,9 +532,23 @@ func (c *Context) SendResponse(content string) (*discordgo.Message, error) {
 			go func(frame *ContextFrame) {
 				for _, v := range frame.AddResponseReactionNames {
 					common.BotSession.MessageReactionAdd(m.ChannelID, m.ID, v)
+					// failed response reacts err
+					err := common.BotSession.MessageReactionAdd(m.ChannelID, m.ID, v)
+					if err != nil {
+						goErrs <- err
+						break
+					}
 				}
+				close(goErrs)
 			}(c.CurrentFrame)
 		}
+	}
+	if goErrs != nil {
+		logger.WithField("guild", c.GS.ID).WithError(err).Error("Error executing template response: " + c.Name)
+		//common.BotSession.ChannelMessageSendComplex(channelID, c.MessageSend(fmt.Sprint(<-goErrs)))
+		errOut := "\nAn error caused the execution of the custom command template to stop:\n"
+		errOut += "`" + fmt.Sprint(<-goErrs) + "`"
+		return c.SendResponse(errOut)
 	}
 
 	return m, nil
@@ -670,13 +689,13 @@ func baseContextFuncs(c *Context) {
 	c.addContextFunc("getChannelOrThread", c.tmplGetChannelOrThread)
 	c.addContextFunc("getMember", c.tmplGetMember)
 	c.addContextFunc("getMessage", c.tmplGetMessage)
-	c.addContextFunc("getThread", c.tmplGetThread)
 	c.addContextFunc("getPinCount", c.tmplGetChannelPins(true))
+	c.addContextFunc("getThread", c.tmplGetThread)
 	c.addContextFunc("setMemberTimeout", c.tmplSetMemberTimeout)
 
-	c.addContextFunc("currentUserCreated", c.tmplCurrentUserCreated)
 	c.addContextFunc("currentUserAgeHuman", c.tmplCurrentUserAgeHuman)
 	c.addContextFunc("currentUserAgeMinutes", c.tmplCurrentUserAgeMinutes)
+	c.addContextFunc("currentUserCreated", c.tmplCurrentUserCreated)
 	c.addContextFunc("reFind", c.reFind)
 	c.addContextFunc("reFindAll", c.reFindAll)
 	c.addContextFunc("reFindAllSubmatches", c.reFindAllSubmatches)
