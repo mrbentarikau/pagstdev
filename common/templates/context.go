@@ -23,6 +23,8 @@ import (
 	"github.com/botlabs-gg/yagpdb/lib/template"
 	"github.com/sirupsen/logrus"
 	"github.com/vmihailenco/msgpack"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 var (
@@ -51,7 +53,7 @@ var (
 		"printf":      withOutputLimitf(fmt.Sprintf, MaxStringLength),
 		"slice":       slice,
 		"split":       strings.Split,
-		"title":       strings.Title,
+		"title":       cases.Title(language.Und).String,
 		"trim":        trimString(""),
 		"trimLeft":    trimString("left"),
 		"trimRight":   trimString("right"),
@@ -210,6 +212,7 @@ type ContextFrame struct {
 
 	isNestedTemplate bool
 	parsedTemplate   *template.Template
+
 	SendResponseInDM bool
 }
 
@@ -438,7 +441,7 @@ func (c *Context) ExecuteAndSendWithErrors(source string, channelID int64) error
 	// deal with the results
 	if err != nil {
 		logger.WithField("guild", c.GS.ID).WithError(err).Error("Error executing template: " + c.Name)
-		out += "\nAn error caused the execution of the custom command template to stop:\n"
+		out += "\nAn error caused the execution of the custom command " + c.Name + " template to stop:\n"
 		out += "`" + err.Error() + "`"
 	}
 
@@ -513,42 +516,44 @@ func (c *Context) SendResponse(content string) (*discordgo.Message, error) {
 		content = "Custom Command DM from the server **" + c.GS.Name + "**\n" + content
 	}
 
-	goErrs := make(chan error, 1)
 	m, err := common.BotSession.ChannelMessageSendComplex(channelID, c.MessageSend(content))
 	if err != nil {
 		/* KRAAKA that error printout!!! */
-		//common.BotSession.ChannelMessageSendComplex(channelID, c.MessageSend(fmt.Sprint(err)))
-		//logger.WithError(err).Error("Failed sending message")
-		logger.WithField("guild", c.GS.ID).WithError(err).Error("Error sending response message: " + c.Name)
-		errOut := "\nAn error caused the execution of the custom command template to stop:\n"
+		logger.WithField("guild", c.GS.ID).WithError(err).Error("Error sending message: " + c.Name)
+		/*errOut := "\nAn error caused the execution of the custom command " + c.Name + " template to stop:\n"
 		errOut += "`" + err.Error() + "`"
-		return c.SendResponse(errOut)
+		common.BotSession.ChannelMessageSendComplex(channelID, c.MessageSend(fmt.Sprint(errOut)))*/
 	} else {
 		if c.CurrentFrame.DelResponse {
 			MaybeScheduledDeleteMessage(c.GS.ID, channelID, m.ID, c.CurrentFrame.DelResponseDelay)
 		}
 
 		if len(c.CurrentFrame.AddResponseReactionNames) > 0 {
+			//goErrs := make(chan error, 1)
 			go func(frame *ContextFrame) {
-				for _, v := range frame.AddResponseReactionNames {
+				for _, v := range c.CurrentFrame.AddResponseReactionNames {
 					common.BotSession.MessageReactionAdd(m.ChannelID, m.ID, v)
 					// failed response reacts err
-					err := common.BotSession.MessageReactionAdd(m.ChannelID, m.ID, v)
-					if err != nil {
+					//err = common.BotSession.MessageReactionAdd(m.ChannelID, m.ID, v)
+					/*if err != nil {
 						goErrs <- err
+
+						logger.WithField("guild", c.GS.ID).WithError(err).Error("Error executing template response: " + c.Name)
+
+						errOut := "\nAn error caused the execution of the custom command " + c.Name + " template to send response:\n"
+						errOut += "`" + err.Error() + "`"
+						common.BotSession.ChannelMessageSendComplex(channelID, c.MessageSend(errOut))
 						break
-					}
+					}*/
 				}
-				close(goErrs)
+				//close(goErrs)
 			}(c.CurrentFrame)
+
+			/*goErr:= <-goErrs
+			if goErr != nil {
+				return m, errors.New(fmt.Sprint(goErr))
+			}*/
 		}
-	}
-	if goErrs != nil {
-		logger.WithField("guild", c.GS.ID).WithError(err).Error("Error executing template response: " + c.Name)
-		//common.BotSession.ChannelMessageSendComplex(channelID, c.MessageSend(fmt.Sprint(<-goErrs)))
-		errOut := "\nAn error caused the execution of the custom command template to stop:\n"
-		errOut += "`" + fmt.Sprint(<-goErrs) + "`"
-		return c.SendResponse(errOut)
 	}
 
 	return m, nil
