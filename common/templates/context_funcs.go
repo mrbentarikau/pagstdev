@@ -16,6 +16,8 @@ import (
 	"github.com/botlabs-gg/yagpdb/common/scheduledevents2"
 	"github.com/botlabs-gg/yagpdb/lib/discordgo"
 	"github.com/botlabs-gg/yagpdb/lib/dstate"
+
+	"golang.org/x/exp/slices"
 )
 
 var ErrTooManyCalls = errors.New("too many calls to this function")
@@ -399,9 +401,11 @@ func (c *Context) checkSafeDictNoRecursion(d Dict, n int) bool {
 }
 
 func (c *Context) tmplSendMessage(filterSpecialMentions bool, returnID bool) func(channel interface{}, msg interface{}) interface{} {
+	var repliedUser bool
 	parseMentions := []discordgo.AllowedMentionType{}
 	if !filterSpecialMentions {
 		parseMentions = append(parseMentions, discordgo.AllowedMentionTypeUsers, discordgo.AllowedMentionTypeRoles, discordgo.AllowedMentionTypeEveryone)
+		repliedUser = true
 	}
 
 	return func(channel interface{}, msg interface{}) interface{} {
@@ -423,7 +427,8 @@ func (c *Context) tmplSendMessage(filterSpecialMentions bool, returnID bool) fun
 		var m *discordgo.Message
 		msgSend := &discordgo.MessageSend{
 			AllowedMentions: discordgo.AllowedMentions{
-				Parse: parseMentions,
+				Parse:       parseMentions,
+				RepliedUser: repliedUser,
 			},
 		}
 
@@ -449,10 +454,27 @@ func (c *Context) tmplSendMessage(filterSpecialMentions bool, returnID bool) fun
 			}
 		case *discordgo.MessageSend:
 			msgSend = typedMsg
+			copyAllowedMentions := typedMsg.AllowedMentions
 			msgSend.AllowedMentions = discordgo.AllowedMentions{Parse: parseMentions}
 
 			if !filterSpecialMentions {
-				msgSend.AllowedMentions = discordgo.AllowedMentions{Parse: parseMentions}
+				msgSend.AllowedMentions = discordgo.AllowedMentions{Parse: parseMentions, RepliedUser: repliedUser}
+			} else {
+				if len(copyAllowedMentions.Parse) > 0 {
+					msgSend.AllowedMentions.Parse = copyAllowedMentions.Parse
+				}
+
+				if len(copyAllowedMentions.Users) > 0 &&
+					!(slices.Contains(msgSend.AllowedMentions.Parse, "users") || slices.Contains(copyAllowedMentions.Parse, "users")) {
+					msgSend.AllowedMentions.Users = copyAllowedMentions.Users
+				}
+
+				if len(copyAllowedMentions.Roles) > 0 &&
+					!(slices.Contains(msgSend.AllowedMentions.Parse, "roles") || slices.Contains(copyAllowedMentions.Parse, "roles")) {
+					msgSend.AllowedMentions.Roles = copyAllowedMentions.Roles
+				}
+
+				msgSend.AllowedMentions.RepliedUser = copyAllowedMentions.RepliedUser
 			}
 
 			if msgSend.Reference != nil {
@@ -546,7 +568,8 @@ func (c *Context) tmplEditMessage(filterSpecialMentions bool) func(channel inter
 
 		if !filterSpecialMentions {
 			msgEdit.AllowedMentions = discordgo.AllowedMentions{
-				Parse: []discordgo.AllowedMentionType{discordgo.AllowedMentionTypeUsers, discordgo.AllowedMentionTypeRoles, discordgo.AllowedMentionTypeEveryone},
+				Parse:       []discordgo.AllowedMentionType{discordgo.AllowedMentionTypeUsers, discordgo.AllowedMentionTypeRoles, discordgo.AllowedMentionTypeEveryone},
+				RepliedUser: true,
 			}
 		}
 
@@ -826,9 +849,9 @@ func (c *Context) tmplDelMessage(channel, msgID interface{}, args ...interface{}
 	return ""
 }
 
-//Deletes reactions from a message either via reaction trigger or argument-set of emojis,
-//needs channelID, messageID, userID, list of emojis - up to twenty
-//can be run once per CC.
+// Deletes reactions from a message either via reaction trigger or argument-set of emojis,
+// needs channelID, messageID, userID, list of emojis - up to twenty
+// can be run once per CC.
 func (c *Context) tmplDelMessageReaction(values ...reflect.Value) (reflect.Value, error) {
 
 	f := func(args []reflect.Value) (reflect.Value, error) {
