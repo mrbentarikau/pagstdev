@@ -394,12 +394,12 @@ func parseAllowedMentions(Data interface{}) (*discordgo.AllowedMentions, error) 
 			case Slice, *Slice:
 				conv, err := parseSlice.AppendSlice(v)
 				if err != nil {
-					return nil, errors.New(`Allowed Mentions Parsing : invalid datatype passed to "Parse"`)
+					return nil, errors.New(`Allowed Mentions Parsing : invalid datatype passed to "parse"`)
 				}
 				for _, elem := range conv.(Slice) {
 					elemConv, _ := elem.(string)
 					if elemConv != "users" && elemConv != "roles" && elemConv != "everyone" {
-						return nil, errors.New(`Allowed Mentions Parsing: invalid slice element in "Parse"`)
+						return nil, errors.New(`Allowed Mentions Parsing: invalid slice element in "parse"`)
 					}
 					parseMentions = append(parseMentions, discordgo.AllowedMentionType(elemConv))
 				}
@@ -425,7 +425,7 @@ func parseAllowedMentions(Data interface{}) (*discordgo.AllowedMentions, error) 
 				}
 				for _, elem := range conv.(Slice) {
 					if ToInt64(elem) == 0 {
-						return nil, errors.New(`Allowed Mentions Parsing: "Users" IDSlice: invalid ID passed-` + ToString(elem))
+						return nil, errors.New(`Allowed Mentions Parsing: "users" IDSlice: invalid ID passed-` + ToString(elem))
 					}
 					newslice = append(newslice, ToInt64(elem))
 				}
@@ -435,7 +435,7 @@ func parseAllowedMentions(Data interface{}) (*discordgo.AllowedMentions, error) 
 				allowedMentions.Users = newslice
 			default:
 				if ToInt64(v) == 0 {
-					return nil, errors.New(`Allowed Mentions Parsing: "Users" IDSlice: invalid ID passed-` + ToString(v))
+					return nil, errors.New(`Allowed Mentions Parsing: "users" IDSlice: invalid ID passed-` + ToString(v))
 				}
 
 				newslice = append(newslice, ToInt64(v))
@@ -450,11 +450,11 @@ func parseAllowedMentions(Data interface{}) (*discordgo.AllowedMentions, error) 
 			case Slice, *Slice:
 				conv, err := parseSlice.AppendSlice(v)
 				if err != nil {
-					return nil, errors.New(`Allowed Mentions Parsing : invalid datatype passed to "Roles"`)
+					return nil, errors.New(`Allowed Mentions Parsing : invalid datatype passed to "roles"`)
 				}
 				for _, elem := range conv.(Slice) {
 					if (ToInt64(elem)) == 0 {
-						return nil, errors.New(`Allowed Mentions Parsing: "Roles" IDSlice: invalid ID passed-` + ToString(elem))
+						return nil, errors.New(`Allowed Mentions Parsing: "roles" IDSlice: invalid ID passed-` + ToString(elem))
 					}
 					newslice = append(newslice, ToInt64(elem))
 				}
@@ -464,7 +464,7 @@ func parseAllowedMentions(Data interface{}) (*discordgo.AllowedMentions, error) 
 				allowedMentions.Roles = newslice
 			default:
 				if (ToInt64(v)) == 0 {
-					return nil, errors.New(`Allowed Mentions Parsing: "Roles" IDSlice: invalid ID passed-` + ToString(v))
+					return nil, errors.New(`Allowed Mentions Parsing: "roles" IDSlice: invalid ID passed-` + ToString(v))
 				}
 
 				newslice = append(newslice, ToInt64(v))
@@ -478,7 +478,7 @@ func parseAllowedMentions(Data interface{}) (*discordgo.AllowedMentions, error) 
 					allowedMentions.RepliedUser = true
 				}
 			default:
-				return nil, errors.New(`Allowed Mentions Parsing: "Reply" not a bool` + ToString(v))
+				return nil, errors.New(`Allowed Mentions Parsing: "reply" not a bool: ` + ToString(v))
 			}
 
 		default:
@@ -1498,7 +1498,6 @@ func callVariadic(f variadicFunc, skipNil bool, values ...reflect.Value) (reflec
 			vs = append(vs, v)
 		}
 	}
-
 	return f(vs)
 }
 

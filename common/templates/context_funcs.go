@@ -477,8 +477,8 @@ func (c *Context) tmplSendMessage(filterSpecialMentions bool, returnID bool) fun
 				msgSend.AllowedMentions.RepliedUser = copyAllowedMentions.RepliedUser
 			}
 
-			if msgSend.Reference != nil {
-				cid = c.CurrentFrame.CS.ID
+			if msgSend.Reference != nil && msgSend.Reference.ChannelID == 0 {
+				//cid = c.CurrentFrame.CS.ID
 				msgSend.Reference.ChannelID = cid
 			}
 
