@@ -520,9 +520,9 @@ func (c *Context) SendResponse(content string) (*discordgo.Message, error) {
 	if err != nil {
 		/* KRAAKA that error printout!!! */
 		logger.WithField("guild", c.GS.ID).WithError(err).Error("Error sending message: " + c.Name)
-		/*errOut := "\nAn error caused the execution of the custom command " + c.Name + " template to stop:\n"
+		errOut := "\nA response-level error caused the execution of the custom command " + c.Name + " template to stop:\n"
 		errOut += "`" + err.Error() + "`"
-		common.BotSession.ChannelMessageSendComplex(channelID, c.MessageSend(fmt.Sprint(errOut)))*/
+		common.BotSession.ChannelMessageSendComplex(channelID, c.MessageSend(fmt.Sprint(errOut)))
 	} else {
 		if c.CurrentFrame.DelResponse {
 			MaybeScheduledDeleteMessage(c.GS.ID, channelID, m.ID, c.CurrentFrame.DelResponseDelay)
@@ -920,6 +920,15 @@ func (d SDict) HasKey(k string) (ok bool) {
 }
 
 type Slice []interface{}
+
+func (s Slice) String() string {
+	fromStringSlice := s.StringSlice()
+
+	stringSlice := make([]string, 0, len(fromStringSlice.([]string)))
+	stringSlice = append(stringSlice, fromStringSlice.([]string)...)
+
+	return strings.Join(stringSlice, " ")
+}
 
 func (s Slice) Append(item interface{}) (interface{}, error) {
 	if len(s)+1 > 10000 {
