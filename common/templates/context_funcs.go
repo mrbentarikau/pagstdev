@@ -455,11 +455,10 @@ func (c *Context) tmplSendMessage(filterSpecialMentions bool, returnID bool) fun
 		case *discordgo.MessageSend:
 			msgSend = typedMsg
 			copyAllowedMentions := typedMsg.AllowedMentions
-			msgSend.AllowedMentions = discordgo.AllowedMentions{Parse: parseMentions}
+			msgSend.AllowedMentions = discordgo.AllowedMentions{Parse: parseMentions, RepliedUser: repliedUser}
 
-			if !filterSpecialMentions {
-				msgSend.AllowedMentions = discordgo.AllowedMentions{Parse: parseMentions, RepliedUser: repliedUser}
-			} else {
+			if filterSpecialMentions {
+
 				if len(copyAllowedMentions.Parse) > 0 {
 					msgSend.AllowedMentions.Parse = copyAllowedMentions.Parse
 				}
@@ -640,10 +639,17 @@ func (c *Context) tmplSetRoles(target interface{}, input interface{}) (string, e
 
 	rv, _ := indirect(reflect.ValueOf(input))
 	switch rv.Kind() {
+	case reflect.Int, reflect.Int64:
+		oneSlice := make([]int64, 0)
+		sliceType := reflect.TypeOf(oneSlice)
+		oneSliceReflect := reflect.MakeSlice(sliceType, 0, 0)
+		toRv := reflect.ValueOf(input)
+		oneSliceReflect = reflect.Append(oneSliceReflect, toRv)
+		rv = oneSliceReflect
 	case reflect.Slice, reflect.Array:
 		// ok
 	default:
-		return "", errors.New("value passed was not an array or slice")
+		return "", errors.New("value passed was not an array, slice or single int64")
 	}
 
 	// use a map to easily handle duplicate roles
@@ -695,7 +701,8 @@ func (c *Context) tmplSetRoles(target interface{}, input interface{}) (string, e
 		rs = append(rs, discordgo.StrID(id))
 	}
 
-	err = common.BotSession.GuildMemberEdit(c.GS.ID, targetID, rs)
+	guildMemberParams := &discordgo.GuildMemberParams{Roles: &rs}
+	_, err = common.BotSession.GuildMemberEdit(c.GS.ID, targetID, guildMemberParams)
 	if err != nil {
 		return "", err
 	}
@@ -1174,12 +1181,12 @@ func (c *Context) tmplGetChannelPins(pinCount bool) func(channel interface{}) (i
 			return len(msg), nil
 		}
 
-		ids := []int64{}
-		for _, v := range msg {
-			ids = append(ids, v.ID)
+		pinnedMessages := make([]discordgo.Message, 0, len(msg))
+		for _, m := range msg {
+			pinnedMessages = append(pinnedMessages, *m)
 		}
 
-		return ids, nil
+		return pinnedMessages, nil
 	}
 }
 
@@ -1194,7 +1201,7 @@ func (c *Context) tmplAddReactions(values ...reflect.Value) (reflect.Value, erro
 				return reflect.Value{}, ErrTooManyCalls
 			}
 
-			if err := common.BotSession.MessageReactionAdd(c.Msg.ChannelID, c.Msg.ID, reaction.String()); err != nil {
+			if err := common.BotSession.MessageReactionAdd(c.Msg.ChannelID, c.Msg.ID, fmt.Sprint(reaction)); err != nil {
 				return reflect.Value{}, err
 			}
 		}
@@ -1211,7 +1218,7 @@ func (c *Context) tmplAddResponseReactions(values ...reflect.Value) (reflect.Val
 				return reflect.Value{}, ErrTooManyCalls
 			}
 
-			c.CurrentFrame.AddResponseReactionNames = append(c.CurrentFrame.AddResponseReactionNames, reaction.String())
+			c.CurrentFrame.AddResponseReactionNames = append(c.CurrentFrame.AddResponseReactionNames, fmt.Sprint(reaction))
 		}
 		return reflect.ValueOf(""), nil
 	}
@@ -1225,7 +1232,6 @@ func (c *Context) tmplAddMessageReactions(values ...reflect.Value) (reflect.Valu
 			return reflect.Value{}, errors.New("not enough arguments (need channel and message-id)")
 		}
 
-		// cArg := args[0].Interface()
 		var cArg interface{}
 		var mID int64
 
@@ -1255,9 +1261,19 @@ func (c *Context) tmplAddMessageReactions(values ...reflect.Value) (reflect.Valu
 				return reflect.Value{}, ErrTooManyCalls
 			}
 
-			if err := common.BotSession.MessageReactionAdd(cID, mID, reaction.String()); err != nil {
+			if err := common.BotSession.MessageReactionAdd(cID, mID, fmt.Sprint(reaction)); err != nil {
 				return reflect.Value{}, err
 			}
+			/*if reaction.Kind() == reflect.String {
+				if err := common.BotSession.MessageReactionAdd(cID, mID, reaction.String()); err != nil {
+					return reflect.Value{}, err
+				}
+			} else {
+				if err := common.BotSession.MessageReactionAdd(cID, mID, fmt.Sprint(reaction.Interface())); err != nil {
+					return reflect.Value{}, err
+				}
+			}*/
+
 		}
 		return reflect.ValueOf(""), nil
 	}
@@ -1400,7 +1416,8 @@ func (c *Context) tmplEditChannelName(channel interface{}, newName string) (stri
 		return "", ErrTooManyCalls
 	}
 
-	cID := c.ChannelArgNoDMNoThread(channel)
+	//cID := c.ChannelArgNoDMNoThread(channel)
+	cID := c.ChannelArgNoDM(channel)
 	if cID == 0 {
 		return "", errors.New("unknown channel")
 	}
@@ -1409,7 +1426,9 @@ func (c *Context) tmplEditChannelName(channel interface{}, newName string) (stri
 		return "", ErrTooManyCalls
 	}
 
-	_, err := common.BotSession.ChannelEdit(cID, newName)
+	channelEdit := &discordgo.ChannelEdit{Name: newName}
+
+	_, err := common.BotSession.ChannelEdit(cID, channelEdit)
 	return "", err
 }
 
