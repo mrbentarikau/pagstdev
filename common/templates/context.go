@@ -115,6 +115,7 @@ var (
 		"in":                 in,
 		"inFold":             inFold,
 		"json":               tmplJson,
+		"jsonToSdict":        tmplJsonToSDict,
 		"kindOf":             KindOf,
 		"noun":               common.RandomNoun,
 		"ordinalize":         tmplOrdinalize,
