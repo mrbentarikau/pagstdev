@@ -63,26 +63,16 @@ func (evt *Event) NKeys() int {
 	return 0
 }
 
-// Commented out are removed in dgo
 // A Ready stores all data for the websocket READY event.
 type Ready struct {
-	Version   int       `json:"v"`
-	SessionID string    `json:"session_id"`
-	User      *SelfUser `json:"user"`
-	//ReadState        []*ReadState `json:"read_state"`
+	Version          int          `json:"v"`
+	SessionID        string       `json:"session_id"`
+	User             *SelfUser    `json:"user"`
 	Guilds           []*Guild     `json:"guilds"`
 	PrivateChannels  []*Channel   `json:"private_channels"`
 	ResumeGatewayUrl string       `json:"resume_gateway_url"`
 	Shard            [2]int       `json:"shard"`
 	Application      *Application `json:"application"`
-	/*
-	   // Undocumented fields
-	   Settings          *Settings            `json:"user_settings"`
-	   UserGuildSettings []*UserGuildSettings `json:"user_guild_settings"`
-	   Relationships     []*Relationship      `json:"relationships"`
-	   Presences         []*Presence          `json:"presences"`
-	   Notes             map[string]string    `json:"notes"`
-	*/
 }
 
 // ChannelCreate is the data for a ChannelCreate event.
@@ -265,14 +255,6 @@ type GuildScheduledEventUserRemove struct {
 	GuildID               int64 `json:"guild_id"`
 }
 
-/* removed in dgo
-// MessageAck is the data for a MessageAck event.
-type MessageAck struct {
-	MessageID int64 `json:"message_id,string"`
-	ChannelID int64 `json:"channel_id,string"`
-}
-*/
-
 // MessageCreate is the data for a MessageCreate event.
 type MessageCreate struct {
 	*Message
@@ -343,18 +325,6 @@ type Resumed struct {
 	Trace []string `json:"_trace"`
 }
 
-/* removed in dgo
-// RelationshipAdd is the data for a RelationshipAdd event.
-type RelationshipAdd struct {
-	*Relationship
-}
-
-// RelationshipRemove is the data for a RelationshipRemove event.
-type RelationshipRemove struct {
-	*Relationship
-}
-*/
-
 var _ gojay.UnmarshalerJSONObject = (*TypingStart)(nil)
 
 // TypingStart is the data for a TypingStart event.
@@ -407,16 +377,6 @@ func (u *UserUpdate) UnmarshalJSONObject(dec *gojay.Decoder, key string) error {
 func (u *UserUpdate) NKeys() int {
 	return 0
 }
-
-/* removed in dgo
-// UserSettingsUpdate is the data for a UserSettingsUpdate event.
-type UserSettingsUpdate map[string]interface{}
-
-// UserGuildSettingsUpdate is the data for a UserGuildSettingsUpdate event.
-type UserGuildSettingsUpdate struct {
-	*UserGuildSettings
-}
-*/
 
 // UserNoteUpdate is the data for a UserNoteUpdate event.
 type UserNoteUpdate struct {

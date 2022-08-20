@@ -19,7 +19,6 @@ import (
 	_ "image/jpeg" // For JPEG decoding
 	_ "image/png"  // For PNG decoding
 	"io"
-	"io/ioutil"
 	"log"
 	"mime/multipart"
 	"net/http"
@@ -133,7 +132,7 @@ func (s *Session) doRequest(method, urlStr, contentType string, b []byte, extraH
 		}
 	}()
 
-	response, err = ioutil.ReadAll(resp.Body)
+	response, err = io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, true, false, err
 	}
@@ -426,41 +425,6 @@ func (s *Session) UserUpdate(email, password, username, avatar, newPassword stri
 	err = unmarshal(body, &st)
 	return
 }
-
-/* removed in dgo
-// UserSettings returns the settings for a given user
-func (s *Session) UserSettings() (st *Settings, err error) {
-
-	body, err := s.RequestWithBucketID("GET", EndpointUserSettings("@me"), nil, nil, EndpointUserSettings(""))
-	if err != nil {
-		return
-	}
-
-	err = unmarshal(body, &st)
-	return
-}
-
-// UserUpdateStatus update the user status
-// status   : The new status (Actual valid status are 'online','idle','dnd','invisible')
-func (s *Session) UserUpdateStatus(status Status) (st *Settings, err error) {
-	if status == StatusOffline {
-		err = ErrStatusOffline
-		return
-	}
-
-	data := struct {
-		Status Status `json:"status"`
-	}{status}
-
-	body, err := s.RequestWithBucketID("PATCH", EndpointUserSettings("@me"), data, nil, EndpointUserSettings(""))
-	if err != nil {
-		return
-	}
-
-	err = unmarshal(body, &st)
-	return
-}
-*/
 
 // UserConnections returns the user's connections
 func (s *Session) UserConnections() (conn []*UserConnection, err error) {
@@ -1827,23 +1791,6 @@ func (s *Session) ChannelMessage(channelID, messageID int64) (st *Message, err e
 	return
 }
 
-/* removed in dgo
-// ChannelMessageAck acknowledges and marks the given message as read
-// channeld  : The ID of a Channel
-// messageID : the ID of a Message
-// lastToken : token returned by last ack
-func (s *Session) ChannelMessageAck(channelID, messageID int64, lastToken string) (st *Ack, err error) {
-
-	body, err := s.RequestWithBucketID("POST", EndpointChannelMessageAck(channelID, messageID), &Ack{Token: lastToken}, nil, EndpointChannelMessageAck(channelID, 0))
-	if err != nil {
-		return
-	}
-
-	err = unmarshal(body, &st)
-	return
-}
-*/
-
 // ChannelMessageSend sends a message to the given channel.
 // channelID : The ID of a Channel.
 // content   : The message to send.
@@ -2354,20 +2301,6 @@ func (s *Session) VoiceRegions() (st []*VoiceRegion, err error) {
 	err = unmarshal(body, &st)
 	return
 }
-
-/* removed in dgo
-// VoiceICE returns the voice server ICE information
-func (s *Session) VoiceICE() (st *VoiceICE, err error) {
-
-	body, err := s.RequestWithBucketID("GET", EndpointVoiceIce, nil, nil, EndpointVoiceIce)
-	if err != nil {
-		return
-	}
-
-	err = unmarshal(body, &st)
-	return
-}
-*/
 
 // ------------------------------------------------------------------------------------------------
 // Functions specific to Discord Websockets
@@ -2997,74 +2930,6 @@ func (s *Session) UserNoteSet(userID int64, message string) (err error) {
 	_, err = s.RequestWithBucketID("PUT", EndpointUserNotes(userID), data, nil, EndpointUserNotes(0))
 	return
 }
-
-/* removed in dgo
-// ------------------------------------------------------------------------------------------------
-// Functions specific to Discord Relationships (Friends list)
-// ------------------------------------------------------------------------------------------------
-
-// RelationshipsGet returns an array of all the relationships of the user.
-func (s *Session) RelationshipsGet() (r []*Relationship, err error) {
-	body, err := s.RequestWithBucketID("GET", EndpointRelationships(), nil, nil, EndpointRelationships())
-	if err != nil {
-		return
-	}
-
-	err = unmarshal(body, &r)
-	return
-}
-
-// relationshipCreate creates a new relationship. (I.e. send or accept a friend request, block a user.)
-// relationshipType : 1 = friend, 2 = blocked, 3 = incoming friend req, 4 = sent friend req
-func (s *Session) relationshipCreate(userID int64, relationshipType int) (err error) {
-	data := struct {
-		Type int `json:"type"`
-	}{relationshipType}
-
-	_, err = s.RequestWithBucketID("PUT", EndpointRelationship(userID), data, nil, EndpointRelationships())
-	return
-}
-
-// RelationshipFriendRequestSend sends a friend request to a user.
-// userID: ID of the user.
-func (s *Session) RelationshipFriendRequestSend(userID int64) (err error) {
-	err = s.relationshipCreate(userID, 4)
-	return
-}
-
-// RelationshipFriendRequestAccept accepts a friend request from a user.
-// userID: ID of the user.
-func (s *Session) RelationshipFriendRequestAccept(userID int64) (err error) {
-	err = s.relationshipCreate(userID, 1)
-	return
-}
-
-// RelationshipUserBlock blocks a user.
-// userID: ID of the user.
-func (s *Session) RelationshipUserBlock(userID int64) (err error) {
-	err = s.relationshipCreate(userID, 2)
-	return
-}
-
-// RelationshipDelete removes the relationship with a user.
-// userID: ID of the user.
-func (s *Session) RelationshipDelete(userID int64) (err error) {
-	_, err = s.RequestWithBucketID("DELETE", EndpointRelationship(userID), nil, nil, EndpointRelationships())
-	return
-}
-
-// RelationshipsMutualGet returns an array of all the users both @me and the given user is friends with.
-// userID: ID of the user.
-func (s *Session) RelationshipsMutualGet(userID int64) (mf []*User, err error) {
-	body, err := s.RequestWithBucketID("GET", EndpointRelationshipsMutual(userID), nil, nil, EndpointRelationshipsMutual(userID))
-	if err != nil {
-		return
-	}
-
-	err = unmarshal(body, &mf)
-	return
-}
-*/
 
 // ------------------------------------------------------------------------------------------------
 // Functions specific to application (slash) commands
