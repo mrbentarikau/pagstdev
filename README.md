@@ -33,7 +33,7 @@ some of the code here. not merged to YAG yet, has been made by YAGPDB contributo
 [Pedro-Pessoa](https://github.com/Pedro-Pessoa),
 [Satty9361](https://github.com/Satty9361)
    
-![#Praise Testers!](https://i.imgur.com/PLHxiSj.png)]
+![#Praise Testers!](https://i.imgur.com/PLHxiSj.png)   
 [buthed010203](https://github.com/buthed010203)   
 [Shadow21AR](https://github.com/shadow21ar)   
 
