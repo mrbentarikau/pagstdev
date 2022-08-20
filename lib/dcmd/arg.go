@@ -529,7 +529,7 @@ func (i *IntArg) ParseFromMessage(def *ArgDef, part string, data *Data) (interfa
 		if i.Max < v || i.Min > v {
 			return nil, &OutOfRangeError{ArgName: def.Name, Got: v, Min: i.Min, Max: i.Max}
 		}
-	} else {
+	} else if (i.Min != 0 || i.Max != 0) && i.Max == i.Min {
 		if v == i.Max {
 			return v, nil
 		} else {
@@ -610,11 +610,11 @@ func (f *FloatArg) ParseFromMessage(def *ArgDef, part string, data *Data) (inter
 		if f.Max < v || f.Min > v {
 			return nil, &OutOfRangeError{ArgName: def.Name, Got: v, Min: f.Min, Max: f.Max, Float: true}
 		}
-	} else {
+	} else if (f.Min != 0 || f.Max != 0) && f.Max == f.Min {
 		if v == f.Max {
 			return v, nil
 		} else {
-			return nil, &OutOfRangeError{ArgName: def.Name, Got: v, Min: f.Min, Max: f.Max, Float: true}
+			return nil, &OutOfRangeError{ArgName: def.Name, Got: v, Min: f.Min, Max: f.Max}
 		}
 	}
 
