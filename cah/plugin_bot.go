@@ -51,21 +51,33 @@ var (
 
 func (p *Plugin) BotInit() {
 	eventsystem.AddHandlerAsyncLastLegacy(p, func(evt *eventsystem.EventData) {
-		switch t := evt.EvtInterface.(type) {
-		case *discordgo.MessageCreate:
-			if t.GuildID == 0 {
-				return
-			}
+		ic := evt.EvtInterface.(*discordgo.InteractionCreate)
+		if ic.GuildID == 0 {
+			return
+			/*switch t := evt.EvtInterface.(type) {
+			case *discordgo.MessageCreate:
+				if t.GuildID == 0 {
+					return
+				}
 
-			go p.Manager.HandleMessageCreate(t)
-		case *discordgo.MessageReactionAdd:
-			if t.GuildID == 0 {
-				return
-			}
+				go p.Manager.HandleMessageCreate(t)
+			case *discordgo.MessageReactionAdd:
+				if t.GuildID == 0 {
+					return
+				}
 
-			go p.Manager.HandleReactionAdd(t)
+				go p.Manager.HandleReactionAdd(t)*/
 		}
-	}, eventsystem.EventMessageReactionAdd, eventsystem.EventMessageCreate)
+		go p.Manager.HandleInteractionCreate(ic)
+	}, eventsystem.EventInteractionCreate)
+	pubsub.AddHandler("dm_interaction", func(evt *pubsub.Event) {
+		dataCast := evt.Data.(*discordgo.InteractionCreate)
+		if dataCast.Type != discordgo.InteractionMessageComponent && dataCast.Type != discordgo.InteractionModalSubmit {
+			return
+		}
+		go p.Manager.HandleCahInteraction(dataCast)
+	}, discordgo.InteractionCreate{})
+	/*}, eventsystem.EventMessageReactionAdd, eventsystem.EventMessageCreate)
 
 	pubsub.AddHandler("dm_reaction", func(evt *pubsub.Event) {
 		dataCast := evt.Data.(*discordgo.MessageReactionAdd)
@@ -75,7 +87,7 @@ func (p *Plugin) BotInit() {
 	pubsub.AddHandler("dm_message", func(evt *pubsub.Event) {
 		dataCast := evt.Data.(*discordgo.MessageCreate)
 		go p.Manager.HandleMessageCreate(dataCast)
-	}, discordgo.MessageCreate{})
+	}, discordgo.MessageCreate{})*/
 }
 
 func (p *Plugin) Status() (string, string) {

@@ -337,10 +337,11 @@ func CmdRunsInChannel(cc *models.CustomCommand, channel int64) bool {
 	}
 
 	if cs.Type.IsThread() {
-		if cc.ChannelsWhitelistMode && !common.ContainsInt64Slice(cc.Channels, common.ChannelOrThreadParentID(cs)) {
+		isContained := common.ContainsInt64Slice(cc.Channels, common.ChannelOrThreadParentID(cs))
+		if cc.ChannelsWhitelistMode && !isContained {
 			return false
 		}
-		if !cc.ChannelsWhitelistMode && common.ContainsInt64Slice(cc.Channels, common.ChannelOrThreadParentID(cs)) {
+		if !cc.ChannelsWhitelistMode && isContained {
 			return false
 		}
 		return cc.ThreadsEnabled

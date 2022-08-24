@@ -1460,14 +1460,14 @@ func tmplJson(v interface{}) (string, error) {
 	return string(b), nil
 }
 
-func tmplJsonToSDict(v interface{}) (SDict, error) {
-	var toSdict SDict
-	err := json.Unmarshal([]byte(v.(string)), &toSdict)
+func tmplJSONToSDict(v interface{}) (SDict, error) {
+	var toSDict SDict
+	err := json.Unmarshal([]byte(ToString(v)), &toSDict)
 	if err != nil {
 		return nil, err
 	}
 
-	return toSdict, nil
+	return toSDict, nil
 }
 
 func tmplFormatTime(t time.Time, args ...string) string {
