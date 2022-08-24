@@ -500,6 +500,10 @@
                                             id="command-channels" data-plugin-multiselect>
                                             {{textChannelOptionsMulti $g.Channels .CC.Channels}}
                                         </select>
+                                        <div>
+                                            <h4>Threads enabled</h4>
+                                            {{checkbox "threads_enabled" "threads_enabled" "" .CC.ThreadsEnabled}}
+                                        </div>
                                     </div>
                                 </div>
                             </div>

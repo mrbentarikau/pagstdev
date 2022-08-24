@@ -50,6 +50,8 @@ type GroupForm struct {
 
 	WhitelistRoles []int64 `valid:"role,true"`
 	BlacklistRoles []int64 `valid:"role,true"`
+
+	ThreadsEnabled bool `valid:"threads_enabled,true"`
 }
 
 var (
@@ -254,8 +256,9 @@ func handleNewCommand(w http.ResponseWriter, r *http.Request) (web.TemplateData,
 		GuildID: activeGuild.ID,
 		LocalID: localID,
 
-		Disabled:   true,
-		ShowErrors: true,
+		Disabled:       true,
+		ShowErrors:     true,
+		ThreadsEnabled: true,
 
 		TimeTriggerExcludingDays:  []int64{},
 		TimeTriggerExcludingHours: []int64{},
@@ -427,8 +430,9 @@ func handleDuplicateCommand(w http.ResponseWriter, r *http.Request) (web.Templat
 		LocalID: localID,
 		GroupID: cmd.GroupID,
 
-		Disabled:   true,
-		ShowErrors: true,
+		Disabled:       true,
+		ShowErrors:     true,
+		ThreadsEnabled: true,
 
 		Categories:              cmd.Categories,
 		CategoriesWhitelistMode: cmd.CategoriesWhitelistMode,
@@ -746,7 +750,7 @@ func queryCCsRan(ag int64, total bool) string {
 	return queryReturn
 }
 
-//HumanizeThousands comma separates thousands
+// HumanizeThousands comma separates thousands
 func humanizeThousands(input int64) string {
 	var f1, f2 string
 
