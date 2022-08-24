@@ -263,7 +263,7 @@ func (gm *GameManager) HandleCahInteraction(ic *discordgo.InteractionCreate) {
 	gm.RLock()
 	if game, ok := gm.ActiveGames[cid]; ok {
 		gm.RUnlock()
-		game.HandleRectionAdd(ic)
+		game.HandleInteractionAdd(ic)
 	} else if ic.User != nil {
 		gm.RUnlock()
 		if ic.Type == discordgo.InteractionModalSubmit && ic.ModalSubmitData().CustomID == CahBlankCardModal {
@@ -273,7 +273,7 @@ func (gm *GameManager) HandleCahInteraction(ic *discordgo.InteractionCreate) {
 			return
 		}
 		if game, ok := gm.ActiveGames[ic.User.ID]; ok {
-			game.HandleRectionAdd(ic)
+			game.HandleInteractionAdd(ic)
 		}
 	} else {
 		gm.RUnlock()

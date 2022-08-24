@@ -931,7 +931,7 @@ func (g *Game) removeOldInteractions(cID, mID int64) {
 	})
 }
 
-func (g *Game) HandleRectionAdd(ic *discordgo.InteractionCreate) {
+func (g *Game) HandleInteractionAdd(ic *discordgo.InteractionCreate) {
 	g.Lock()
 	defer g.Unlock()
 
