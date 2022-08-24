@@ -12,6 +12,7 @@ import (
 	"unicode/utf8"
 
 	"emperror.dev/errors"
+	"github.com/botlabs-gg/yagpdb/bot"
 	"github.com/botlabs-gg/yagpdb/common"
 	"github.com/botlabs-gg/yagpdb/common/featureflags"
 	"github.com/botlabs-gg/yagpdb/customcommands/models"
@@ -159,7 +160,8 @@ type CustomCommand struct {
 
 	GroupID int64
 
-	ShowErrors bool `schema:"show_errors"`
+	ShowErrors     bool `schema:"show_errors"`
+	ThreadsEnabled bool `schema:"threads_enabled"`
 }
 
 var _ web.CustomValidator = (*CustomCommand)(nil)
@@ -256,6 +258,8 @@ func (cc *CustomCommand) ToDBModel() *models.CustomCommand {
 
 		ShowErrors: cc.ShowErrors,
 
+		ThreadsEnabled: cc.ThreadsEnabled,
+
 		DateUpdated: null.TimeFrom(time.Now()),
 	}
 
@@ -298,7 +302,7 @@ func CmdRunsInCategory(cc *models.CustomCommand, channel int64) bool {
 		}
 	}
 
-	// check command specifc restrictions
+	// check command specific restrictions
 	for _, v := range cc.Categories {
 		if v == channel {
 			return cc.CategoriesWhitelistMode
@@ -310,6 +314,8 @@ func CmdRunsInCategory(cc *models.CustomCommand, channel int64) bool {
 }
 
 func CmdRunsInChannel(cc *models.CustomCommand, channel int64) bool {
+	gs := bot.State.GetGuild(cc.GuildID)
+	cs := gs.GetChannelOrThread(channel)
 	if cc.GroupID.Valid {
 		// check group restrictions
 		if common.ContainsInt64Slice(cc.R.Group.IgnoreChannels, channel) {
@@ -323,11 +329,21 @@ func CmdRunsInChannel(cc *models.CustomCommand, channel int64) bool {
 		}
 	}
 
-	// check command specifc restrictions
+	// check command specific restrictions
 	for _, v := range cc.Channels {
 		if v == channel {
 			return cc.ChannelsWhitelistMode
 		}
+	}
+
+	if cs.Type.IsThread() {
+		if cc.ChannelsWhitelistMode && !common.ContainsInt64Slice(cc.Channels, common.ChannelOrThreadParentID(cs)) {
+			return false
+		}
+		if !cc.ChannelsWhitelistMode && common.ContainsInt64Slice(cc.Channels, common.ChannelOrThreadParentID(cs)) {
+			return false
+		}
+		return cc.ThreadsEnabled
 	}
 
 	// Not found
