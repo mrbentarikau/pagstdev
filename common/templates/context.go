@@ -115,7 +115,7 @@ var (
 		"in":                 in,
 		"inFold":             inFold,
 		"json":               tmplJson,
-		"jsonToSdict":        tmplJsonToSDict,
+		"jsonToSdict":        tmplJSONToSDict,
 		"kindOf":             KindOf,
 		"noun":               common.RandomNoun,
 		"ordinalize":         tmplOrdinalize,
@@ -532,7 +532,7 @@ func (c *Context) SendResponse(content string) (*discordgo.Message, error) {
 		if len(c.CurrentFrame.AddResponseReactionNames) > 0 {
 			//goErrs := make(chan error, 1)
 			go func(frame *ContextFrame) {
-				for _, v := range c.CurrentFrame.AddResponseReactionNames {
+				for _, v := range frame.AddResponseReactionNames {
 					common.BotSession.MessageReactionAdd(m.ChannelID, m.ID, v)
 					// failed response reacts err
 					//err = common.BotSession.MessageReactionAdd(m.ChannelID, m.ID, v)
