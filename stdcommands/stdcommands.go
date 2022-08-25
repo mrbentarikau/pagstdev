@@ -15,7 +15,8 @@ import (
 	"github.com/botlabs-gg/yagpdb/stdcommands/calc"
 	"github.com/botlabs-gg/yagpdb/stdcommands/catfact"
 	"github.com/botlabs-gg/yagpdb/stdcommands/ccreqs"
-	"github.com/botlabs-gg/yagpdb/stdcommands/covidstats"
+
+	// "github.com/botlabs-gg/yagpdb/stdcommands/covidstats"
 	"github.com/botlabs-gg/yagpdb/stdcommands/createinvite"
 	"github.com/botlabs-gg/yagpdb/stdcommands/currentshard"
 	"github.com/botlabs-gg/yagpdb/stdcommands/currenttime"
@@ -96,7 +97,7 @@ func (p *Plugin) AddCommands() {
 		bashquotes.Command,
 		calc.Command,
 		catfact.Command,
-		covidstats.Command,
+		// covidstats.Command,
 		currenttime.Command,
 		customembed.Command,
 		dadjoke.Command,
