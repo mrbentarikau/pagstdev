@@ -6,6 +6,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/botlabs-gg/yagpdb/commands"
+	"github.com/botlabs-gg/yagpdb/common"
 	"github.com/botlabs-gg/yagpdb/lib/dcmd"
 )
 
@@ -36,7 +37,7 @@ func topicAPI() (response string, err error) {
 		panic(err)
 	}
 
-	req.Header.Set("User-Agent", "curlPAGST/7.65.1")
+	req.Header.Set("User-Agent", common.ConfBotUserAgent.GetString())
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
