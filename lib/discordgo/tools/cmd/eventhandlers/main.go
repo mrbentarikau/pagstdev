@@ -6,6 +6,7 @@ import (
 	"go/parser"
 	"go/token"
 	"log"
+	"os"
 	"path/filepath"
 	"regexp"
 	"sort"
@@ -89,7 +90,7 @@ func main() {
 		src = buf.Bytes()
 	}
 
-	err = io.WriteFile(filepath.Join(dir, strings.ToLower("eventhandlers.go")), src, 0644)
+	err = os.WriteFile(filepath.Join(dir, strings.ToLower("eventhandlers.go")), src, 0644)
 	if err != nil {
 		log.Fatal(buf, "writing output: %s", err)
 	}
