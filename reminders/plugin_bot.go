@@ -50,7 +50,7 @@ var cmds = []*commands.YAGCommand{
 	{
 		CmdCategory:  commands.CategoryTool,
 		Name:         "Remindme",
-		Description:  "Schedules a reminder, example: 'remindme 1h30min are you still alive?'\n\nSwitch -repeat will repeat the reminder starting with min duration of 1 hour.\nSwitch -time needs quoted date. Adds first argument's duration and disables repeat. 'remindme 5m are you still alive? -time \"tomorrow 12:45\"'",
+		Description:  "Schedules a reminder, example: 'remindme 1h30min are you still alive?'\n\nSwitch -repeat will repeat the reminder starting with min duration of 1 hour.\nSwitch -time needs quoted date in either your registered time zone (using the `setz` command) or UTC. Adds first argument's duration and disables repeat. 'remindme 5m are you still alive? -time \"tomorrow 12:45\"'",
 		Aliases:      []string{"remind", "reminder"},
 		RequiredArgs: 2,
 		Arguments: []*dcmd.ArgDef{
