@@ -54,19 +54,6 @@ func (p *Plugin) BotInit() {
 		ic := evt.EvtInterface.(*discordgo.InteractionCreate)
 		if ic.GuildID == 0 {
 			return
-			/*switch t := evt.EvtInterface.(type) {
-			case *discordgo.MessageCreate:
-				if t.GuildID == 0 {
-					return
-				}
-
-				go p.Manager.HandleMessageCreate(t)
-			case *discordgo.MessageReactionAdd:
-				if t.GuildID == 0 {
-					return
-				}
-
-				go p.Manager.HandleReactionAdd(t)*/
 		}
 		go p.Manager.HandleInteractionCreate(ic)
 	}, eventsystem.EventInteractionCreate)
@@ -77,17 +64,6 @@ func (p *Plugin) BotInit() {
 		}
 		go p.Manager.HandleCahInteraction(dataCast)
 	}, discordgo.InteractionCreate{})
-	/*}, eventsystem.EventMessageReactionAdd, eventsystem.EventMessageCreate)
-
-	pubsub.AddHandler("dm_reaction", func(evt *pubsub.Event) {
-		dataCast := evt.Data.(*discordgo.MessageReactionAdd)
-		go p.Manager.HandleReactionAdd(dataCast)
-	}, discordgo.MessageReactionAdd{})
-
-	pubsub.AddHandler("dm_message", func(evt *pubsub.Event) {
-		dataCast := evt.Data.(*discordgo.MessageCreate)
-		go p.Manager.HandleMessageCreate(dataCast)
-	}, discordgo.MessageCreate{})*/
 }
 
 func (p *Plugin) Status() (string, string) {
