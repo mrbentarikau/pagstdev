@@ -922,6 +922,7 @@ func (d SDict) HasKey(k string) (ok bool) {
 
 type Slice []interface{}
 
+/*
 func (s Slice) String() string {
 	fromStringSlice := make([]string, 0, len(s))
 
@@ -938,14 +939,15 @@ func (s Slice) String() string {
 		}
 	}
 
-	/*stringSlice := make([]string, 0, len(s))
-	for _, v := range s {
-		stringSlice = append(stringSlice, fmt.Sprintf("%v", v))
-	}*/
-	//stringSlice = append(stringSlice, fromStringSlice...)
+	// stringSlice := make([]string, 0, len(s))
+	// for _, v := range s {
+	// 	stringSlice = append(stringSlice, fmt.Sprintf("%v", v))
+	// }
+	// stringSlice = append(stringSlice, fromStringSlice...)
 
 	return strings.Join(fromStringSlice, " ")
 }
+*/
 
 func (s Slice) Append(item interface{}) (interface{}, error) {
 	if len(s)+1 > 10000 {
