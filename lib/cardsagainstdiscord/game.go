@@ -156,7 +156,6 @@ func (g *Game) Created() error {
 		Description: fmt.Sprintf("React with %s to join and %s to leave, the game master can start/stop the game with %s", JoinEmoji, LeaveEmoji, PlayPauseEmoji),
 	}
 
-	// msg, err := g.Session.ChannelMessageSendEmbed(g.MasterChannel, embed)
 	msg, err := g.Session.ChannelMessageSendComplex(g.MasterChannel, &discordgo.MessageSend{
 		Components: GetCommonCahButtons(),
 		Embeds:     []*discordgo.MessageEmbed{embed},
@@ -174,7 +173,6 @@ func (g *Game) Created() error {
 
 	go g.runTicker()
 
-	// go g.addCommonMenuReactions(msg.ID)
 	g.tickerRunning = true
 	return nil
 }
@@ -380,7 +378,6 @@ func (g *Game) sendAnnouncmentMenu(msg string) {
 		Description: msg,
 	}
 
-	// m, err := g.Session.ChannelMessageSendEmbed(g.MasterChannel, embed)
 	m, err := g.Session.ChannelMessageSendComplex(g.MasterChannel, &discordgo.MessageSend{
 		Embeds:     []*discordgo.MessageEmbed{embed},
 		Components: GetCommonCahButtons(),
@@ -388,7 +385,6 @@ func (g *Game) sendAnnouncmentMenu(msg string) {
 	if err == nil {
 		g.removeOldInteractions(g.MasterChannel, g.LastMenuMessage)
 		g.LastMenuMessage = m.ID
-		// go g.addCommonMenuReactions(m.ID)
 	}
 }
 
@@ -676,7 +672,6 @@ func (g *Game) presentStartRound() {
 		Fields: fields,
 	}
 
-	// m, err := g.Session.ChannelMessageSendEmbed(g.MasterChannel, embed)
 	m, err := g.Session.ChannelMessageSendComplex(g.MasterChannel, &discordgo.MessageSend{
 		Embeds:     []*discordgo.MessageEmbed{embed},
 		Components: GetCommonCahButtons(),
@@ -684,7 +679,6 @@ func (g *Game) presentStartRound() {
 	if err == nil {
 		g.removeOldInteractions(g.MasterChannel, g.LastMenuMessage)
 		g.LastMenuMessage = m.ID
-		//go g.addCommonMenuReactions(m.ID)
 	}
 }
 
@@ -847,7 +841,6 @@ func (g *Game) presentPickedResponseCards(edit bool) {
 	}
 
 	if edit {
-		// g.Session.ChannelMessageEditEmbed(g.MasterChannel, g.LastMenuMessage, embed)
 		g.Session.ChannelMessageEditComplex(&discordgo.MessageEdit{
 			Embeds:     []*discordgo.MessageEmbed{embed},
 			Components: voteOptionsComponent,
@@ -857,7 +850,6 @@ func (g *Game) presentPickedResponseCards(edit bool) {
 		return
 	}
 
-	// msg, err := g.Session.ChannelMessageSendEmbed(g.MasterChannel, embed)
 	msg, err := g.Session.ChannelMessageSendComplex(g.MasterChannel, &discordgo.MessageSend{
 		Embeds:     []*discordgo.MessageEmbed{embed},
 		Components: voteOptionsComponent,
@@ -867,18 +859,6 @@ func (g *Game) presentPickedResponseCards(edit bool) {
 	}
 
 	g.removeOldInteractions(g.MasterChannel, g.LastMenuMessage)
-
-	/*
-		numOptions := len(g.Responses)
-		go func() {
-			for i := 0; i < numOptions; i++ {
-				g.Session.MessageReactionAdd(g.MasterChannel, msg.ID, CardSelectionEmojis[i])
-			}
-
-			g.addCommonMenuReactions(msg.ID)
-		}()
-	*/
-
 	g.LastMenuMessage = msg.ID
 }
 
@@ -889,11 +869,6 @@ func (g *Game) pickWinnerExpired() {
 	} else {
 		content = fmt.Sprintf("<@%d> didn't pick a winner in %d seconds, skipping round...", g.CurrentCardCzar, int(PickWinnerDuration.Seconds()))
 	}
-
-	/*msg, err := g.Session.ChannelMessageSend(g.MasterChannel, content)
-	if err == nil {
-		go g.addCommonMenuReactions(msg.ID)
-	}*/
 
 	_, err := g.Session.ChannelMessageSendComplex(g.MasterChannel, &discordgo.MessageSend{
 		Content:    content,
@@ -911,14 +886,6 @@ func (g *Game) gameExpired() {
 	go g.Manager.RemoveGame(g.MasterChannel)
 	g.stop()
 }
-
-/*
-func (g *Game) addCommonMenuReactions(mID int64) {
-	g.Session.MessageReactionAdd(g.MasterChannel, mID, JoinEmoji)
-	g.Session.MessageReactionAdd(g.MasterChannel, mID, LeaveEmoji)
-	g.Session.MessageReactionAdd(g.MasterChannel, mID, PlayPauseEmoji)
-}
-*/
 
 func (g *Game) removeOldInteractions(cID, mID int64) {
 	if mID == 0 {
@@ -1003,7 +970,6 @@ func (g *Game) HandleInteractionAdd(ic *discordgo.InteractionCreate) {
 			return
 		default:
 		}
-
 	}
 
 	// From here on out only players can take actions
@@ -1124,7 +1090,7 @@ func (g *Game) HandleMessageCreate(ic *discordgo.InteractionCreate) {
 	player.FilingBlankCard = false
 }
 
-const zeroWidthSpace = "​"
+const zeroWidthSpace = "\u200b"
 
 var (
 	mentionReplacer = strings.NewReplacer("@here", "@"+zeroWidthSpace+"here", "@everyone", "@"+zeroWidthSpace+"everyone")
@@ -1233,7 +1199,6 @@ func (g *Game) presentWinners(winningPicks []*PickedResonse) {
 		Color:       15276265,
 	}
 
-	// msg, err := g.Session.ChannelMessageSendEmbed(g.MasterChannel, embed)
 	msg, err := g.Session.ChannelMessageSendComplex(g.MasterChannel, &discordgo.MessageSend{
 		Embeds:     []*discordgo.MessageEmbed{embed},
 		Components: GetCommonCahButtons(),
@@ -1246,7 +1211,6 @@ func (g *Game) presentWinners(winningPicks []*PickedResonse) {
 	if !wonFullGame {
 		g.removeOldInteractions(g.MasterChannel, g.LastMenuMessage)
 		g.LastMenuMessage = msg.ID
-		// g.addCommonMenuReactions(msg.ID)
 	}
 }
 
@@ -1406,13 +1370,6 @@ func (p *Player) PresentBoard(session *discordgo.Session, currentPrompt *PromptC
 	embed := &discordgo.MessageEmbed{
 		Title:       fmt.Sprintf("Pick %d card(s)!", currentPrompt.NumPick),
 		Description: currentPrompt.PlaceHolder(),
-		/*
-			Fields: []*discordgo.MessageEmbedField{
-				&discordgo.MessageEmbedField{
-					Name: "Options",
-				},
-			},
-		*/
 	}
 
 	options := []discordgo.SelectMenuOption{}
