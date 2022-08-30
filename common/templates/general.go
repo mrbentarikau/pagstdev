@@ -1133,7 +1133,6 @@ func joinStrings(sep string, args ...interface{}) (string, error) {
 					return "", ErrStringTooLong
 				}
 			}
-
 		}
 
 		if builder.Len() > MaxStringLength {
