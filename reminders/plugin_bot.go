@@ -54,7 +54,7 @@ var cmds = []*commands.YAGCommand{
 		Aliases:      []string{"remind", "reminder"},
 		RequiredArgs: 2,
 		Arguments: []*dcmd.ArgDef{
-			{Name: "Time", Type: &commands.DurationArg{}},
+			{Name: "Duration", Type: &commands.DurationArg{}},
 			{Name: "Message", Type: dcmd.String},
 		},
 		ArgSwitches: []*dcmd.ArgDef{
