@@ -50,7 +50,7 @@ var cmds = []*commands.YAGCommand{
 	{
 		CmdCategory:  commands.CategoryTool,
 		Name:         "Remindme",
-		Description:  "Schedules a reminder, example: 'remindme 1h30min are you still alive?'\n\nSwitch -repeat will repeat the reminder starting with min duration of 1 hour.\nSwitch -time needs quoted date in either your registered time zone (using the `setz` command) or UTC. Adds first argument's duration and disables repeat. 'remindme 5m are you still alive? -time \"tomorrow 12:45\"'",
+		Description:  "Schedules a reminder, example: 'remindme 1h30min are you still alive?'\n\nSwitch -repeat will repeat the reminder starting with min duration of 1 hour.\nSwitch -time needs quoted date in either your registered time zone (using the `setz` command) or UTC. Adds first argument's duration and if repeat, sets duration to 24h. 'remindme 5m are you still alive? -time \"tomorrow 12:45\"'",
 		Aliases:      []string{"remind", "reminder"},
 		RequiredArgs: 2,
 		Arguments: []*dcmd.ArgDef{
@@ -96,7 +96,9 @@ var cmds = []*commands.YAGCommand{
 				)
 				dateParser.Add(wcommon.All...)
 
-				repeatDuration = time.Duration(0)
+				if parsed.Switch("repeat").Value != nil && parsed.Switch("repeat").Value.(bool) {
+					repeatDuration = time.Duration(24 * time.Hour)
+				}
 				registeredTimezone := timezonecompanion.GetUserTimezone(parsed.Author.ID)
 				if registeredTimezone == nil || rsvp.UTCRegex.MatchString(switchTime.Str()) {
 					registeredTimezone = time.UTC
@@ -440,7 +442,7 @@ func embedCreator(currentReminders []*Reminder, i, ml, flag int, parsed *dcmd.Da
 			}
 			repeat := ""
 			if v.Repeat > 0 {
-				repeat = "Repeated"
+				repeat = "`Repeated`"
 			}
 			t := time.Unix(v.When, 0)
 			tStr := t.Format(time.RFC822)
