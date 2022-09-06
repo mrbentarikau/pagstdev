@@ -284,6 +284,8 @@ type MemberFields struct {
 	Nick             string
 	Avatar           string
 	Pending          bool
+	PremiumSince     *time.Time
+	Permissions      int64
 	TimeoutExpiresAt *time.Time
 }
 
@@ -329,6 +331,8 @@ func MemberStateFromMember(member *discordgo.Member) *MemberState {
 			Nick:             member.Nick,
 			Avatar:           member.Avatar,
 			Pending:          member.Pending,
+			PremiumSince:     member.PremiumSince,
+			Permissions:      member.Permissions,
 			TimeoutExpiresAt: member.TimeoutExpiresAt,
 		},
 		Presence: nil,
@@ -351,6 +355,8 @@ func (ms *MemberState) DgoMember() *discordgo.Member {
 		TimeoutExpiresAt: ms.Member.TimeoutExpiresAt,
 		User:             &ms.User,
 		Pending:          ms.Member.Pending,
+		PremiumSince:     ms.Member.PremiumSince,
+		Permissions:      ms.Member.Permissions,
 	}
 
 	if ms.Member != nil {
