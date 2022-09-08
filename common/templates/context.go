@@ -132,9 +132,10 @@ var (
 		"currentTime":     tmplCurrentTime,
 		"formatTime":      tmplFormatTime,
 		"loadLocation":    time.LoadLocation,
+		"newDate":         tmplNewDate,
 		"parseTime":       tmplParseTime,
 		"snowflakeToTime": tmplSnowflakeToTime,
-		"newDate":         tmplNewDate,
+		"timestampToTime": tmplTimestampToTime,
 		"weekNumber":      tmplWeekNumber,
 
 		"humanizeDurationHours":   tmplHumanizeDurationHours,
