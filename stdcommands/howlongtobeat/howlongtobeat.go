@@ -133,6 +133,10 @@ func embedCreator(hltbQuery HowlongToBeat, i int, paginated bool) *discordgo.Mes
 		embed.Fields = append(embed.Fields,
 			&discordgo.MessageEmbedField{Name: "Completionist", Value: hltbQuery.Data[i].Comp100Humanize})
 	}
+	if hltbQuery.Data[i].ReviewScore > 0 {
+		embed.Fields = append(embed.Fields,
+			&discordgo.MessageEmbedField{Name: "Review Score", Value: fmt.Sprintf("%d%%", hltbQuery.Data[i].ReviewScore)})
+	}
 	if paginated {
 		embed.Description = fmt.Sprintf("Term similarity: %.1f%%", hltbQuery.Data[i].JaroWinklerSimilarity*100)
 	}
