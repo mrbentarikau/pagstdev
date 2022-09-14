@@ -149,9 +149,9 @@ func (p *Plugin) HandleNew(w http.ResponseWriter, r *http.Request) (web.Template
 		return templateData.AddAlerts(web.ErrorAlert("This is not a valid HTTP(S) URL...")), nil
 	}
 
-	reReddit := regexp.MustCompile(`reddit.com/`)
-	if reReddit.MatchString(url) {
-		return templateData.AddAlerts(web.ErrorAlert("Use Reddit feeds plugin...")), nil
+	reRedditYT := regexp.MustCompile(`reddit.com/|youtube.com`)
+	if reRedditYT.MatchString(url) {
+		return templateData.AddAlerts(web.ErrorAlert("Use Reddit/Youtube feeds plugin...")), nil
 	}
 
 	// search for the RSS feed
