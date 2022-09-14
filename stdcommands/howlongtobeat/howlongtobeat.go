@@ -16,18 +16,6 @@ import (
 	"github.com/botlabs-gg/yagpdb/lib/jarowinkler"
 )
 
-type hltb struct {
-	GameTitle             string
-	PureTitle             string //useful for Levenshtein calculation, symbol clutter removed
-	GameURL               string
-	ImageURL              string
-	MainStory             []string
-	MainExtra             []string
-	Completionist         []string
-	JaroWinklerSimilarity float64
-	OnlineGame            bool
-}
-
 var (
 	hltbScheme = "https"
 	hltbHost   = "howlongtobeat.com"
@@ -73,15 +61,15 @@ var Command = &commands.YAGCommand{
 		}
 
 		var hltbQuery HowlongToBeat
-		queryErr := json.Unmarshal([]byte(getData), &hltbQuery)
+		queryErr := json.Unmarshal(getData, &hltbQuery)
 		if queryErr != nil {
 			return nil, queryErr
 		}
 
 		for i, j := range hltbQuery.Data {
-			hltbQuery.Data[i].CompMainHumanize = common.HumanizeDuration(common.DurationPrecisionMinutes, time.Second*time.Duration(j.CompMain))
-			hltbQuery.Data[i].CompPlusHumanize = common.HumanizeDuration(common.DurationPrecisionMinutes, time.Second*time.Duration(j.CompPlus))
-			hltbQuery.Data[i].Comp100Humanize = common.HumanizeDuration(common.DurationPrecisionMinutes, time.Second*time.Duration(j.Comp100))
+			hltbQuery.Data[i].CompMainHumanize = common.HumanizeDurationShort(common.DurationPrecisionMinutes, time.Second*time.Duration(j.CompMain))
+			hltbQuery.Data[i].CompPlusHumanize = common.HumanizeDurationShort(common.DurationPrecisionMinutes, time.Second*time.Duration(j.CompPlus))
+			hltbQuery.Data[i].Comp100Humanize = common.HumanizeDurationShort(common.DurationPrecisionMinutes, time.Second*time.Duration(j.Comp100))
 			hltbQuery.Data[i].JaroWinklerSimilarity = jarowinkler.Similarity([]rune(gameName), []rune(j.GameName))
 		}
 
