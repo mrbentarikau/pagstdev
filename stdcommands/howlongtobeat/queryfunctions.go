@@ -2,14 +2,17 @@ package howlongtobeat
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/botlabs-gg/yagpdb/commands"
 	"github.com/botlabs-gg/yagpdb/common"
+	"github.com/botlabs-gg/yagpdb/lib/jarowinkler"
 )
 
 func getGameData(searchTitle string) ([]byte, error) {
@@ -29,17 +32,8 @@ func getGameData(searchTitle string) ([]byte, error) {
 	jsonQuery.SearchType = "games"
 	jsonQuery.SearchPage = 1
 	jsonQuery.Size = 25
-	jsonQuery.SearchOptions.Games.UserID = 0
-	jsonQuery.SearchOptions.Games.Platform = ""
 	jsonQuery.SearchOptions.Games.SortCategory = "popular"
 	jsonQuery.SearchOptions.Games.RangeCategory = "main"
-	jsonQuery.SearchOptions.Games.RangeTime.Max = 0
-	jsonQuery.SearchOptions.Games.RangeTime.Min = 0
-	jsonQuery.SearchOptions.Games.Modifier = ""
-	jsonQuery.SearchOptions.Users.SortCategory = "postcount"
-	jsonQuery.SearchOptions.Filter = ""
-	jsonQuery.SearchOptions.Sort = 0
-	jsonQuery.SearchOptions.Randomizer = 0
 
 	jsonData, err := json.Marshal(jsonQuery)
 	if err != nil {
@@ -61,7 +55,7 @@ func getGameData(searchTitle string) ([]byte, error) {
 	}
 
 	if resp.StatusCode != 200 {
-		return nil, commands.NewPublicError("Unable to fetch data from howlongtobeat.com", resp.StatusCode)
+		return nil, commands.NewPublicError("Unable to fetch data from howlongtobeat.com, status code:", resp.StatusCode)
 	}
 	r.Body.Close()
 	defer resp.Body.Close()
@@ -72,4 +66,23 @@ func getGameData(searchTitle string) ([]byte, error) {
 	}
 
 	return bytes, nil
+}
+
+func parseQueryData(hltbQuery []HowlongToBeatData, gameName string) []HowlongToBeatData {
+
+	for i, j := range hltbQuery {
+		hltbQuery[i].CompMainDur = time.Second * time.Duration(j.CompMain)
+		hltbQuery[i].CompPlusDur = time.Second * time.Duration(j.CompPlus)
+		hltbQuery[i].Comp100Dur = time.Second * time.Duration(j.Comp100)
+
+		hltbQuery[i].CompMainHumanize = common.HumanizeDurationShort(common.DurationPrecisionMinutes, hltbQuery[i].CompMainDur)
+		hltbQuery[i].CompPlusHumanize = common.HumanizeDurationShort(common.DurationPrecisionMinutes, hltbQuery[i].CompPlusDur)
+		hltbQuery[i].Comp100Humanize = common.HumanizeDurationShort(common.DurationPrecisionMinutes, hltbQuery[i].Comp100Dur)
+
+		hltbQuery[i].JaroWinklerSimilarity = jarowinkler.Similarity([]rune(gameName), []rune(j.GameName))
+		hltbQuery[i].GameURL = fmt.Sprintf("%sgame/%d", hltbURL, hltbQuery[i].GameID)
+		hltbQuery[i].ImageURL = fmt.Sprintf("%sgames/%s", hltbURL, hltbQuery[i].GameImage)
+	}
+
+	return hltbQuery
 }
