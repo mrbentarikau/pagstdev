@@ -1,6 +1,7 @@
 package howlongtobeat
 
 import (
+	"encoding/json"
 	"io"
 	"net/http"
 	"net/url"
@@ -14,16 +15,17 @@ import (
 )
 
 func getGameData(searchTitle string) (string, error) {
-	data := url.Values{}
-	data.Set("queryString", searchTitle) //setting default request header query form data, the site uses
-	data.Add("t", "games")               // search type - for games, second option would be HLTB users
-	data.Add("sorthead", "popular")      // sort by release date,rating,popularity or name...  all parameters can be seen via header data, popular's the best
-	data.Add("sortd", "Normal Order")    // sorting, Normal or Reverse
-	data.Add("plat", "")                 // platform, empty string is for all
-	data.Add("length_type", "main")      // length range category, main is fine
-	data.Add("length_min", "")           // game length min
-	data.Add("length_max", "")           // game length max
-	data.Add("detail", "")               // extra information with user_stats ala speedruns, user rating etc...
+	// data := url.Values{}
+	// data.Set("searchTerms", searchTitle) //setting default request header query form data, the site uses
+	// data.Add("searchType", "games")      // search type - for games, second option would be HLTB users
+	// data.Add("searchPage", "1")
+	//data.Add("sorthead", "popular")      // sort by release date,rating,popularity or name...  all parameters can be seen via header data, popular's the best
+	//data.Add("sortd", "Normal Order")    // sorting, Normal or Reverse
+	//data.Add("plat", "")                 // platform, empty string is for all
+	//data.Add("length_type", "main")      // length range category, main is fine
+	//data.Add("length_min", "")           // game length min
+	//data.Add("length_max", "")           // game length max
+	//data.Add("detail", "")               // extra information with user_stats ala speedruns, user rating etc...
 
 	u := &url.URL{
 		Scheme:   hltbScheme,
@@ -35,11 +37,35 @@ func getGameData(searchTitle string) (string, error) {
 	urlStr := u.String()
 
 	client := &http.Client{}
-	r, _ := http.NewRequest("POST", urlStr, strings.NewReader(data.Encode())) // URL-encoded payload
-	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	var jsonQuery HowlongToBeatQuery
+	jsonQuery.SearchTerms = []string{searchTitle}
+	jsonQuery.SearchType = "games"
+	jsonQuery.SearchPage = 1
+	jsonQuery.Size = 25
+	jsonQuery.SearchOptions.Games.UserID = 0
+	jsonQuery.SearchOptions.Games.Platform = ""
+	jsonQuery.SearchOptions.Games.SortCategory = "popular"
+	jsonQuery.SearchOptions.Games.RangeCategory = "main"
+	jsonQuery.SearchOptions.Games.RangeTime.Max = 0
+	jsonQuery.SearchOptions.Games.RangeTime.Min = 0
+	jsonQuery.SearchOptions.Games.Modifier = ""
+	jsonQuery.SearchOptions.Users.SortCategory = "postcount"
+	jsonQuery.SearchOptions.Filter = ""
+	jsonQuery.SearchOptions.Sort = 0
+	jsonQuery.SearchOptions.Randomizer = 0
+
+	jsonData, err := json.Marshal(jsonQuery)
+	if err != nil {
+		return "", err
+	}
+
+	r, _ := http.NewRequest("POST", urlStr, strings.NewReader(string(jsonData))) // URL-encoded payload
+	r.Header.Add("Content-Type", "application/json")
 	r.Header.Add("Accept", "*/*")
-	r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
+	r.Header.Add("Content-Length", strconv.Itoa(len(jsonData)))
 	r.Header.Add("User-Agent", common.ConfBotUserAgent.GetString())
+	r.Header.Add("Authority", hltbURL)
 	r.Header.Add("Origin", hltbURL)
 	r.Header.Add("Referer", hltbURL)
 
@@ -49,7 +75,7 @@ func getGameData(searchTitle string) (string, error) {
 	}
 
 	if resp.StatusCode != 200 {
-		return "", commands.NewPublicError("Unable to fetch data from howlongtobeat.com")
+		return "", commands.NewPublicError("Unable to fetch data from howlongtobeat.com", resp.StatusCode)
 	}
 	r.Body.Close()
 	defer resp.Body.Close()
@@ -60,7 +86,6 @@ func getGameData(searchTitle string) (string, error) {
 	}
 
 	stringBody := string(bytes)
-
 	return stringBody, nil
 }
 
