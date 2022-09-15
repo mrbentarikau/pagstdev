@@ -9,6 +9,7 @@ import (
 	"unicode"
 
 	"github.com/botlabs-gg/yagpdb/commands"
+	"github.com/botlabs-gg/yagpdb/common"
 	"github.com/botlabs-gg/yagpdb/lib/dcmd"
 	"github.com/lunixbochs/vtclean"
 )
@@ -39,7 +40,7 @@ var Command = &commands.YAGCommand{
 			return nil, err
 		}
 
-		req.Header.Set("User-Agent", "curl/7.49.1")
+		req.Header.Set("User-Agent", common.ConfBotUserAgent.GetString())
 
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
