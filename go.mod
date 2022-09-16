@@ -18,6 +18,7 @@ require (
 	github.com/dpatrie/urbandictionary v0.0.0-20151214192647-3b38cbf4cb81
 	github.com/ei14/calc v0.0.0-20220307072502-adbe43bdf801
 	github.com/fatih/structs v1.1.0
+	github.com/forPelevin/gomoji v1.1.6
 	github.com/francoispqt/gojay v1.2.13
 	github.com/friendsofgo/errors v0.9.2
 	github.com/getsentry/sentry-go v0.7.0
@@ -47,6 +48,7 @@ require (
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.12.1
+	github.com/rivo/uniseg v0.3.4
 	github.com/russross/blackfriday v1.5.2
 	github.com/shirou/gopsutil v3.21.11+incompatible
 	github.com/shurcooL/github_flavored_markdown v0.0.0-20181002035957-2122de532470
@@ -129,7 +131,6 @@ require (
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.33.0 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
-	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/rogpeppe/go-internal v1.8.1 // indirect
 	github.com/sergi/go-diff v1.1.0 // indirect
 	github.com/shurcooL/highlight_diff v0.0.0-20170515013008-09bb4053de1b // indirect
@@ -157,9 +158,7 @@ require (
 	go.opencensus.io v0.22.5 // indirect
 	go.uber.org/atomic v1.4.0 // indirect
 	go.uber.org/multierr v1.1.0 // indirect
-	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
 	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f // indirect
-	golang.org/x/tools v0.1.11 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20201214200347-8c77b98c765d // indirect
