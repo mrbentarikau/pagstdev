@@ -32,11 +32,6 @@ var Command = &commands.YAGCommand{
 	},
 
 	RunFunc: func(data *dcmd.Data) (interface{}, error) {
-		/*check, err := requestAPI("https://api.exchangerate.host/symbols")
-		if err != nil {
-			return nil, err
-		}*/
-
 		amount := fmt.Sprintf("%.2f", data.Args[0].Float64())
 		from := currencies.Lookup(currencies.Currency{Alpha3: strings.ToUpper(data.Args[1].Str())})
 		to := currencies.Lookup(currencies.Currency{Alpha3: strings.ToUpper(data.Args[2].Str())})
