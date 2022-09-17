@@ -213,9 +213,7 @@ func (p *Plugin) sendNewRSSFeedMessage(guildID, channelID, mentionRole int64, fe
 
 	var announceMsg AnnouncementMessage
 	dbAnnounceMsg, err := models.RSSAnnouncements(qm.Where("guild_id = ?", guildID)).OneG(context.Background())
-	if err != nil {
-		logger.Error("rssFeed dbAnnounceMsg error:", err)
-	} else {
+	if err == nil {
 		announceMsg.Enabled = dbAnnounceMsg.Enabled
 		announceMsg.Announcement = dbAnnounceMsg.Announcement
 	}

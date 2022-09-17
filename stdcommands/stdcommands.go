@@ -27,6 +27,7 @@ import (
 	"github.com/botlabs-gg/yagpdb/stdcommands/dogfact"
 	"github.com/botlabs-gg/yagpdb/stdcommands/editchannelpermissions"
 	"github.com/botlabs-gg/yagpdb/stdcommands/editrole"
+	"github.com/botlabs-gg/yagpdb/stdcommands/exchange"
 	"github.com/botlabs-gg/yagpdb/stdcommands/exportcustomcommands"
 	"github.com/botlabs-gg/yagpdb/stdcommands/exportuserdatabase"
 	"github.com/botlabs-gg/yagpdb/stdcommands/findserver"
@@ -105,6 +106,7 @@ func (p *Plugin) AddCommands() {
 		dogfact.Command,
 		editchannelpermissions.Command,
 		editrole.Command,
+		exchange.Command,
 		getiplocation.Command,
 		howlongtobeat.Command,
 		inspire.Command,
