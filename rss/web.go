@@ -99,14 +99,18 @@ func (p *Plugin) HandleRSS(w http.ResponseWriter, r *http.Request) (web.Template
 	}
 
 	templateData["RSSFeedAnnounceMsg"] = DefaultAnnounceMessage
-	var announceMsg AnnouncementMessage
-	err = common.GetRedisJson(RedisRSSAnnounceMessage+":"+discordgo.StrID(ag.ID), &announceMsg)
-	if err == nil && announceMsg.AnnounceMsg != "" {
-		templateData["RSSFeedAnnounceMsg"] = announceMsg.AnnounceMsg
+
+	dbAnnounceMsg, err := models.RSSAnnouncements(qm.Where("guild_id = ?", ag.ID)).OneG(ctx)
+	if err != nil {
+		return templateData, err
+	}
+
+	if dbAnnounceMsg.Announcement != "" {
+		templateData["RSSFeedAnnounceMsg"] = dbAnnounceMsg.Announcement
 	}
 
 	templateData["Subs"] = subs
-	templateData["AnnounceEnabled"] = announceMsg.Enabled
+	templateData["AnnounceEnabled"] = dbAnnounceMsg.Enabled
 	templateData["VisibleURL"] = "/manage/" + discordgo.StrID(ag.ID) + "/rssfeeds"
 
 	return templateData, nil
@@ -117,10 +121,16 @@ func (p *Plugin) HandleAnnouncement(w http.ResponseWriter, r *http.Request) (tem
 	guild, templateData := web.GetBaseCPContextData(ctx)
 	data := ctx.Value(common.ContextKeyParsedForm).(*Form)
 
-	var announceMsg AnnouncementMessage
-	announceMsg.AnnounceMsg = data.RSSFeedAnnounceMsg
-	announceMsg.Enabled = data.AnnounceEnabled
-	err = common.SetRedisJson(RedisRSSAnnounceMessage+":"+discordgo.StrID(guild.ID), announceMsg)
+	dbAnnounceMsg := &models.RSSAnnouncement{
+		GuildID:      guild.ID,
+		Announcement: data.RSSFeedAnnounceMsg,
+		Enabled:      data.AnnounceEnabled,
+	}
+
+	err = dbAnnounceMsg.UpsertG(ctx, true, []string{"guild_id"}, boil.Infer(), boil.Infer())
+	if err != nil {
+		return nil, err
+	}
 
 	go cplogs.RetryAddEntry(web.NewLogEntryFromContext(r.Context(), panelLogKeyFeedAnnouncement, &cplogs.Param{}))
 
