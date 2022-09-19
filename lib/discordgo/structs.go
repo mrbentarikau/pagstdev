@@ -85,6 +85,29 @@ type Session struct {
 	onceHandlers map[string][]*eventHandlerInstance
 }
 
+/*
+// Application stores values for a Discord Application
+type Application struct {
+	ID                  int64    `json:"id,omitempty,string"`
+	Name                string   `json:"name"`
+	Icon                string   `json:"icon,omitempty"`
+	Description         string   `json:"description,omitempty"`
+	RPCOrigins          []string `json:"rpc_origins,omitempty"`
+	BotPublic           bool     `json:"bot_public,omitempty"`
+	BotRequireCodeGrant bool     `json:"bot_require_code_grant,omitempty"`
+	TermsOfServiceURL   string   `json:"terms_of_service_url"`
+	PrivacyProxyURL     string   `json:"privacy_policy_url"`
+	Owner               *User    `json:"owner"`
+	Summary             string   `json:"summary"`
+	VerifyKey           string   `json:"verify_key"`
+	Team                *Team    `json:"team"`
+	GuildID             int64    `json:"guild_id,string"`
+	PrimarySKUID        int64    `json:"primary_sku_id,string"`
+	Slug                string   `json:"slug"`
+	CoverImage          string   `json:"cover_image"`
+	Flags               int      `json:"flags,omitempty"`
+}
+*/
 // UserConnection is a Connection returned from the UserConnections endpoint
 type UserConnection struct {
 	ID           string         `json:"id"`
