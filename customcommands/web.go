@@ -335,7 +335,23 @@ func handleUpdateCommand(w http.ResponseWriter, r *http.Request) (web.TemplateDa
 		if err != nil {
 			web.CtxLogger(ctx).WithError(err).Error("failed retrieving full model")
 		} else {
-			err = UpdateCommandNextRunTime(fullModel, true, true)
+			triggerStartsAt := time.Now().UTC()
+			if cmd.TimeTriggerStartsAt != "" {
+				startsAtForm := cmd.TimeTriggerStartsAt
+				timeToFormat := fmt.Sprintf("%d-%d-%d %s", time.Now().UTC().Year(), time.Now().UTC().Month(), time.Now().UTC().Day(), startsAtForm)
+				parsedTime, err := time.Parse("2006-1-2 15:04", timeToFormat)
+
+				if err != nil {
+					return templateData, err
+				}
+
+				if parsedTime.Before(triggerStartsAt) {
+					triggerStartsAt = triggerStartsAt.Add(24 * time.Hour)
+				} else {
+					triggerStartsAt = parsedTime
+				}
+			}
+			err = UpdateCommandNextRunTime(fullModel, true, true, triggerStartsAt)
 		}
 	} else {
 		err = DelNextRunEvent(activeGuild.ID, dbModel.LocalID)

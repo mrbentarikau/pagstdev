@@ -143,6 +143,7 @@ type CustomCommand struct {
 	TimeTriggerInterval       int     `schema:"time_trigger_interval"`
 	TimeTriggerExcludingDays  []int64 `schema:"time_trigger_excluding_days"`
 	TimeTriggerExcludingHours []int64 `schema:"time_trigger_excluding_hours"`
+	TimeTriggerStartsAt       string  `schema:"time_trigger_starts_at"`
 
 	ReactionTriggerMode int `schema:"reaction_trigger_mode"`
 
