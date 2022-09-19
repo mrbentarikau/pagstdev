@@ -344,7 +344,9 @@ func handleUpdateCommand(w http.ResponseWriter, r *http.Request) (web.TemplateDa
 					return templateData, err
 				}
 
-				if parsedTime.Before(triggerStartsAt) {
+				if parsedTime.Format("15:04") == triggerStartsAt.Format("15:04") {
+					triggerStartsAt = parsedTime
+				} else if parsedTime.Before(triggerStartsAt) {
 					triggerStartsAt = triggerStartsAt.Add(24 * time.Hour)
 				} else {
 					triggerStartsAt = parsedTime
