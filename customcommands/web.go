@@ -338,9 +338,8 @@ func handleUpdateCommand(w http.ResponseWriter, r *http.Request) (web.TemplateDa
 			triggerStartsAt := time.Now().UTC()
 			if cmd.TimeTriggerStartsAt != "" {
 				startsAtForm := cmd.TimeTriggerStartsAt
-				timeToFormat := fmt.Sprintf("%d-%d-%d %s", time.Now().UTC().Year(), time.Now().UTC().Month(), time.Now().UTC().Day(), startsAtForm)
-				parsedTime, err := time.Parse("2006-1-2 15:04", timeToFormat)
-
+				timeToFormat := fmt.Sprintf("%04d-%02d-%02d %s", triggerStartsAt.Year(), triggerStartsAt.Month(), triggerStartsAt.Day(), startsAtForm)
+				parsedTime, err := time.Parse("2006-01-02 15:04", timeToFormat)
 				if err != nil {
 					return templateData, err
 				}
@@ -352,6 +351,9 @@ func handleUpdateCommand(w http.ResponseWriter, r *http.Request) (web.TemplateDa
 				}
 			}
 			err = UpdateCommandNextRunTime(fullModel, true, true, triggerStartsAt)
+			if err != nil {
+				return templateData, err
+			}
 		}
 	} else {
 		err = DelNextRunEvent(activeGuild.ID, dbModel.LocalID)
@@ -483,6 +485,9 @@ func handleDuplicateCommand(w http.ResponseWriter, r *http.Request) (web.Templat
 			web.CtxLogger(ctx).WithError(err).Error("failed retrieving full model")
 		} else {
 			err = UpdateCommandNextRunTime(fullModel, true, true)
+			if err != nil {
+				return templateData, err
+			}
 		}
 	} else {
 		err = DelNextRunEvent(activeGuild.ID, dbModel.LocalID)

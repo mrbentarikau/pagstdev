@@ -221,9 +221,8 @@
                                 <div class="row">
                                     <div class="col-sm-2">
                                         <div class="form-group">
-                                            <label>Start time (UTC)</label>
-                                            <input type="time" min="00:00" max="23:59" class="form-control" name="time_trigger_starts_at"
-                                                placeholder="" value="">
+                                            <label>Start time (UTC)</label>&nbsp;<sup><i class="fa-solid fa-info" title="Interval trigger first start. Will be next day, if set before current UTC-time."></i></sup>
+                                            <input type="time" min="00:00" max="23:59" class="form-control" name="time_trigger_starts_at" value="{{currentTime.Format `15:04`}}">
                                         </div>
                                     </div>
                                     <div class="col-sm-2">
