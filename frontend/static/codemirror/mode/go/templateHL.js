@@ -149,6 +149,7 @@
     "getChannelPins":true,
     "getChannelOrThread":true,
     "getMember":true,
+    "getMemberTimezone":true,
     "getMessage":true,
     "getPinCount":true,
     "getThread":true,

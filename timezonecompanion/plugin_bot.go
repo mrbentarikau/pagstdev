@@ -16,6 +16,7 @@ import (
 	"github.com/botlabs-gg/yagpdb/common"
 	"github.com/botlabs-gg/yagpdb/lib/dcmd"
 	"github.com/botlabs-gg/yagpdb/lib/discordgo"
+	"github.com/botlabs-gg/yagpdb/lib/jarowinkler"
 	"github.com/botlabs-gg/yagpdb/timezonecompanion/models"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
@@ -98,11 +99,11 @@ func (p *Plugin) AddCommands() {
 				}
 
 				out = "More than 1 result, reuse the command for fine tuning with a one of the following:\n"
-				levDistance := 1000
+				levDistance := float64(1000)
 				for _, v := range zones {
 					if s := StrZone(v); s != "" {
 						re := regexp.MustCompile(`.*` + userInput + `.*:`)
-						if levD := levenshtein([]rune(userInput), []rune(re.FindString(s))); levD <= levDistance {
+						if levD := jarowinkler.Similarity([]rune(userInput), []rune(re.FindString(s))); levD <= levDistance {
 							levDistance = levD
 							manyZones = v
 						}

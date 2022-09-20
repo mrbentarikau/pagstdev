@@ -16,6 +16,7 @@ import (
 	"github.com/botlabs-gg/yagpdb/common/scheduledevents2"
 	"github.com/botlabs-gg/yagpdb/lib/discordgo"
 	"github.com/botlabs-gg/yagpdb/lib/dstate"
+	tzModels "github.com/botlabs-gg/yagpdb/timezonecompanion/models"
 
 	"golang.org/x/exp/slices"
 )
@@ -2303,4 +2304,33 @@ func (c *Context) tmplGetUser(target interface{}) (*discordgo.User, error) {
 
 	return user, nil
 
+}
+
+func (c *Context) tmplGetMemberTimezone(target interface{}) (*time.Location, error) {
+	if c.IncreaseCheckGenericAPICall() {
+		return nil, ErrTooManyAPICalls
+	}
+
+	if c.IncreaseCheckCallCounter("guild_integrations", 3) {
+		return nil, ErrTooManyCalls
+	}
+
+	uID := targetUserID(target)
+	if uID == 0 {
+		return nil, nil
+	}
+
+	timezoneName := "UTC"
+	m, err := tzModels.FindUserTimezoneG(context.Background(), uID)
+	if err == nil {
+		timezoneName = m.TimezoneName
+	}
+
+	loc, err := time.LoadLocation(timezoneName)
+	if err != nil {
+		logger.WithError(err).Error("failed loading location")
+		return nil, err
+	}
+
+	return loc, nil
 }

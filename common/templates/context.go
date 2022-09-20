@@ -21,6 +21,7 @@ import (
 	"github.com/botlabs-gg/yagpdb/lib/discordgo"
 	"github.com/botlabs-gg/yagpdb/lib/dstate"
 	"github.com/botlabs-gg/yagpdb/lib/template"
+
 	"github.com/sirupsen/logrus"
 	"github.com/vmihailenco/msgpack"
 	"golang.org/x/text/cases"
@@ -725,6 +726,7 @@ func baseContextFuncs(c *Context) {
 	// testing grounds
 	c.addContextFunc("getAuditLogEntries", c.tmplGetAuditLog)
 	c.addContextFunc("getGuildIntegrations", c.tmplGetGuildIntegrations)
+	c.addContextFunc("getMemberTimezone", c.tmplGetMemberTimezone)
 	c.addContextFunc("getThreadsArchived", c.tmplGetThreadsArchived)
 	c.addContextFunc("getUser", c.tmplGetUser)
 	c.addContextFunc("guildMemberMove", c.tmplGuildMemberMove)
