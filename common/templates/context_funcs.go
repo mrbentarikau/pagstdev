@@ -2320,16 +2320,16 @@ func (c *Context) tmplGetMemberTimezone(target interface{}) (*time.Location, err
 		return nil, nil
 	}
 
-	timezoneName := "UTC"
+	serverTZ := time.Now().UTC().Location()
 	m, err := tzModels.FindUserTimezoneG(context.Background(), uID)
-	if err == nil {
-		timezoneName = m.TimezoneName
+	if err != nil {
+		return serverTZ, nil
 	}
 
-	loc, err := time.LoadLocation(timezoneName)
+	loc, err := time.LoadLocation(m.TimezoneName)
 	if err != nil {
 		logger.WithError(err).Error("failed loading location")
-		return nil, err
+		return serverTZ, nil
 	}
 
 	return loc, nil

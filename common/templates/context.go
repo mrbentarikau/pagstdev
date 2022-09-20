@@ -697,6 +697,7 @@ func baseContextFuncs(c *Context) {
 	c.addContextFunc("getChannelPins", c.tmplGetChannelPins(false))
 	c.addContextFunc("getChannelOrThread", c.tmplGetChannelOrThread)
 	c.addContextFunc("getMember", c.tmplGetMember)
+	c.addContextFunc("getMemberTimezone", c.tmplGetMemberTimezone)
 	c.addContextFunc("getMessage", c.tmplGetMessage)
 	c.addContextFunc("getPinCount", c.tmplGetChannelPins(true))
 	c.addContextFunc("getThread", c.tmplGetThread)
@@ -726,7 +727,6 @@ func baseContextFuncs(c *Context) {
 	// testing grounds
 	c.addContextFunc("getAuditLogEntries", c.tmplGetAuditLog)
 	c.addContextFunc("getGuildIntegrations", c.tmplGetGuildIntegrations)
-	c.addContextFunc("getMemberTimezone", c.tmplGetMemberTimezone)
 	c.addContextFunc("getThreadsArchived", c.tmplGetThreadsArchived)
 	c.addContextFunc("getUser", c.tmplGetUser)
 	c.addContextFunc("guildMemberMove", c.tmplGuildMemberMove)
