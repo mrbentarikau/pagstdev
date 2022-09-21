@@ -165,12 +165,21 @@ func (p *Plugin) yagCommandToSlashCommand(cmd *dcmd.RegisteredCommand) *discordg
 	t := true
 
 	_, opts := cast.slashCommandOptions()
-	return &discordgo.CreateApplicationCommandRequest{
+	applicationCommandRequest := &discordgo.CreateApplicationCommandRequest{
 		Name:              strings.ToLower(cmd.Trigger.Names[0]),
 		Description:       common.CutStringShort(cast.Description, 100),
 		DefaultPermission: &t,
 		Options:           opts,
 	}
+
+	if cast.ApplicationCommandType == 2 {
+		applicationCommandRequest.Type = discordgo.UserApplicationCommand
+		applicationCommandRequest.Options = nil
+		applicationCommandRequest.Description = ""
+
+	}
+
+	return applicationCommandRequest
 }
 
 func (yc *YAGCommand) slashCommandOptions() (turnedIntoSubCommands bool, result []*discordgo.ApplicationCommandOption) {
