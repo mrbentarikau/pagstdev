@@ -2188,7 +2188,7 @@ func (c *Context) tmplGuildMemberMove(channel interface{}, target interface{}) (
 		return "", ErrTooManyAPICalls
 	}
 
-	if c.IncreaseCheckCallCounter("guild_integrations", 3) {
+	if c.IncreaseCheckCallCounter("guild_membermove", 3) {
 		return "", ErrTooManyCalls
 	}
 
@@ -2226,7 +2226,7 @@ func (c *Context) tmplCountMembers(isBot bool) func() (int, error) {
 			return 0, ErrTooManyAPICalls
 		}
 
-		if c.IncreaseCheckCallCounter("guild_integrations", 2) {
+		if c.IncreaseCheckCallCounter("guild_membercount", 2) {
 			return 0, ErrTooManyCalls
 		}
 
@@ -2288,7 +2288,7 @@ func (c *Context) tmplGetUser(target interface{}) (*discordgo.User, error) {
 		return nil, ErrTooManyAPICalls
 	}
 
-	if c.IncreaseCheckCallCounter("guild_integrations", 3) {
+	if c.IncreaseCheckCallCounter("guild_getuser", 3) {
 		return nil, ErrTooManyCalls
 	}
 
@@ -2311,7 +2311,7 @@ func (c *Context) tmplGetMemberTimezone(target ...interface{}) (*time.Location, 
 		return nil, ErrTooManyAPICalls
 	}
 
-	if c.IncreaseCheckCallCounter("guild_integrations", 3) {
+	if c.IncreaseCheckCallCounter("guild_member_timezone", 3) {
 		return nil, ErrTooManyCalls
 	}
 
@@ -2336,4 +2336,21 @@ func (c *Context) tmplGetMemberTimezone(target ...interface{}) (*time.Location, 
 	}
 
 	return loc, nil
+}
+
+func (c *Context) tmplGetApplicationCommands() ([]*discordgo.ApplicationCommand, error) {
+	if c.IncreaseCheckGenericAPICall() {
+		return nil, ErrTooManyAPICalls
+	}
+
+	if c.IncreaseCheckCallCounter("guild_applicationcommands", 1) {
+		return nil, ErrTooManyCalls
+	}
+
+	applications, err := common.BotSession.GetGlobalApplicationCommands(c.BotUser.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return applications, nil
 }

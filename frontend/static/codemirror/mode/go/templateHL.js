@@ -60,6 +60,7 @@
     "cslice":true,
     "dict":true,
     "derefPointer":true,
+    "getApplicationCommands":true,
     "humanizeThousands":true,
     "in":true,
     "inFold":true,
