@@ -2306,7 +2306,7 @@ func (c *Context) tmplGetUser(target interface{}) (*discordgo.User, error) {
 
 }
 
-func (c *Context) tmplGetMemberTimezone(target interface{}) (*time.Location, error) {
+func (c *Context) tmplGetMemberTimezone(target ...interface{}) (*time.Location, error) {
 	if c.IncreaseCheckGenericAPICall() {
 		return nil, ErrTooManyAPICalls
 	}
@@ -2315,9 +2315,12 @@ func (c *Context) tmplGetMemberTimezone(target interface{}) (*time.Location, err
 		return nil, ErrTooManyCalls
 	}
 
-	uID := targetUserID(target)
-	if uID == 0 {
-		return nil, nil
+	uID := c.MS.User.ID
+	if len(target) > 0 {
+		uID = targetUserID(target[0])
+		if uID == 0 {
+			return nil, nil
+		}
 	}
 
 	serverTZ := time.Now().UTC().Location()
