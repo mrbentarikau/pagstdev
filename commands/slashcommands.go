@@ -33,7 +33,7 @@ type slashCommandsContainer struct {
 	slashCommandID     int64
 }
 
-// register containers seperately as they need special handling
+// register containers separately as they need special handling
 //
 // note: we could infer all the info from the members of the container
 // but i felt that this explicit method was better and less quirky
@@ -82,7 +82,6 @@ func (p *Plugin) updateGlobalCommands() {
 	logger.Info("Slash commands changed, updating....")
 
 	ret, err := common.BotSession.BulkOverwriteGlobalApplicationCommands(common.BotApplication.ID, result)
-	// ret, err := common.BotSession.BulkOverwriteGuildApplicationCommands(common.BotApplication.ID, 614909558585819162, result)
 	if err != nil {
 		logger.WithError(err).Error("failed updating global slash commands")
 		return
@@ -110,7 +109,6 @@ OUTER:
 	}
 
 	atomic.StoreInt32(slashCommandsIdsSet, 1)
-
 	err = common.RedisPool.Do(radix.Cmd(nil, "SET", "slash_commands_current", string(encoded)))
 	if err != nil {
 		logger.WithError(err).Error("failed setting current slash commands in redis")
@@ -154,7 +152,7 @@ func (p *Plugin) yagCommandToSlashCommand(cmd *dcmd.RegisteredCommand) *discordg
 
 	cast, ok := cmd.Command.(*YAGCommand)
 	if !ok {
-		// probably a container, which is handled seperately, see RegisterSlashCommandsContainer
+		// probably a container, which is handled separately, see RegisterSlashCommandsContainer
 		return nil
 	}
 
@@ -165,12 +163,23 @@ func (p *Plugin) yagCommandToSlashCommand(cmd *dcmd.RegisteredCommand) *discordg
 	t := true
 
 	_, opts := cast.slashCommandOptions()
-	return &discordgo.CreateApplicationCommandRequest{
+	createApplicationCommandRequest := &discordgo.CreateApplicationCommandRequest{
 		Name:              strings.ToLower(cmd.Trigger.Names[0]),
 		Description:       common.CutStringShort(cast.Description, 100),
 		DefaultPermission: &t,
 		Options:           opts,
 	}
+
+	// KRAAKA adding context menu command
+	if cast.ApplicationCommandType == discordgo.UserApplicationCommand {
+		createApplicationCommandRequest = &discordgo.CreateApplicationCommandRequest{
+			Name:              strings.ToLower(cmd.Trigger.Names[0]),
+			DefaultPermission: &t,
+			Type:              discordgo.UserApplicationCommand,
+		}
+	}
+
+	return createApplicationCommandRequest
 }
 
 func (yc *YAGCommand) slashCommandOptions() (turnedIntoSubCommands bool, result []*discordgo.ApplicationCommandOption) {
@@ -384,6 +393,9 @@ func ContainerSlashCommandPermissions(container *slashCommandsContainer, overrid
 	}
 
 	childAllows, childDenies, childAllowAll, childDenyAll, err := sumContainerSlashCommandsChildren(container, overrides, gs)
+	if err != nil {
+		return nil, err
+	}
 
 	if allowAll {
 		allowAll = childAllowAll
