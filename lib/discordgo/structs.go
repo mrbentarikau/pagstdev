@@ -316,16 +316,17 @@ type Channel struct {
 	Members []*ThreadMember `json:"-"`
 
 	// Channel flags.
+	// KRAAKA: Below stuff commented out due forums
 	// Flags ChannelFlags `json:"flags"`
 
 	// The set of tags that can be used in a forum channel.
-	AvailableTags []ForumTag `json:"available_tags"`
+	//AvailableTags []ForumTag `json:"available_tags"`
 
 	// The IDs of the set of tags that have been applied to a thread in a forum channel.
-	AppliedTags []string `json:"applied_tags"`
+	//AppliedTags []string `json:"applied_tags"`
 
 	// Emoji to use as the default reaction to a forum post.
-	DefaultReactionEmoji DefaultReaction `json:"default_reaction_emoji"`
+	// DefaultReactionEmoji DefaultReaction `json:"default_reaction_emoji"`
 }
 
 func (c *Channel) GetChannelID() int64 {
@@ -366,12 +367,13 @@ type ChannelEdit struct {
 	Invitable           *bool `json:"invitable,omitempty"`
 
 	// NOTE: forum channels only
+	// KRAAKA below stuff commented out due forums
 
-	AvailableTags        *[]ForumTag      `json:"available_tags,omitempty"`
-	DefaultReactionEmoji *DefaultReaction `json:"default_reaction_emoji,omitempty"`
+	// AvailableTags        *[]ForumTag      `json:"available_tags,omitempty"`
+	// DefaultReactionEmoji *DefaultReaction `json:"default_reaction_emoji,omitempty"`
 
 	// NOTE: forum threads only
-	AppliedTags *[]string `json:"applied_tags,omitempty"`
+	// AppliedTags *[]string `json:"applied_tags,omitempty"`
 }
 
 // A ChannelFollow holds data returned after following a news channel
