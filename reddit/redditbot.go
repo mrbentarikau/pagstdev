@@ -201,7 +201,7 @@ func (p *PostHandlerImpl) handlePost(post *reddit.Link, filterGuild int64) error
 	for _, item := range filteredItems {
 		idStr := strconv.FormatInt(item.ID, 10)
 
-		webhookUsername := "r/" + post.Subreddit + " • PAGSTDB"
+		webhookUsername := "Reddit • PAGSTDB"
 
 		var content string
 		parseMentions := []discordgo.AllowedMentionType{}
@@ -400,6 +400,7 @@ func CreatePostMessage(post *reddit.Link) (string, *discordgo.MessageEmbed) {
 			}
 		}
 	}
+	embed.Footer.Text += "\nr/" + post.Subreddit
 
 	return plainMessage, embed
 }
