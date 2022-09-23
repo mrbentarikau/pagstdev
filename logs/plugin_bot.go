@@ -96,8 +96,9 @@ var cmdWhois = &commands.YAGCommand{
 	Arguments: []*dcmd.ArgDef{
 		{Name: "User", Type: &commands.MemberArg{}},
 	},
-	SlashCommandEnabled: true,
-	DefaultEnabled:      false,
+	SlashCommandEnabled:    true,
+	ApplicationCommandType: 2,
+	DefaultEnabled:         false,
 	RunFunc: func(parsed *dcmd.Data) (interface{}, error) {
 		config, err := GetConfig(common.PQ, parsed.Context(), parsed.GuildData.GS.ID)
 		if err != nil {

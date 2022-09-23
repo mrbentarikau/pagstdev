@@ -319,13 +319,13 @@ type Channel struct {
 	// Flags ChannelFlags `json:"flags"`
 
 	// The set of tags that can be used in a forum channel.
-	//KRAAKA AvailableTags []ForumTag `json:"available_tags"`
+	AvailableTags []ForumTag `json:"available_tags"`
 
 	// The IDs of the set of tags that have been applied to a thread in a forum channel.
-	//KRAAKA AppliedTags []int64 `json:"applied_tags"`
+	AppliedTags []string `json:"applied_tags"`
 
 	// Emoji to use as the default reaction to a forum post.
-	// DefaultReactionEmoji DefaultReaction `json:"default_reaction_emoji"`
+	DefaultReactionEmoji DefaultReaction `json:"default_reaction_emoji"`
 }
 
 func (c *Channel) GetChannelID() int64 {
@@ -367,11 +367,11 @@ type ChannelEdit struct {
 
 	// NOTE: forum channels only
 
-	//KRAAKA AvailableTags        *[]ForumTag      `json:"available_tags,omitempty"`
-	// DefaultReactionEmoji *DefaultReaction `json:"default_reaction_emoji,omitempty"`
+	AvailableTags        *[]ForumTag      `json:"available_tags,omitempty"`
+	DefaultReactionEmoji *DefaultReaction `json:"default_reaction_emoji,omitempty"`
 
 	// NOTE: forum threads only
-	//KRAAKA AppliedTags *[]string `json:"applied_tags,omitempty"`
+	AppliedTags *[]string `json:"applied_tags,omitempty"`
 }
 
 // A ChannelFollow holds data returned after following a news channel
@@ -470,7 +470,7 @@ type ForumTag struct {
 	ID        int64  `json:"id,string,omitempty"`
 	Name      string `json:"name"`
 	Moderated bool   `json:"moderated"`
-	EmojiID   int64  `json:"emoji_id,string,omitempty"`
+	EmojiID   int64  `json:"emoji_id,omitempty"`
 	EmojiName string `json:"emoji_name,omitempty"`
 }
 
@@ -2015,8 +2015,9 @@ type InviteUser struct {
 }
 
 type CreateApplicationCommandRequest struct {
-	Name              string                      `json:"name"`                         // 1-32 character name matching ^[\w-]{1,32}$
-	Description       string                      `json:"description"`                  // 1-100 character description
+	Name              string                      `json:"name"`        // 1-32 character name matching ^[\w-]{1,32}$
+	Description       string                      `json:"description"` // 1-100 character description
+	Type              ApplicationCommandType      `json:"type,omitempty"`
 	Options           []*ApplicationCommandOption `json:"options"`                      // the parameters for the command
 	DefaultPermission *bool                       `json:"default_permission,omitempty"` // (default true)	whether the command is enabled by default when the app is added to a guild
 }

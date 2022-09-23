@@ -87,6 +87,19 @@ func (c *Container) Run(data *Data) (interface{}, error) {
 
 		matchingCmd, _ = c.FindCommand(name)
 
+		// KRAAKA this is SlashCommands2ContextMenuCommand
+		if data.SlashCommandTriggerData.Interaction.DataCommand.AppCmdType == discordgo.UserApplicationCommand &&
+			len(data.SlashCommandTriggerData.Interaction.DataCommand.Options) > 0 {
+
+			defs, _, _ := matchingCmd.Command.(CmdWithArgDefs).ArgDefs(nil)
+			arg := &discordgo.ApplicationCommandInteractionDataOption{
+				Name: strings.ToLower(defs[0].Name),
+				//Type:  4,
+				Value: data.SlashCommandTriggerData.Interaction.DataCommand.TargetID,
+			}
+			data.SlashCommandTriggerData.Interaction.DataCommand.Options[0] = arg
+		}
+
 		// add to the container chain and set the parse helper
 		data.ContainerChain = append(data.ContainerChain, c)
 		data.SlashCommandTriggerData.Options = options
