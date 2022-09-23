@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"emperror.dev/errors"
@@ -197,6 +198,12 @@ var cmdWhois = &commands.YAGCommand{
 			}
 		}
 
+		perms, err := parsed.GuildData.GS.GetMemberPermissions(parsed.GuildData.CS.ID, member.User.ID, member.Member.Roles)
+		if err != nil {
+			fmt.Println((fmt.Errorf("unable to calculate perms")).Error())
+		}
+		humanized := common.HumanizePermissions(int64(perms))
+
 		embed := &discordgo.MessageEmbed{
 			Title: fmt.Sprintf("%s#%s%s (%s)", member.User.Username, member.User.Discriminator, nick, onlineStatus),
 			Fields: []*discordgo.MessageEmbedField{
@@ -234,6 +241,11 @@ var cmdWhois = &commands.YAGCommand{
 					Name:   "Status",
 					Value:  memberStatus,
 					Inline: true,
+				},
+				{
+					Name:   fmt.Sprintf("Permissions in:\n#%s", parsed.GuildData.CS.Name),
+					Value:  fmt.Sprintf("`%d`\n%s", perms, strings.Join(humanized, ", ")),
+					Inline: false,
 				},
 			},
 			Thumbnail: &discordgo.MessageEmbedThumbnail{
