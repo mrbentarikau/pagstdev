@@ -158,7 +158,7 @@ var cmdWhois = &commands.YAGCommand{
 			}
 		}
 
-		onlineStatus := "Offline/Invisible"
+		onlineStatus := ""
 		if member.Presence != nil {
 			switch member.Presence.Status {
 			case 0:
@@ -198,6 +198,10 @@ var cmdWhois = &commands.YAGCommand{
 			}
 		}
 
+		if onlineStatus != "" {
+			onlineStatus = "(" + onlineStatus + ")"
+		}
+
 		perms, err := parsed.GuildData.GS.GetMemberPermissions(parsed.GuildData.CS.ID, member.User.ID, member.Member.Roles)
 		if err != nil {
 			fmt.Println((fmt.Errorf("unable to calculate perms")).Error())
@@ -205,7 +209,7 @@ var cmdWhois = &commands.YAGCommand{
 		humanized := common.HumanizePermissions(int64(perms))
 
 		embed := &discordgo.MessageEmbed{
-			Title: fmt.Sprintf("%s#%s%s (%s)", member.User.Username, member.User.Discriminator, nick, onlineStatus),
+			Title: fmt.Sprintf("%s#%s%s %s", member.User.Username, member.User.Discriminator, nick, onlineStatus),
 			Fields: []*discordgo.MessageEmbedField{
 				{
 					Name:   "ID",
