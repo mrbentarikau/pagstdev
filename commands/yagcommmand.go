@@ -157,6 +157,8 @@ type YAGCommand struct {
 	slashCommandID int64
 
 	IsResponseEphemeral bool
+
+	CmdNoRun bool
 }
 
 // CmdWithCategory puts the command in a category, mostly used for the help generation
@@ -183,6 +185,10 @@ var metricsExcecutedCommands = promauto.NewCounterVec(prometheus.CounterOpts{
 
 func (yc *YAGCommand) Run(data *dcmd.Data) (interface{}, error) {
 	if !yc.RunInDM && data.Source == dcmd.TriggerSourceDM {
+		return nil, nil
+	}
+
+	if yc.CmdNoRun && data.TraditionalTriggerData != nil {
 		return nil, nil
 	}
 

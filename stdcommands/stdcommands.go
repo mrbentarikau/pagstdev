@@ -55,6 +55,7 @@ import (
 	"github.com/botlabs-gg/yagpdb/stdcommands/sleep"
 	"github.com/botlabs-gg/yagpdb/stdcommands/statedbg"
 	"github.com/botlabs-gg/yagpdb/stdcommands/stateinfo"
+	"github.com/botlabs-gg/yagpdb/stdcommands/thanks"
 	"github.com/botlabs-gg/yagpdb/stdcommands/throw"
 	"github.com/botlabs-gg/yagpdb/stdcommands/toggledbg"
 	"github.com/botlabs-gg/yagpdb/stdcommands/topcommands"
@@ -117,6 +118,7 @@ func (p *Plugin) AddCommands() {
 		quack.Command,
 		roll.Command,
 		simpleembed.Command,
+		thanks.Command,
 		throw.Command,
 		topgames.Command,
 		topic.Command,
