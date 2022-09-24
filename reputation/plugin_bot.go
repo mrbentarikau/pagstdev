@@ -332,12 +332,13 @@ var cmds = []*commands.YAGCommand{
 	{
 		CmdCategory: commands.CategoryFun,
 		Name:        "Rep",
-		Description: "Shows yours or the specified users current rep and rank",
+		Description: "Shows member's current reputation and rank...",
 		Arguments: []*dcmd.ArgDef{
 			{Name: "User", Type: dcmd.User},
 		},
-		SlashCommandEnabled: true,
-		DefaultEnabled:      false,
+		SlashCommandEnabled:    true,
+		ApplicationCommandType: 2,
+		DefaultEnabled:         false,
 		RunFunc: func(parsed *dcmd.Data) (interface{}, error) {
 			target := parsed.Author
 			if parsed.Args[0].Value != nil {
