@@ -988,7 +988,7 @@ const (
 	maxSupportedReactionCount = fetchBatchSize * 50 // 50 API calls
 )
 
-func (c *Context) tmplGetAllMessageReactions(channel, msgID, emoji interface{}) (interface{}, error) {
+func (c *Context) tmplGetMessageReactions(channel, msgID, emoji interface{}) (interface{}, error) {
 	if c.IncreaseCheckGenericAPICall() {
 		return nil, ErrTooManyAPICalls
 	}

@@ -400,7 +400,12 @@ func CreatePostMessage(post *reddit.Link) (string, *discordgo.MessageEmbed) {
 			}
 		}
 	}
-	embed.Footer.Text += "\nr/" + post.Subreddit
+
+	if post.Ups > 1 {
+		embed.Footer.Text += fmt.Sprintf(": %d ⬆ %d ⬇\nr/%s", post.Ups, post.Downs, post.Subreddit)
+	} else {
+		embed.Footer.Text += "\nr/" + post.Subreddit
+	}
 
 	return plainMessage, embed
 }

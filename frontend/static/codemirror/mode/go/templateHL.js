@@ -152,6 +152,7 @@
     "getMember":true,
     "getMemberTimezone":true,
     "getMessage":true,
+    "getMessageReactions":true,
     "getPinCount":true,
     "getThread":true,
     "getUser":true,
