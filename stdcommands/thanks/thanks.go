@@ -5,9 +5,43 @@ import (
 
 	"github.com/botlabs-gg/yagpdb/commands"
 	"github.com/botlabs-gg/yagpdb/lib/dcmd"
+	"github.com/botlabs-gg/yagpdb/lib/discordgo"
 	"github.com/botlabs-gg/yagpdb/lib/dstate"
 	"github.com/botlabs-gg/yagpdb/reputation"
 )
+
+var thanksLocalizations = &map[discordgo.Locale]string{
+	"da":    "tak",
+	"de":    "danke",
+	"en-GB": "thanks",
+	"en-US": "thanks",
+	"es-ES": "gracias",
+	"fr":    "merci",
+	"hr":    "hvala",
+	"it":    "grazie",
+	"lt":    "dėkoju",
+	"hu":    "kösz",
+	"nl":    "dank",
+	"no":    "takk",
+	"pl":    "dziękuję",
+	"pt-BR": "obrigado",
+	"ro":    "mulțumiri",
+	"fi":    "kiitos",
+	"sv-SE": "tack",
+	"vi":    "cảm ơn",
+	"tr":    "şükür",
+	"cs":    "dik",
+	"el":    "ευχαριστώ",
+	"bg":    "благодаря",
+	"ru":    "спасибо",
+	"uk":    "спасибі",
+	"hi":    "धन्यवाद",
+	"th":    "ขอบใจ",
+	"zh-CN": "谢谢",
+	"ja":    "ありがとう",
+	"zh-TW": "謝謝",
+	"ko":    "감사해요",
+}
 
 var Command = &commands.YAGCommand{
 	CmdCategory:          commands.CategoryFun,
@@ -20,6 +54,7 @@ var Command = &commands.YAGCommand{
 
 	SlashCommandEnabled:    true,
 	ApplicationCommandType: 2,
+	NameLocalizations:      thanksLocalizations,
 
 	Arguments: []*dcmd.ArgDef{
 		{Name: "User", Type: &commands.MemberArg{}},

@@ -144,6 +144,7 @@ type YAGCommand struct {
 	// If it's disabled in all channels, then for default_enabled = true commands, it adds the everyone role to the blacklist, otherwise it adds no role to the whitelist (does this even work? can i use the everyone role in this context?)
 	SlashCommandEnabled    bool
 	ApplicationCommandType discordgo.ApplicationCommandType
+	NameLocalizations      *map[discordgo.Locale]string
 
 	// Weather the command is enabled in all guilds by default or not
 	DefaultEnabled bool
