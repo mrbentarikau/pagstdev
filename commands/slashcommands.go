@@ -50,11 +50,11 @@ func (p *Plugin) startSlashCommandsUpdater() {
 }
 
 func (p *Plugin) updateGlobalCommands() {
-	result := make([]*discordgo.CreateApplicationCommandRequest, 0)
+	result := make([]*discordgo.ApplicationCommand, 0)
 
 	for _, v := range CommandSystem.Root.Commands {
 		if cmd := p.yagCommandToSlashCommand(v); cmd != nil {
-			logger.Infof("%s is a global slash command: default enabled: %v", cmd.Name, cmd.DefaultPermission)
+			logger.Infof("%s is a global slash command: default enabled: %v", cmd.Name, *cmd.DefaultPermission)
 			result = append(result, cmd)
 		}
 	}
@@ -77,11 +77,10 @@ func (p *Plugin) updateGlobalCommands() {
 		logger.Info("Slash commands identical, skipping update")
 		return
 	}
-	// fmt.Println(string(encoded))
 
-	logger.Info("Slash commands changed, updating....")
+	logger.Info("Application commands changed, updating...")
 
-	ret, err := common.BotSession.BulkOverwriteGlobalApplicationCommands(common.BotApplication.ID, result)
+	ret, err := common.BotSession.ApplicationCommandBulkOverwrite(common.BotApplication.ID, 0, result)
 	if err != nil {
 		logger.WithError(err).Error("failed updating global slash commands")
 		return
@@ -115,9 +114,9 @@ OUTER:
 	}
 }
 
-func (p *Plugin) containerToSlashCommand(container *slashCommandsContainer) *discordgo.CreateApplicationCommandRequest {
+func (p *Plugin) containerToSlashCommand(container *slashCommandsContainer) *discordgo.ApplicationCommand {
 	t := true
-	req := &discordgo.CreateApplicationCommandRequest{
+	req := &discordgo.ApplicationCommand{
 		Name:              strings.ToLower(container.container.Names[0]),
 		Description:       common.CutStringShort(container.container.Description, 100),
 		DefaultPermission: &t,
@@ -148,7 +147,7 @@ func (p *Plugin) containerToSlashCommand(container *slashCommandsContainer) *dis
 	return req
 }
 
-func (p *Plugin) yagCommandToSlashCommand(cmd *dcmd.RegisteredCommand) *discordgo.CreateApplicationCommandRequest {
+func (p *Plugin) yagCommandToSlashCommand(cmd *dcmd.RegisteredCommand) *discordgo.ApplicationCommand {
 
 	cast, ok := cmd.Command.(*YAGCommand)
 	if !ok {
@@ -163,7 +162,7 @@ func (p *Plugin) yagCommandToSlashCommand(cmd *dcmd.RegisteredCommand) *discordg
 	t := true
 
 	_, opts := cast.slashCommandOptions()
-	createApplicationCommandRequest := &discordgo.CreateApplicationCommandRequest{
+	applicationCommand := &discordgo.ApplicationCommand{
 		Name:              strings.ToLower(cmd.Trigger.Names[0]),
 		Description:       common.CutStringShort(cast.Description, 100),
 		DefaultPermission: &t,
@@ -172,14 +171,24 @@ func (p *Plugin) yagCommandToSlashCommand(cmd *dcmd.RegisteredCommand) *discordg
 
 	// KRAAKA adding context menu command
 	if cast.ApplicationCommandType == discordgo.UserApplicationCommand {
-		createApplicationCommandRequest = &discordgo.CreateApplicationCommandRequest{
+		applicationCommand = &discordgo.ApplicationCommand{
 			Name:              strings.ToLower(cmd.Trigger.Names[0]),
 			DefaultPermission: &t,
+			NameLocalizations: cast.NameLocalizations,
 			Type:              discordgo.UserApplicationCommand,
 		}
 	}
 
-	return createApplicationCommandRequest
+	if cast.ApplicationCommandType == discordgo.MessageApplicationCommand {
+		applicationCommand = &discordgo.ApplicationCommand{
+			Name:              strings.ToLower(cmd.Trigger.Names[0]),
+			NameLocalizations: cast.NameLocalizations,
+			DefaultPermission: &t,
+			Type:              discordgo.MessageApplicationCommand,
+		}
+	}
+
+	return applicationCommand
 }
 
 func (yc *YAGCommand) slashCommandOptions() (turnedIntoSubCommands bool, result []*discordgo.ApplicationCommandOption) {
