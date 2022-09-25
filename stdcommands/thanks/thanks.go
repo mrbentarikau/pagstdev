@@ -23,7 +23,7 @@ var thanksLocalizations = &map[discordgo.Locale]string{
 	"hu":    "kösz",
 	"nl":    "dank",
 	"no":    "takk",
-	"pl":    "dziękuję",
+	"pl":    "dzięki",
 	"pt-BR": "obrigado",
 	"ro":    "mulțumiri",
 	"fi":    "kiitos",
