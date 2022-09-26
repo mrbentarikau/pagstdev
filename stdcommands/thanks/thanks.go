@@ -52,9 +52,9 @@ var Command = &commands.YAGCommand{
 	HideFromCommandsPage: false,
 	DefaultEnabled:       false,
 
-	SlashCommandEnabled:    true,
-	ApplicationCommandType: 2,
-	NameLocalizations:      thanksLocalizations,
+	ApplicationCommandEnabled: true,
+	ApplicationCommandType:    2,
+	NameLocalizations:         thanksLocalizations,
 
 	Arguments: []*dcmd.ArgDef{
 		{Name: "User", Type: &commands.MemberArg{}},

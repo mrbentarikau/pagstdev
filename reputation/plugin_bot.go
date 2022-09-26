@@ -122,21 +122,21 @@ var cmds = []*commands.YAGCommand{
 			{Name: "User", Type: dcmd.User},
 			{Name: "Num", Type: dcmd.Int, Default: 1},
 		},
-		SlashCommandEnabled: true,
-		DefaultEnabled:      false,
+		ApplicationCommandEnabled: true,
+		DefaultEnabled:            false,
 		RunFunc: func(parsed *dcmd.Data) (interface{}, error) {
 			parsed.Args[1].Value = -int(math.Abs(parsed.Args[1].Float64()))
 			return CmdGiveRep(parsed)
 		},
 	},
 	{
-		CmdCategory:         commands.CategoryFun,
-		Name:                "GiveRep",
-		Aliases:             []string{"+", "gr", "grep", "+rep"},
-		Description:         "Gives absolute value of rep to someone.",
-		RequiredArgs:        1,
-		SlashCommandEnabled: true,
-		DefaultEnabled:      false,
+		CmdCategory:               commands.CategoryFun,
+		Name:                      "GiveRep",
+		Aliases:                   []string{"+", "gr", "grep", "+rep"},
+		Description:               "Gives absolute value of rep to someone.",
+		RequiredArgs:              1,
+		ApplicationCommandEnabled: true,
+		DefaultEnabled:            false,
 		Arguments: []*dcmd.ArgDef{
 			{Name: "User", Type: dcmd.User},
 			{Name: "Num", Type: dcmd.Int, Default: 1},
@@ -148,13 +148,13 @@ var cmds = []*commands.YAGCommand{
 		},
 	},
 	{
-		CmdCategory:         commands.CategoryFun,
-		Name:                "SetRep",
-		Aliases:             []string{"SetRepID"}, // alias for legacy reasons, used to be a standalone command
-		Description:         "Sets someones rep, this is an admin command and bypasses cooldowns and other restrictions.",
-		RequiredArgs:        2,
-		SlashCommandEnabled: true,
-		DefaultEnabled:      false,
+		CmdCategory:               commands.CategoryFun,
+		Name:                      "SetRep",
+		Aliases:                   []string{"SetRepID"}, // alias for legacy reasons, used to be a standalone command
+		Description:               "Sets someones rep, this is an admin command and bypasses cooldowns and other restrictions.",
+		RequiredArgs:              2,
+		ApplicationCommandEnabled: true,
+		DefaultEnabled:            false,
 		Arguments: []*dcmd.ArgDef{
 			{Name: "User", Type: dcmd.UserID},
 			{Name: "Num", Type: dcmd.Int},
@@ -197,12 +197,12 @@ var cmds = []*commands.YAGCommand{
 		},
 	},
 	{
-		CmdCategory:         commands.CategoryFun,
-		Name:                "DelRep",
-		Description:         "Deletes someone from the reputation list completely, this cannot be undone.",
-		RequiredArgs:        1,
-		SlashCommandEnabled: true,
-		DefaultEnabled:      false,
+		CmdCategory:               commands.CategoryFun,
+		Name:                      "DelRep",
+		Description:               "Deletes someone from the reputation list completely, this cannot be undone.",
+		RequiredArgs:              1,
+		ApplicationCommandEnabled: true,
+		DefaultEnabled:            false,
 		Arguments: []*dcmd.ArgDef{
 			{Name: "User", Type: dcmd.UserID},
 		},
@@ -231,13 +231,13 @@ var cmds = []*commands.YAGCommand{
 		},
 	},
 	{
-		CmdCategory:         commands.CategoryFun,
-		Name:                "RepLog",
-		Aliases:             []string{"replogs"},
-		Description:         "Shows the rep log for the specified user. Times are in UTC.",
-		RequiredArgs:        0,
-		SlashCommandEnabled: true,
-		DefaultEnabled:      false,
+		CmdCategory:               commands.CategoryFun,
+		Name:                      "RepLog",
+		Aliases:                   []string{"replogs"},
+		Description:               "Shows the rep log for the specified user. Times are in UTC.",
+		RequiredArgs:              0,
+		ApplicationCommandEnabled: true,
+		DefaultEnabled:            false,
 		Arguments: []*dcmd.ArgDef{
 			{Name: "User", Type: dcmd.UserID},
 		},
@@ -336,9 +336,9 @@ var cmds = []*commands.YAGCommand{
 		Arguments: []*dcmd.ArgDef{
 			{Name: "User", Type: dcmd.User},
 		},
-		SlashCommandEnabled:    true,
-		ApplicationCommandType: 2,
-		DefaultEnabled:         false,
+		ApplicationCommandEnabled: true,
+		ApplicationCommandType:    2,
+		DefaultEnabled:            false,
 		RunFunc: func(parsed *dcmd.Data) (interface{}, error) {
 			target := parsed.Author
 			if parsed.Args[0].Value != nil {
@@ -382,8 +382,8 @@ var cmds = []*commands.YAGCommand{
 		ArgSwitches: []*dcmd.ArgDef{
 			{Name: "user", Help: "User to search for in the leader board", Type: dcmd.UserID},
 		},
-		SlashCommandEnabled: true,
-		DefaultEnabled:      true,
+		ApplicationCommandEnabled: true,
+		DefaultEnabled:            true,
 		RunFunc: func(parsed *dcmd.Data) (interface{}, error) {
 			const (
 				countEntriesQuery = "SELECT COUNT(1) FROM reputation_users WHERE guild_id = $1"

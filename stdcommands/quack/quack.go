@@ -15,12 +15,12 @@ import (
 )
 
 var Command = &commands.YAGCommand{
-	CmdCategory:         commands.CategoryFun,
-	Name:                "Duck",
-	Aliases:             []string{"quack"},
-	Description:         "Random duck images from random-d.uk API",
-	DefaultEnabled:      true,
-	SlashCommandEnabled: true,
+	CmdCategory:               commands.CategoryFun,
+	Name:                      "Duck",
+	Aliases:                   []string{"quack"},
+	Description:               "Random duck images from random-d.uk API",
+	DefaultEnabled:            true,
+	ApplicationCommandEnabled: true,
 
 	RunFunc: func(data *dcmd.Data) (interface{}, error) {
 		var descr, quackURL string

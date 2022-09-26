@@ -50,13 +50,13 @@ var (
 )
 
 var Command = &commands.YAGCommand{
-	CmdCategory:         commands.CategoryTool,
-	Name:                "CoronaStatistics",
-	Aliases:             []string{"coronastats", "cstats", "cst"},
-	Description:         "Shows COVID-19 statistics sourcing Worldometer statistics. Location is country name or their ISO2/3 shorthand.\nIf nothing is added, shows World's total.\nListings are sorted by count of total cases not deaths.",
-	RunInDM:             true,
-	DefaultEnabled:      true,
-	SlashCommandEnabled: true,
+	CmdCategory:               commands.CategoryTool,
+	Name:                      "CoronaStatistics",
+	Aliases:                   []string{"coronastats", "cstats", "cst"},
+	Description:               "Shows COVID-19 statistics sourcing Worldometer statistics. Location is country name or their ISO2/3 shorthand.\nIf nothing is added, shows World's total.\nListings are sorted by count of total cases not deaths.",
+	RunInDM:                   true,
+	DefaultEnabled:            true,
+	ApplicationCommandEnabled: true,
 	Arguments: []*dcmd.ArgDef{
 		{Name: "Location", Type: dcmd.String},
 	},
