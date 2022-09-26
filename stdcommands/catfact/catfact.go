@@ -12,12 +12,12 @@ import (
 )
 
 var Command = &commands.YAGCommand{
-	CmdCategory:         commands.CategoryFun,
-	Name:                "CatFact",
-	Aliases:             []string{"cf", "cat", "catfacts"},
-	Description:         "Cat Facts from local database or catfact.ninja API",
-	DefaultEnabled:      true,
-	SlashCommandEnabled: true,
+	CmdCategory:               commands.CategoryFun,
+	Name:                      "CatFact",
+	Aliases:                   []string{"cf", "cat", "catfacts"},
+	Description:               "Cat Facts from local database or catfact.ninja API",
+	DefaultEnabled:            true,
+	ApplicationCommandEnabled: true,
 
 	RunFunc: func(data *dcmd.Data) (interface{}, error) {
 		var cf string

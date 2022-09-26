@@ -98,6 +98,21 @@ func (c *Container) Run(data *Data) (interface{}, error) {
 				Value: data.SlashCommandTriggerData.Interaction.DataCommand.TargetID,
 			}
 			data.SlashCommandTriggerData.Interaction.DataCommand.Options[0] = arg
+		} else if data.SlashCommandTriggerData.Interaction.DataCommand.AppCmdType == discordgo.MessageApplicationCommand &&
+			len(data.SlashCommandTriggerData.Interaction.DataCommand.Options) > 0 {
+
+			message, err := data.Session.ChannelMessage(data.GuildData.CS.ID, data.SlashCommandTriggerData.Interaction.DataCommand.TargetID)
+			if err != nil {
+				return nil, err
+			}
+
+			defs, _, _ := matchingCmd.Command.(CmdWithArgDefs).ArgDefs(nil)
+			arg := &discordgo.ApplicationCommandInteractionDataOption{
+				Name:  strings.ToLower(defs[0].Name),
+				Type:  3,
+				Value: message.Content,
+			}
+			data.SlashCommandTriggerData.Interaction.DataCommand.Options[0] = arg
 		}
 
 		// add to the container chain and set the parse helper

@@ -21,8 +21,8 @@ var Command = &commands.YAGCommand{
 	},
 	DefaultEnabled: true,
 
-	SlashCommandEnabled:    true,
-	ApplicationCommandType: 2,
+	ApplicationCommandEnabled: true,
+	ApplicationCommandType:    2,
 
 	RunFunc: func(data *dcmd.Data) (interface{}, error) {
 		target := "a random person nearby"

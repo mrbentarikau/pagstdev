@@ -12,12 +12,12 @@ import (
 )
 
 var Command = &commands.YAGCommand{
-	CmdCategory:         commands.CategoryFun,
-	Name:                "DogFact",
-	Aliases:             []string{"dog", "dogfacts"},
-	Description:         "Dog Facts from local database or dog-api.kinduff.com API",
-	SlashCommandEnabled: true,
-	DefaultEnabled:      true,
+	CmdCategory:               commands.CategoryFun,
+	Name:                      "DogFact",
+	Aliases:                   []string{"dog", "dogfacts"},
+	Description:               "Dog Facts from local database or dog-api.kinduff.com API",
+	ApplicationCommandEnabled: true,
+	DefaultEnabled:            true,
 	RunFunc: func(data *dcmd.Data) (interface{}, error) {
 		request := rand.Intn(2)
 		if request > 0 {

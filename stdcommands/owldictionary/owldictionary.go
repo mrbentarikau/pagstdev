@@ -36,8 +36,8 @@ var Command = &commands.YAGCommand{
 	Arguments: []*dcmd.ArgDef{
 		{Name: "Query", Help: "Word to search for", Type: dcmd.String},
 	},
-	DefaultEnabled:      true,
-	SlashCommandEnabled: true,
+	DefaultEnabled:            true,
+	ApplicationCommandEnabled: true,
 	RunFunc: func(data *dcmd.Data) (interface{}, error) {
 		query := strings.ToLower(data.Args[0].Str())
 		req, err := http.NewRequest("GET", "https://owlbot.info/api/v4/dictionary/"+url.QueryEscape(query), nil)

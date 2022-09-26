@@ -91,7 +91,7 @@ OUTER:
 	for _, v := range ret {
 		for _, rs := range CommandSystem.Root.Commands {
 			if cast, ok := rs.Command.(*YAGCommand); ok {
-				if cast.SlashCommandEnabled && strings.EqualFold(v.Name, cast.Name) {
+				if cast.ApplicationCommandEnabled && strings.EqualFold(v.Name, cast.Name) {
 					cast.slashCommandID = v.ID
 					continue OUTER
 				}
@@ -155,7 +155,7 @@ func (p *Plugin) yagCommandToSlashCommand(cmd *dcmd.RegisteredCommand) *discordg
 		return nil
 	}
 
-	if !cast.SlashCommandEnabled {
+	if !cast.ApplicationCommandEnabled {
 		// not enabled for slash commands
 		return nil
 	}
@@ -314,7 +314,7 @@ func updateSlashCommandGuildPermissions(gs *dstate.GuildSet) (updated bool, err 
 	// Start with root commands
 	for _, v := range CommandSystem.Root.Commands {
 		if cast, ok := v.Command.(*YAGCommand); ok {
-			if cast.SlashCommandEnabled {
+			if cast.ApplicationCommandEnabled {
 				perms, err := cast.TopLevelSlashCommandPermissions(commandSettings, gs)
 				if err != nil {
 					return false, err
@@ -729,7 +729,7 @@ OUTER:
 func IsSlashCommandPermissionCommandEnabled(fullName string, overrides []*models.CommandsChannelsOverride) bool {
 	// check if atleast one command override has it explicitly enabled, this takes precedence
 	for _, override := range overrides {
-		if isSlashCommandEnabledChannelOverride(fullName, override) {
+		if isApplicationCommandEnabledChannelOverride(fullName, override) {
 			return true
 		}
 	}
@@ -737,7 +737,7 @@ func IsSlashCommandPermissionCommandEnabled(fullName string, overrides []*models
 	return false
 }
 
-func isSlashCommandEnabledChannelOverride(fullName string, override *models.CommandsChannelsOverride) bool {
+func isApplicationCommandEnabledChannelOverride(fullName string, override *models.CommandsChannelsOverride) bool {
 	for _, cmdOverride := range override.R.CommandsCommandOverrides {
 		if common.ContainsStringSliceFold(cmdOverride.Commands, fullName) {
 			return cmdOverride.CommandsEnabled

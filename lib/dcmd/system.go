@@ -264,7 +264,7 @@ func (sys *System) FillDataInteraction(s *discordgo.Session, interaction *discor
 	}
 
 	// KRAAKA_WHOIS from commands/slashcommands.go:handleInteractionUpdate > CheckInteractions:72
-	if interaction.DataCommand.AppCmdType == discordgo.UserApplicationCommand {
+	if interaction.DataCommand.AppCmdType == discordgo.UserApplicationCommand || interaction.DataCommand.AppCmdType == discordgo.MessageApplicationCommand {
 		arg := &discordgo.ApplicationCommandInteractionDataOption{}
 		interaction.DataCommand.Options = append(interaction.DataCommand.Options, arg)
 	}

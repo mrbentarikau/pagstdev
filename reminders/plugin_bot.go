@@ -62,8 +62,8 @@ var cmds = []*commands.YAGCommand{
 			{Name: "repeat", Help: "Repeat the reminder at set duration"},
 			{Name: "time", Help: "Exact time for the reminder", Type: dcmd.String},
 		},
-		SlashCommandEnabled: true,
-		DefaultEnabled:      true,
+		ApplicationCommandEnabled: true,
+		DefaultEnabled:            true,
 		RunFunc: func(parsed *dcmd.Data) (interface{}, error) {
 			currentReminders, _ := GetUserReminders(parsed.Author.ID)
 			if len(currentReminders) >= 25 {
@@ -144,11 +144,11 @@ var cmds = []*commands.YAGCommand{
 		},
 	},
 	{
-		CmdCategory:         commands.CategoryTool,
-		Name:                "Reminders",
-		Description:         "Lists your active reminders",
-		SlashCommandEnabled: true,
-		DefaultEnabled:      true,
+		CmdCategory:               commands.CategoryTool,
+		Name:                      "Reminders",
+		Description:               "Lists your active reminders",
+		ApplicationCommandEnabled: true,
+		DefaultEnabled:            true,
 		ArgSwitches: []*dcmd.ArgDef{
 			{Name: "raw", Help: "Raw, legacy output"},
 		},
@@ -186,12 +186,12 @@ var cmds = []*commands.YAGCommand{
 		},
 	},
 	{
-		CmdCategory:         commands.CategoryTool,
-		Name:                "CReminders",
-		Aliases:             []string{"channelreminders"},
-		Description:         "Lists reminders in channel, only users with 'manage channel' permissions can use this.",
-		SlashCommandEnabled: true,
-		DefaultEnabled:      true,
+		CmdCategory:               commands.CategoryTool,
+		Name:                      "CReminders",
+		Aliases:                   []string{"channelreminders"},
+		Description:               "Lists reminders in channel, only users with 'manage channel' permissions can use this.",
+		ApplicationCommandEnabled: true,
+		DefaultEnabled:            true,
 		ArgSwitches: []*dcmd.ArgDef{
 			{Name: "raw", Help: "Raw, legacy output"},
 		},
@@ -249,8 +249,8 @@ var cmds = []*commands.YAGCommand{
 			{Name: "a", Help: "All"},
 			{Name: "userid", Type: dcmd.Int, Default: 0, Help: "userID"},
 		},
-		SlashCommandEnabled: true,
-		DefaultEnabled:      true,
+		ApplicationCommandEnabled: true,
+		DefaultEnabled:            true,
 		RunFunc: func(parsed *dcmd.Data) (interface{}, error) {
 			var reminder Reminder
 
