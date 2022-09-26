@@ -196,12 +196,12 @@ func (p *PostHandlerImpl) handlePost(post *reddit.Link, filterGuild int64) error
 		"subreddit":    post.Subreddit,
 	}).Debug("Found matched Reddit post")
 
-	message, embed := CreatePostMessage(post)
+	message, embed := p.createPostMessage(post)
 
 	for _, item := range filteredItems {
 		idStr := strconv.FormatInt(item.ID, 10)
 
-		webhookUsername := "Reddit • PAGSTDB"
+		webhookUsername := "Reddit • " + common.ConfBotName.GetString()
 
 		var content string
 		parseMentions := []discordgo.AllowedMentionType{}
@@ -291,7 +291,7 @@ OUTER:
 	return filteredItems
 }
 
-func CreatePostMessage(post *reddit.Link) (string, *discordgo.MessageEmbed) {
+func (p *PostHandlerImpl) createPostMessage(post *reddit.Link) (string, *discordgo.MessageEmbed) {
 	plainMessage := fmt.Sprintf("**%s**\n*by %s (<%s>)*\n",
 		html.UnescapeString(post.Title), post.Author, "https://redd.it/"+post.ID)
 
@@ -328,6 +328,11 @@ func CreatePostMessage(post *reddit.Link) (string, *discordgo.MessageEmbed) {
 		plainMessage += plainBody
 	}
 
+	feedSpeed := "Fast feed"
+	if p.Slow {
+		feedSpeed = "Slow feed"
+	}
+
 	embed := &discordgo.MessageEmbed{
 		Author: &discordgo.MessageEmbedAuthor{
 			URL:  "https://reddit.com/u/" + post.Author,
@@ -340,7 +345,7 @@ func CreatePostMessage(post *reddit.Link) (string, *discordgo.MessageEmbed) {
 		//Description: "**" + html.UnescapeString(post.Title) + "**\n",
 		Description: "",
 		Footer: &discordgo.MessageEmbedFooter{
-			Text: "Type: ",
+			Text: feedSpeed + "\nType: ",
 		},
 		Timestamp: time.Unix(int64(post.CreatedUtc), 0).UTC().Format(time.RFC3339),
 	}
@@ -402,9 +407,9 @@ func CreatePostMessage(post *reddit.Link) (string, *discordgo.MessageEmbed) {
 	}
 
 	if post.Ups > 1 {
-		embed.Footer.Text += fmt.Sprintf(": %d ⬆ %d ⬇\nr/%s", post.Ups, post.Downs, post.Subreddit)
+		embed.Footer.Text += fmt.Sprintf("\nRating: %d ⬆ %d ⬇\n\nr/%s", post.Ups, post.Downs, post.Subreddit)
 	} else {
-		embed.Footer.Text += "\nr/" + post.Subreddit
+		embed.Footer.Text += "\n\nr/" + post.Subreddit
 	}
 
 	return plainMessage, embed
