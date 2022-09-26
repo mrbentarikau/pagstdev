@@ -345,7 +345,7 @@ func (p *PostHandlerImpl) createPostMessage(post *reddit.Link) (string, *discord
 		//Description: "**" + html.UnescapeString(post.Title) + "**\n",
 		Description: "",
 		Footer: &discordgo.MessageEmbedFooter{
-			Text: feedSpeed + "\nType: ",
+			Text: feedSpeed + " of type: ",
 		},
 		Timestamp: time.Unix(int64(post.CreatedUtc), 0).UTC().Format(time.RFC3339),
 	}
