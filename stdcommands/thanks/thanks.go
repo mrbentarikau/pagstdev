@@ -38,7 +38,7 @@ var thanksLocalizations = &map[discordgo.Locale]string{
 	"hi":    "धन्यवाद",
 	"th":    "ขอบใจ",
 	"zh-CN": "谢谢",
-	"ja":    "ありがとう",
+	"ja":    "どうも",
 	"zh-TW": "謝謝",
 	"ko":    "감사해요",
 }
