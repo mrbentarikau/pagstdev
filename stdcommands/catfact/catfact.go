@@ -2,14 +2,12 @@ package catfact
 
 import (
 	"encoding/json"
-	"io"
 	"math/rand"
-	"net/http"
 
 	"github.com/botlabs-gg/yagpdb/commands"
-	"github.com/botlabs-gg/yagpdb/common"
 	"github.com/botlabs-gg/yagpdb/lib/dcmd"
 	"github.com/botlabs-gg/yagpdb/lib/discordgo"
+	"github.com/botlabs-gg/yagpdb/stdcommands/util"
 )
 
 type CatStuff struct {
@@ -31,7 +29,6 @@ var Command = &commands.YAGCommand{
 	RunFunc: func(data *dcmd.Data) (interface{}, error) {
 		var catStuff *CatStuff
 		var cf, cPicLink string
-		var err error
 
 		queryFact := "https://catfact.ninja/fact"
 		queryPic := "https://aws.random.cat/meow"
@@ -40,9 +37,13 @@ var Command = &commands.YAGCommand{
 
 		request := rand.Intn(2)
 		if request > 0 {
-			catStuff, err = catFactFromAPI(queryFact)
-			cf = catStuff.Fact
-			if err == nil {
+			catStuffBody, err := util.RequestFromAPI(queryFact)
+			if err != nil {
+				return cf, nil
+			}
+
+			queryErr := json.Unmarshal([]byte(catStuffBody), &catStuff)
+			if queryErr == nil {
 				cf = catStuff.Fact
 			}
 		}
@@ -51,8 +52,13 @@ var Command = &commands.YAGCommand{
 			return cf, nil
 		}
 
-		catStuff, err = catFactFromAPI(queryPic)
-		if err == nil {
+		catStuffBody, err := util.RequestFromAPI(queryPic)
+		if err != nil {
+			return cf, nil
+		}
+
+		queryErr := json.Unmarshal([]byte(catStuffBody), &catStuff)
+		if queryErr == nil {
 			cPicLink = catStuff.File
 		} else {
 			return cf, nil
@@ -68,38 +74,4 @@ var Command = &commands.YAGCommand{
 
 		return embed, nil
 	},
-}
-
-func catFactFromAPI(query string) (*CatStuff, error) {
-	var cf CatStuff
-
-	req, err := http.NewRequest("GET", query, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("User-Agent", common.ConfBotUserAgent.GetString())
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.StatusCode != 200 {
-		return nil, commands.NewPublicError("Not 200!")
-	}
-
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	queryErr := json.Unmarshal([]byte(body), &cf)
-	if queryErr != nil {
-		return nil, err
-	}
-
-	return &cf, nil
 }
