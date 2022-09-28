@@ -22,7 +22,8 @@ func RequestFromAPI(query string) ([]byte, error) {
 	}
 
 	if resp.StatusCode != 200 {
-		return nil, commands.NewPublicError("response not 200!")
+		return nil, commands.NewPublicError("HTTP err: ", resp.StatusCode)
+
 	}
 
 	defer resp.Body.Close()
