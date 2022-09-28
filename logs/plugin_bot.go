@@ -105,8 +105,9 @@ var cmdWhois = &commands.YAGCommand{
 		if err != nil {
 			return nil, err
 		}
-
+		
 		var member *dstate.MemberState
+
 		if parsed.Args[0].Value != nil {
 			member = parsed.Args[0].Value.(*dstate.MemberState)
 		} else {
@@ -116,6 +117,7 @@ var cmdWhois = &commands.YAGCommand{
 				member = sm
 			}
 		}
+
 		var nick, joinedAtStr, joinedAtDurStr string
 		if member.Member == nil {
 			joinedAtStr = "Couldn't find out"
@@ -130,6 +132,7 @@ var cmdWhois = &commands.YAGCommand{
 				nick = " (" + member.Member.Nick + ")"
 			}
 		}
+		
 
 		if joinedAtDurStr == "" {
 			joinedAtDurStr = "Less than an hour ago"
@@ -157,7 +160,7 @@ var cmdWhois = &commands.YAGCommand{
 				memberStatus = fmt.Sprintf("%s: %s", presenceName, member.Presence.Game.Name)
 			}
 		}
-
+		
 		onlineStatus := ""
 		if member.Presence != nil {
 			switch member.Presence.Status {
@@ -201,8 +204,13 @@ var cmdWhois = &commands.YAGCommand{
 		if onlineStatus != "" {
 			onlineStatus = "(" + onlineStatus + ")"
 		}
+		
+		target, err := bot.GetMember(parsed.GuildData.GS.ID, member.User.ID)
+		if err != nil {
+			fmt.Println((fmt.Errorf("unknown member")).Error())
+		}
 
-		perms, err := parsed.GuildData.GS.GetMemberPermissions(parsed.GuildData.CS.ID, member.User.ID, member.Member.Roles)
+		perms, err := parsed.GuildData.GS.GetMemberPermissions(parsed.GuildData.CS.ID, member.User.ID, target.Member.Roles)
 		if err != nil {
 			fmt.Println((fmt.Errorf("unable to calculate perms")).Error())
 		}
@@ -283,7 +291,7 @@ var cmdWhois = &commands.YAGCommand{
 				Value: "Username tracking disabled",
 			})
 		}
-
+		
 		if config.NicknameLoggingEnabled.Bool {
 
 			nicknames, err := GetNicknames(parsed.Context(), member.User.ID, parsed.GuildData.GS.ID, 5, 0)
