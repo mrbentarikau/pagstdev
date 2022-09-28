@@ -9,7 +9,13 @@ import (
 	"github.com/botlabs-gg/yagpdb/commands"
 	"github.com/botlabs-gg/yagpdb/common"
 	"github.com/botlabs-gg/yagpdb/lib/dcmd"
+	"github.com/botlabs-gg/yagpdb/lib/discordgo"
 )
+
+type DogStuff struct {
+	Facts   []string `json:"facts"`
+	Message string   `json:"message"`
+}
 
 var Command = &commands.YAGCommand{
 	CmdCategory:               commands.CategoryFun,
@@ -18,26 +24,54 @@ var Command = &commands.YAGCommand{
 	Description:               "Dog Facts from local database or dog-api.kinduff.com API",
 	ApplicationCommandEnabled: true,
 	DefaultEnabled:            true,
+	ArgSwitches: []*dcmd.ArgDef{
+		{Name: "raw", Help: "Raw output"},
+	},
+
 	RunFunc: func(data *dcmd.Data) (interface{}, error) {
+		var dogStuff *DogStuff
+		var df, dPicLink string
+		var err error
+
+		queryFact := "https://dog-api.kinduff.com/api/facts"
+		queryPic := "https://dog.ceo/api/breeds/image/random"
+
+		df = dogfacts[rand.Intn(len(dogfacts))]
+
 		request := rand.Intn(2)
 		if request > 0 {
-			df, err := dogFactFromAPI()
-			if err == nil && len(df) > 0 {
-				return df[0], nil
+			dogStuff, err = dogFactFromAPI(queryFact)
+			if err == nil && len(dogStuff.Facts) > 0 {
+				df = dogStuff.Facts[0]
 			}
 		}
-		df := dogfacts[rand.Intn(len(dogfacts))]
-		return df, nil
+
+		if data.Switches["raw"].Value != nil && data.Switches["raw"].Value.(bool) {
+			return df, nil
+		}
+
+		dogStuff, err = dogFactFromAPI(queryPic)
+		if err == nil {
+			dPicLink = dogStuff.Message
+		} else {
+			return df, nil
+		}
+
+		embed := &discordgo.MessageEmbed{
+			Description: df,
+			Color:       int(rand.Int63n(0xffffff)),
+			Image: &discordgo.MessageEmbedImage{
+				URL: dPicLink,
+			},
+		}
+
+		return embed, nil
 	},
 }
 
-func dogFactFromAPI() ([]string, error) {
-	var df struct {
-		Facts   []string `json:"facts"`
-		Success bool     `json:"success"`
-	}
+func dogFactFromAPI(query string) (*DogStuff, error) {
+	var ds DogStuff
 
-	query := "https://dog-api.kinduff.com/api/facts"
 	req, err := http.NewRequest("GET", query, nil)
 	if err != nil {
 		return nil, err
@@ -61,10 +95,10 @@ func dogFactFromAPI() ([]string, error) {
 		return nil, err
 	}
 
-	queryErr := json.Unmarshal([]byte(body), &df)
+	queryErr := json.Unmarshal([]byte(body), &ds)
 	if queryErr != nil {
 		return nil, err
 	}
 
-	return df.Facts, nil
+	return &ds, nil
 }
