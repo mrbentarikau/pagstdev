@@ -105,7 +105,7 @@ var cmdWhois = &commands.YAGCommand{
 		if err != nil {
 			return nil, err
 		}
-		
+
 		var member *dstate.MemberState
 
 		if parsed.Args[0].Value != nil {
@@ -119,11 +119,14 @@ var cmdWhois = &commands.YAGCommand{
 		}
 
 		var nick, joinedAtStr, joinedAtDurStr string
+		var joinedAtUnix int64
+
 		if member.Member == nil {
 			joinedAtStr = "Couldn't find out"
 			joinedAtDurStr = "Couldn't find out"
 		} else {
 			parsedJoinedAt, _ := member.Member.JoinedAt.Parse()
+			joinedAtUnix = parsedJoinedAt.Unix()
 			joinedAtStr = parsedJoinedAt.UTC().Format(time.RFC822)
 			dur := time.Since(parsedJoinedAt)
 			joinedAtDurStr = common.HumanizeDuration(common.DurationPrecisionHours, dur)
@@ -132,7 +135,6 @@ var cmdWhois = &commands.YAGCommand{
 				nick = " (" + member.Member.Nick + ")"
 			}
 		}
-		
 
 		if joinedAtDurStr == "" {
 			joinedAtDurStr = "Less than an hour ago"
@@ -160,7 +162,7 @@ var cmdWhois = &commands.YAGCommand{
 				memberStatus = fmt.Sprintf("%s: %s", presenceName, member.Presence.Game.Name)
 			}
 		}
-		
+
 		onlineStatus := ""
 		if member.Presence != nil {
 			switch member.Presence.Status {
@@ -204,7 +206,7 @@ var cmdWhois = &commands.YAGCommand{
 		if onlineStatus != "" {
 			onlineStatus = "(" + onlineStatus + ")"
 		}
-		
+
 		target, err := bot.GetMember(parsed.GuildData.GS.ID, member.User.ID)
 		if err != nil {
 			fmt.Println((fmt.Errorf("unknown member")).Error())
@@ -235,21 +237,21 @@ var cmdWhois = &commands.YAGCommand{
 				},
 				{
 					Name:   "Account Created",
-					Value:  t.UTC().Format(time.RFC822),
+					Value:  fmt.Sprintf("<t:%d>\n*%s*", t.UTC().Unix(), t.UTC().Format(time.RFC822)),
 					Inline: true,
 				},
 				{
-					Name:   "Account Age",
+					Name:   "Account Age (UTC)",
 					Value:  createdDurStr,
 					Inline: true,
 				},
 				{
 					Name:   "Joined Server At",
-					Value:  joinedAtStr,
+					Value:  fmt.Sprintf("<t:%d>\n*%s*", joinedAtUnix, joinedAtStr),
 					Inline: true,
 				},
 				{
-					Name:   "Join Server Age",
+					Name:   "Join Server Age (UTC)",
 					Value:  joinedAtDurStr,
 					Inline: true,
 				},
@@ -291,7 +293,7 @@ var cmdWhois = &commands.YAGCommand{
 				Value: "Username tracking disabled",
 			})
 		}
-		
+
 		if config.NicknameLoggingEnabled.Bool {
 
 			nicknames, err := GetNicknames(parsed.Context(), member.User.ID, parsed.GuildData.GS.ID, 5, 0)
