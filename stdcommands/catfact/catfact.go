@@ -37,7 +37,6 @@ var Command = &commands.YAGCommand{
 		queryPic := "https://aws.random.cat/meow"
 
 		cf = Catfacts[rand.Intn(len(Catfacts))]
-		cPicLink = "https://" + common.ConfHost.GetString() + "/static/img/quacknotfound.png"
 
 		request := rand.Intn(2)
 		if request > 0 {
@@ -55,6 +54,8 @@ var Command = &commands.YAGCommand{
 		catStuff, err = catFactFromAPI(queryPic)
 		if err == nil {
 			cPicLink = catStuff.File
+		} else {
+			return cf, nil
 		}
 
 		embed := &discordgo.MessageEmbed{
