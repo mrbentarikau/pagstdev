@@ -172,7 +172,7 @@ func (p *Plugin) postRSSFeed(subs models.RSSFeedSlice, publishedAt *time.Time, f
 
 	for _, sub := range subs {
 		if sub.Enabled {
-			p.sendNewRSSFeedMessage(sub.GuildID, sub.ChannelID, sub.MentionRole, feed, feedURL, sub.FeedName)
+			go p.sendNewRSSFeedMessage(sub.GuildID, sub.ChannelID, sub.MentionRole, feed, feedURL, sub.FeedName)
 		}
 	}
 
