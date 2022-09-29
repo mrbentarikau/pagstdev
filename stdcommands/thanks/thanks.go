@@ -64,23 +64,28 @@ var Command = &commands.YAGCommand{
 		sender := data.GuildData.MS
 		target := data.Args[0].Value.(*dstate.MemberState)
 		var response string
+		var repDisabledError = "**Rep command is disabled on this server. Enable it from the control panel.**"
 
-		if sender.User.ID == target.User.ID {
-			response = "You can't modify your own Rep... **Silly**"
-			return &commands.EphemeralOrNone{Content: response}, nil
-		}
-
-		conf, err := reputation.GetConfig(data.Context(), data.GuildData.GS.ID)
+		repConf, err := reputation.GetConfig(data.Context(), data.GuildData.GS.ID)
 		if err != nil {
 			return nil, err
 		}
 
-		if err = reputation.CanModifyRep(conf, sender, target); err != nil {
+		if !repConf.Enabled {
+			return repDisabledError, nil
+		}
+
+		if sender.User.ID == target.User.ID {
+			response = fmt.Sprintf("You can't modify your own %s... **Silly**", repConf.PointsName)
+			return &commands.EphemeralOrNone{Content: response}, nil
+		}
+
+		if err = reputation.CanModifyRep(repConf, sender, target); err != nil {
 			response = "You don't have any of the required roles to give points"
 			return &commands.EphemeralOrNone{Content: response}, nil
 		}
 
-		err = reputation.ModifyRep(data.Context(), conf, data.GuildData.GS.ID, sender, target, 1)
+		err = reputation.ModifyRep(data.Context(), repConf, data.GuildData.GS.ID, sender, target, 1)
 		if err != nil {
 			if err == reputation.ErrCooldown {
 				// Ignore this error silently
@@ -88,7 +93,7 @@ var Command = &commands.YAGCommand{
 			}
 		}
 
-		content := fmt.Sprintf("Gave +1 %s to **%s**", conf.PointsName, target.User.Mention())
+		content := fmt.Sprintf("Gave +1 %s to **%s**", repConf.PointsName, target.User.Mention())
 		return content, nil
 	},
 }
