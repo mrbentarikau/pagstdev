@@ -1386,14 +1386,14 @@ type CCLimits struct {
 	CCIDs      string
 }
 
-func CCTriggerLimitFinder(ctx context.Context, ccmd *CustomCommand, guildID, userID int64) (*CCLimits, error) {
-	if ccmd.TriggerTypeForm == "none" || ccmd.TriggerTypeForm == "reaction" || ccmd.TriggerTypeForm == "interval_hours" || ccmd.TriggerTypeForm == "interval_minutes" {
-		return nil, nil
-	}
-
-	cc, err := models.CustomCommands(qm.Where("guild_id = ? AND local_id = ?", guildID, ccmd.ID), qm.Load("Group")).OneG(ctx)
+func CCTriggerLimitFinder(ctx context.Context, ccmdID, guildID, userID int64) (*CCLimits, error) {
+	cc, err := models.CustomCommands(qm.Where("guild_id = ? AND local_id = ?", guildID, ccmdID), qm.Load("Group")).OneG(ctx)
 	if err != nil {
 		return nil, errors.WrapIf(err, "Retrieving full custom command model for limiter")
+	}
+
+	if cc.TriggerType == 10 || cc.TriggerType == 69 || cc.TriggerType == 5 {
+		return nil, nil
 	}
 
 	cmds, err := BotCachedGetCommandsWithMessageTriggers(guildID, ctx)
@@ -1408,10 +1408,6 @@ func CCTriggerLimitFinder(ctx context.Context, ccmd *CustomCommand, guildID, use
 
 	var matched []*TriggeredCC
 	for _, cmd := range cmds {
-		if cmd.TriggerType == 6 {
-			continue
-		}
-
 		gs := bot.State.GetGuild(guildID)
 		ms, _ := bot.GetMember(guildID, common.BotUser.ID)
 
@@ -1427,7 +1423,6 @@ func CCTriggerLimitFinder(ctx context.Context, ccmd *CustomCommand, guildID, use
 				if !common.ContainsInt64Slice(cmd.R.Group.IgnoreCategories, groupIgnCatgr) {
 					checkmatch = false
 					continue
-					//break
 				}
 			}
 
@@ -1435,15 +1430,13 @@ func CCTriggerLimitFinder(ctx context.Context, ccmd *CustomCommand, guildID, use
 				if !common.ContainsInt64Slice(cmd.R.Group.WhitelistCategories, groupWLCatgr) {
 					checkmatch = false
 					continue
-					//break
 				}
 			}
 		}
 
-		if ccmd.RequireChannels || ccmd.RequireRoles || ccmd.RequireCategories {
-			//checkmatch = false
+		if cc.ChannelsWhitelistMode || cc.RolesWhitelistMode || cc.CategoriesWhitelistMode {
 
-			for _, chanl := range ccmd.Channels {
+			for _, chanl := range cc.Channels {
 				cs := gs.GetChannel(chanl)
 				if !CmdRunsInCategory(cmd, cs.ParentID) || !CmdRunsInChannel(cmd, cs.ID) {
 					checkmatch = false
@@ -1457,7 +1450,7 @@ func CCTriggerLimitFinder(ctx context.Context, ccmd *CustomCommand, guildID, use
 				}
 			}
 
-			for _, role := range ccmd.Roles {
+			for _, role := range cc.Roles {
 				if common.ContainsInt64Slice(cmd.Roles, role) && cmd.RolesWhitelistMode {
 					break
 				} else if common.ContainsInt64Slice(cmd.Roles, role) && !cmd.RolesWhitelistMode {
@@ -1465,7 +1458,7 @@ func CCTriggerLimitFinder(ctx context.Context, ccmd *CustomCommand, guildID, use
 				}
 			}
 
-			for _, catgr := range ccmd.Categories {
+			for _, catgr := range cc.Categories {
 				if common.ContainsInt64Slice(cmd.Categories, catgr) && cmd.CategoriesWhitelistMode {
 					break
 				} else if common.ContainsInt64Slice(cmd.Channels, catgr) && !cmd.CategoriesWhitelistMode {
@@ -1475,12 +1468,24 @@ func CCTriggerLimitFinder(ctx context.Context, ccmd *CustomCommand, guildID, use
 
 		}
 
-		if checkmatch {
-			if didMatch, stripped, args := CheckMatch(prefix, cmd, fmt.Sprintf("%s%s %s", prefix, ccmd.Trigger, common.BotUser.Username)); didMatch {
+		if cc.TriggerType == 6 && checkmatch {
+			var reaction *discordgo.MessageReaction
+			var add bool
+
+			if cc.ReactionTriggerMode < 2 {
+				add = true
+			}
+
+			if didMatch := CheckMatchReaction(cmd, reaction, add); didMatch {
 				matched = append(matched, &TriggeredCC{
-					CC:       cmd,
-					Args:     args,
-					Stripped: stripped,
+					CC: cmd,
+				})
+			}
+
+		} else if checkmatch {
+			if didMatch, _, _ := CheckMatch(prefix, cmd, fmt.Sprintf("%s%s %s", prefix, cc.TextTrigger, common.BotUser.Username)); didMatch {
+				matched = append(matched, &TriggeredCC{
+					CC: cmd,
 				})
 			}
 		}
@@ -1500,7 +1505,7 @@ func CCTriggerLimitFinder(ctx context.Context, ccmd *CustomCommand, guildID, use
 	var ccIDs string
 	for _, match := range matched {
 		ccIDs = fmt.Sprintf("%s #%d", ccIDs, match.CC.LocalID)
-		if match.CC.LocalID == ccmd.ID {
+		if match.CC.LocalID == cc.LocalID {
 			return nil, nil
 		}
 	}

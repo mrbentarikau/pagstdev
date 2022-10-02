@@ -370,7 +370,7 @@ func handleUpdateCommand(w http.ResponseWriter, r *http.Request) (web.TemplateDa
 	pubsub.EvictCacheSet(cachedCommandsMessage, activeGuild.ID)
 
 	var limiter *CCLimits
-	limiter, _ = CCTriggerLimitFinder(ctx, cmd, activeGuild.ID, templateData["User"].(*discordgo.User).ID)
+	limiter, _ = CCTriggerLimitFinder(ctx, cmd.ID, activeGuild.ID, templateData["User"].(*discordgo.User).ID)
 
 	if limiter != nil && limiter.LenMatched == limiter.Limit {
 		/*

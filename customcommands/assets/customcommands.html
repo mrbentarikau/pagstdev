@@ -131,7 +131,7 @@
                         </div>
                     </form>
                     {{end}}
-                    <p>You have created <code>{{.CCCount}}</code> custom commands against the total limit of <code>{{.CCLimit}}</code>. {{.AdditionalMessage}}</p>
+                    <p>You have created <code>{{.CCCount}}</code> custom commands against the total limit of <code>{{.CCLimit}}</code>. CC count in this group: <code>{{len .CustomCommands}}</code>. {{.AdditionalMessage}}</p>
                     <form method="post" action="/manage/{{.ActiveGuild.ID}}/customcommands/commands/new" id="pagstNewCommand">
                         <script type="text/javascript" src="/static/js/shortcuts.js"></script>
                             <script>shortcut.add("shift+alt+c",function(){document.getElementById('pagstNewCommand').submit();});</script>
