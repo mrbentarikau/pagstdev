@@ -255,6 +255,11 @@ type MessageEdit struct {
 	AllowedMentions AllowedMentions    `json:"allowed_mentions,omitempty"`
 	Flags           MessageFlags       `json:"flags,omitempty"`
 
+	// Files to append to the message
+	Files []*File `json:"files,omitempty"`
+	// Overwrite existing attachments
+	Attachments *[]*MessageAttachment `json:"attachments,omitempty"`
+
 	ID      int64
 	Channel int64
 }

@@ -44,6 +44,13 @@ var (
 	ErrTokenInvalid            = errors.New("Invalid token provided, it has been marked as invalid")
 )
 
+var (
+	// Marshal defines function used to encode JSON payloads
+	Marshal func(v interface{}) ([]byte, error) = json.Marshal
+	// Unmarshal defines function used to decode JSON payloads
+	Unmarshal func(src []byte, v interface{}) error = json.Unmarshal
+)
+
 // Request is the same as RequestWithBucketID but the bucket id is the same as the urlStr
 func (s *Session) Request(method, urlStr string, data interface{}, extraHeaders map[string]string) (response []byte, err error) {
 	return s.RequestWithBucketID(method, urlStr, data, extraHeaders, strings.SplitN(urlStr, "?", 2)[0])
@@ -1993,7 +2000,19 @@ func (s *Session) ChannelMessageEditComplex(msg *MessageEdit) (st *Message, err 
 	}*/
 	msg.Embeds = ValidateComplexMessageEmbeds(msg.Embeds)
 
-	response, err := s.RequestWithBucketID("PATCH", EndpointChannelMessage(msg.Channel, msg.ID), msg, nil, EndpointChannelMessage(msg.Channel, 0))
+	//response, err := s.RequestWithBucketID("PATCH", EndpointChannelMessage(msg.Channel, msg.ID), msg, nil, EndpointChannelMessage(msg.Channel, 0))
+	endpoint := EndpointChannelMessage(msg.Channel, msg.ID)
+
+	var response []byte
+	if len(msg.Files) > 0 {
+		contentType, body, encodeErr := MultipartBodyWithJSON(msg, msg.Files)
+		if encodeErr != nil {
+			return st, encodeErr
+		}
+		response, err = s.request("PATCH", endpoint, contentType, body, nil, EndpointChannelMessage(msg.Channel, 0))
+	} else {
+		response, err = s.RequestWithBucketID("PATCH", endpoint, msg, nil, EndpointChannelMessage(msg.Channel, 0))
+	}
 	if err != nil {
 		return
 	}
