@@ -1390,6 +1390,11 @@ func CCTriggerLimitFinder(ctx context.Context, ccmd *CustomCommand, guildID, use
 		return nil, nil
 	}
 
+	cc, err := models.CustomCommands(qm.Where("guild_id = ? AND local_id = ?", guildID, ccmd.ID), qm.Load("Group")).OneG(ctx)
+	if err != nil {
+		return nil, errors.WrapIf(err, "Retrieving full custom command model for limiter")
+	}
+
 	cmds, err := BotCachedGetCommandsWithMessageTriggers(guildID, ctx)
 	if err != nil {
 		return nil, errors.WrapIf(err, "BotCachedGetCommandsWithMessageTriggers")
@@ -1414,6 +1419,24 @@ func CCTriggerLimitFinder(ctx context.Context, ccmd *CustomCommand, guildID, use
 		}
 
 		checkmatch := true
+
+		// check group restrictions
+		if cc.GroupID.Valid && cmd.GroupID.Valid {
+			for _, groupIgnCatgr := range cc.R.Group.IgnoreCategories {
+				if !common.ContainsInt64Slice(cmd.R.Group.IgnoreCategories, groupIgnCatgr) {
+					checkmatch = false
+					continue
+				}
+			}
+
+			for _, groupWLCatgr := range cc.R.Group.WhitelistCategories {
+				if !common.ContainsInt64Slice(cmd.R.Group.WhitelistCategories, groupWLCatgr) {
+					checkmatch = false
+					continue
+				}
+			}
+		}
+
 		if ccmd.RequireChannels || ccmd.RequireRoles || ccmd.RequireCategories {
 			//checkmatch = false
 
