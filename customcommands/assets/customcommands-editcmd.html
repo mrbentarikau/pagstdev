@@ -998,7 +998,7 @@
         
         const existingWarning = $(`#${warningID}`);
         if (existingWarning.length > 0 && !doWarn) {
-            // remove existing warning if there's no need for it anymore
+            // remove existing warning if there's no need for it any more
             existingWarning.remove();
         } else if (existingWarning.length === 0 && doWarn) {
             // warning does not exist, so add it

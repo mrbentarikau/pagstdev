@@ -663,15 +663,19 @@ func ControllerPostHandler(mainHandler ControllerHandlerFunc, extraHandler http.
 
 		// Don't display the success alert if there's an error alert displaying, that indicates a problem... :(
 		hasErrorAlert := false
+		hasWarningAlert := false
 		alerts := data.Alerts()
 		for _, v := range alerts {
 			if v.Style == AlertDanger {
 				hasErrorAlert = true
 				break
+			} else if v.Style == AlertWarning {
+				hasWarningAlert = true
+				break
 			}
 		}
 
-		if err == nil && !hasErrorAlert {
+		if err == nil && (!hasErrorAlert && !hasWarningAlert) {
 			data.AddAlerts(SucessAlert("Success!"))
 		}
 	})

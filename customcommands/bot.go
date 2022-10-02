@@ -26,6 +26,7 @@ import (
 	"github.com/botlabs-gg/yagpdb/common"
 	"github.com/botlabs-gg/yagpdb/common/keylock"
 	"github.com/botlabs-gg/yagpdb/common/multiratelimit"
+	prfx "github.com/botlabs-gg/yagpdb/common/prefix"
 	"github.com/botlabs-gg/yagpdb/common/pubsub"
 	"github.com/botlabs-gg/yagpdb/common/scheduledevents2"
 	schEventsModels "github.com/botlabs-gg/yagpdb/common/scheduledevents2/models"
@@ -743,7 +744,7 @@ func HandleMessageCreate(evt *eventsystem.EventData) {
 		matchedCustomCommands, err = findMessageTriggerCustomCommands(evt.Context(), cs, member, evt)
 	})
 	if err != nil {
-		logger.WithError(err).Error("Error mathching custom commands")
+		logger.WithError(err).Error("Error matching custom commands")
 		return
 	}
 
@@ -875,6 +876,27 @@ func sortTriggeredCCs(ccs []*TriggeredCC) {
 
 		if a.CC.TriggerType == int(CommandTriggerRegex) {
 			return false
+		}
+
+		if b.CC.TriggerType == int(CommandTriggerRegex) {
+			return true
+		}
+
+		return a.CC.LocalID < b.CC.LocalID
+	})
+}
+
+func sortLimitedCCs(ccs []*TriggeredCC) {
+	sort.Slice(ccs, func(i, j int) bool {
+		a := ccs[i]
+		b := ccs[j]
+
+		if a.CC.TriggerType == b.CC.TriggerType {
+			return a.CC.LocalID < b.CC.LocalID
+		}
+
+		if a.CC.TriggerType == int(CommandTriggerRegex) {
+			return true
 		}
 
 		if b.CC.TriggerType == int(CommandTriggerRegex) {
@@ -1356,4 +1378,114 @@ var cmdFixCommands = &commands.YAGCommand{
 
 		return fmt.Sprintf("Doneso! fixed %d commands!", len(ccs)), nil
 	}),
+}
+
+type CCLimits struct {
+	Limit int
+	CCIDs string
+}
+
+func CCTriggerLimitFinder(ctx context.Context, ccmd *CustomCommand, guildID, userID int64) (*CCLimits, error) {
+	if ccmd.TriggerTypeForm == "none" || ccmd.TriggerTypeForm == "reaction" || ccmd.TriggerTypeForm == "interval_hours" || ccmd.TriggerTypeForm == "interval_minutes" {
+		return nil, nil
+	}
+
+	cmds, err := BotCachedGetCommandsWithMessageTriggers(guildID, ctx)
+	if err != nil {
+		return nil, errors.WrapIf(err, "BotCachedGetCommandsWithMessageTriggers")
+	}
+
+	prefix, err := prfx.GetCommandPrefixRedis(guildID)
+	if err != nil {
+		return nil, errors.WrapIf(err, "GetCommandPrefix")
+	}
+
+	var matched []*TriggeredCC
+	for _, cmd := range cmds {
+		if cmd.TriggerType == 6 {
+			continue
+		}
+
+		gs := bot.State.GetGuild(guildID)
+		ms, _ := bot.GetMember(guildID, common.BotUser.ID)
+
+		if !CmdRunsForUser(cmd, ms) {
+			continue
+		}
+
+		checkmatch := true
+		if ccmd.RequireChannels || ccmd.RequireRoles || ccmd.RequireCategories {
+			//checkmatch = false
+
+			for _, chanl := range ccmd.Channels {
+				cs := gs.GetChannel(chanl)
+				if !CmdRunsInCategory(cmd, cs.ParentID) || !CmdRunsInChannel(cmd, cs.ID) {
+					checkmatch = false
+					continue
+				}
+
+				if common.ContainsInt64Slice(cmd.Channels, chanl) && cmd.ChannelsWhitelistMode {
+					break
+				} else if common.ContainsInt64Slice(cmd.Channels, chanl) && !cmd.ChannelsWhitelistMode {
+					checkmatch = false
+				}
+			}
+
+			for _, role := range ccmd.Roles {
+				if common.ContainsInt64Slice(cmd.Roles, role) && cmd.RolesWhitelistMode {
+					//checkmatch = true
+					break
+				} else if common.ContainsInt64Slice(cmd.Roles, role) && !cmd.RolesWhitelistMode {
+					checkmatch = false
+				}
+			}
+
+			for _, catgr := range ccmd.Categories {
+				if common.ContainsInt64Slice(cmd.Categories, catgr) && cmd.CategoriesWhitelistMode {
+					// checkmatch = true
+					break
+				} else if common.ContainsInt64Slice(cmd.Channels, catgr) && !cmd.CategoriesWhitelistMode {
+					checkmatch = false
+				}
+			}
+
+		}
+
+		if checkmatch {
+			if didMatch, stripped, args := CheckMatch(prefix, cmd, fmt.Sprintf("%s%s %s", prefix, ccmd.Trigger, common.BotUser.Username)); didMatch {
+				matched = append(matched, &TriggeredCC{
+					CC:       cmd,
+					Args:     args,
+					Stripped: stripped,
+				})
+			}
+		}
+	}
+
+	sortTriggeredCCs(matched)
+
+	limit := CCMessageExecLimitNormal
+	if isPremium, _ := premium.IsGuildPremiumCached(guildID); isPremium {
+		limit = CCMessageExecLimitPremium
+	}
+
+	if len(matched) > limit {
+		matched = matched[:limit]
+	}
+
+	var ccIDs string
+	for _, match := range matched {
+		ccIDs = fmt.Sprintf("%s #%d", ccIDs, match.CC.LocalID)
+		if match.CC.LocalID == ccmd.ID {
+			return nil, nil
+		}
+	}
+
+	limiter := CCLimits{
+		Limit: limit,
+		CCIDs: ccIDs,
+	}
+
+	return &limiter, nil
+
 }

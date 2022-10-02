@@ -368,6 +368,26 @@ func handleUpdateCommand(w http.ResponseWriter, r *http.Request) (web.TemplateDa
 	go cplogs.RetryAddEntry(web.NewLogEntryFromContext(r.Context(), panelLogKeyUpdatedCommand, &cplogs.Param{Type: cplogs.ParamTypeInt, Value: dbModel.LocalID}))
 
 	pubsub.EvictCacheSet(cachedCommandsMessage, activeGuild.ID)
+
+	var limiter *CCLimits
+	limiter, _ = CCTriggerLimitFinder(ctx, cmd, activeGuild.ID, templateData["User"].(*discordgo.User).ID)
+
+	if limiter != nil && limiter.Limit > 0 {
+		/*
+			cookie := &http.Cookie{
+
+				// The old cookie name can safely be used after the old format has been phased out (after a day in use)
+				Name:   "customCommands_activeCmdLimits",
+				Value:  strconv.Itoa(limit),
+				MaxAge: 3153600000,
+				Path:   "/",
+			}
+
+			http.SetCookie(w, cookie)
+		*/
+		return templateData.AddAlerts(web.WarningAlert(fmt.Sprintf("BETA™ This trigger may be hitting limit of %d command actions... Conflicting with CCs: %s", limiter.Limit, limiter.CCIDs))), err
+	}
+
 	return templateData, err
 }
 

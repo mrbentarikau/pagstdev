@@ -139,6 +139,7 @@ function navigate(url, method, data, updateHistory, maintainScroll, alertsOnly, 
 
 function showAlerts(alertsJson) {
 	var alerts = JSON.parse(alertsJson);
+	console.log("KRAAKA "+alerts)
 	if (!alerts) return;
 
 	const stack_bar_top = { "dir1": "down", "dir2": "right", "push": "top", "spacing1": 0, "spacing2": 0 };
@@ -165,6 +166,20 @@ function showAlerts(alertsJson) {
 				title: alert.Message,
 				text: "Read the docs and contact support if you don't know what went wrong.",
 				type: 'error',
+				addclass: 'stack-bar-top click-2-close',
+				stack: stack_bar_top,
+				width: "100%",
+				hide: false,
+				buttons: {
+					closer: false,
+					sticker: false
+				}
+			});
+		} else if (alert.Style === "warning") {
+			notice = new PNotify({
+				title: alert.Message,
+				text: "Command still saved.",
+				type: 'warning',
 				addclass: 'stack-bar-top click-2-close',
 				stack: stack_bar_top,
 				width: "100%",
