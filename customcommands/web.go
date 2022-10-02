@@ -385,7 +385,7 @@ func handleUpdateCommand(w http.ResponseWriter, r *http.Request) (web.TemplateDa
 
 			http.SetCookie(w, cookie)
 		*/
-		return templateData.AddAlerts(web.WarningAlert(fmt.Sprintf("BETA™ This trigger may be hitting limit of %d command actions... Conflicting with CCs: %s", limiter.Limit, limiter.CCIDs))), err
+		return templateData.AddAlerts(web.CCLimitWarningAlert(fmt.Sprintf("BETA™ This trigger may be hitting limit of %d command actions... Conflicting with CCs: %s", limiter.Limit, limiter.CCIDs))), err
 	}
 
 	return templateData, err

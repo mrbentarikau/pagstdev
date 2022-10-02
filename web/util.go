@@ -209,15 +209,23 @@ type Alert struct {
 }
 
 const (
-	AlertDanger  = "danger"
-	AlertSuccess = "success"
-	AlertInfo    = "info"
-	AlertWarning = "warning"
+	AlertDanger    = "danger"
+	AlertSuccess   = "success"
+	AlertInfo      = "info"
+	AlertWarning   = "warning"
+	AlertCCWarning = "warning-cc-limit"
 )
 
 func ErrorAlert(args ...interface{}) *Alert {
 	return &Alert{
 		Style:   AlertDanger,
+		Message: fmt.Sprint(args...),
+	}
+}
+
+func CCLimitWarningAlert(args ...interface{}) *Alert {
+	return &Alert{
+		Style:   AlertCCWarning,
 		Message: fmt.Sprint(args...),
 	}
 }

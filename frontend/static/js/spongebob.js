@@ -174,11 +174,11 @@ function showAlerts(alertsJson) {
 					sticker: false
 				}
 			});
-		} else if (alert.Style === "warning") {
+		} else if (alert.Style === "warning-cc-limit") {
 			notice = new PNotify({
 				title: alert.Message,
 				text: "This warning does not affect saves.",
-				type: 'warning',
+				type: 'warning-cc-limit',
 				addclass: 'stack-bar-top click-2-close',
 				stack: stack_bar_top,
 				width: "100%",

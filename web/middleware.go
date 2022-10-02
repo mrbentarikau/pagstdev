@@ -669,7 +669,7 @@ func ControllerPostHandler(mainHandler ControllerHandlerFunc, extraHandler http.
 			if v.Style == AlertDanger {
 				hasErrorAlert = true
 				break
-			} else if v.Style == AlertWarning {
+			} else if v.Style == AlertCCWarning {
 				hasWarningAlert = true
 				break
 			}
