@@ -178,7 +178,7 @@ function showAlerts(alertsJson) {
 		} else if (alert.Style === "warning") {
 			notice = new PNotify({
 				title: alert.Message,
-				text: "Command still saved.",
+				text: "This warning does not affect saves.",
 				type: 'warning',
 				addclass: 'stack-bar-top click-2-close',
 				stack: stack_bar_top,
