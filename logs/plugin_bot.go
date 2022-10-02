@@ -110,6 +110,12 @@ var cmdWhois = &commands.YAGCommand{
 
 		if parsed.Args[0].Value != nil {
 			member = parsed.Args[0].Value.(*dstate.MemberState)
+			if parsed.SlashCommandTriggerData != nil {
+				if sm := bot.State.GetMember(parsed.GuildData.GS.ID, member.User.ID); sm != nil {
+					// Prefer state member over the one provided in the message, since it may have presence data
+					member = sm
+				}
+			}
 		} else {
 			member = parsed.GuildData.MS
 			if sm := bot.State.GetMember(parsed.GuildData.GS.ID, member.User.ID); sm != nil {

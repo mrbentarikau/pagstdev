@@ -886,27 +886,6 @@ func sortTriggeredCCs(ccs []*TriggeredCC) {
 	})
 }
 
-func sortLimitedCCs(ccs []*TriggeredCC) {
-	sort.Slice(ccs, func(i, j int) bool {
-		a := ccs[i]
-		b := ccs[j]
-
-		if a.CC.TriggerType == b.CC.TriggerType {
-			return a.CC.LocalID < b.CC.LocalID
-		}
-
-		if a.CC.TriggerType == int(CommandTriggerRegex) {
-			return true
-		}
-
-		if b.CC.TriggerType == int(CommandTriggerRegex) {
-			return true
-		}
-
-		return a.CC.LocalID < b.CC.LocalID
-	})
-}
-
 func ExecuteCustomCommandFromMessage(gs *dstate.GuildSet, cmd *models.CustomCommand, member *dstate.MemberState, cs *dstate.ChannelState, cmdArgs []string, stripped string, m *discordgo.Message) error {
 	tmplCtx := templates.NewContext(gs, cs, member)
 	tmplCtx.Msg = m
