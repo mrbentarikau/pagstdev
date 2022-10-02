@@ -1381,8 +1381,9 @@ var cmdFixCommands = &commands.YAGCommand{
 }
 
 type CCLimits struct {
-	Limit int
-	CCIDs string
+	LenMatched int
+	Limit      int
+	CCIDs      string
 }
 
 func CCTriggerLimitFinder(ctx context.Context, ccmd *CustomCommand, guildID, userID int64) (*CCLimits, error) {
@@ -1426,6 +1427,7 @@ func CCTriggerLimitFinder(ctx context.Context, ccmd *CustomCommand, guildID, use
 				if !common.ContainsInt64Slice(cmd.R.Group.IgnoreCategories, groupIgnCatgr) {
 					checkmatch = false
 					continue
+					//break
 				}
 			}
 
@@ -1433,6 +1435,7 @@ func CCTriggerLimitFinder(ctx context.Context, ccmd *CustomCommand, guildID, use
 				if !common.ContainsInt64Slice(cmd.R.Group.WhitelistCategories, groupWLCatgr) {
 					checkmatch = false
 					continue
+					//break
 				}
 			}
 		}
@@ -1456,7 +1459,6 @@ func CCTriggerLimitFinder(ctx context.Context, ccmd *CustomCommand, guildID, use
 
 			for _, role := range ccmd.Roles {
 				if common.ContainsInt64Slice(cmd.Roles, role) && cmd.RolesWhitelistMode {
-					//checkmatch = true
 					break
 				} else if common.ContainsInt64Slice(cmd.Roles, role) && !cmd.RolesWhitelistMode {
 					checkmatch = false
@@ -1465,7 +1467,6 @@ func CCTriggerLimitFinder(ctx context.Context, ccmd *CustomCommand, guildID, use
 
 			for _, catgr := range ccmd.Categories {
 				if common.ContainsInt64Slice(cmd.Categories, catgr) && cmd.CategoriesWhitelistMode {
-					// checkmatch = true
 					break
 				} else if common.ContainsInt64Slice(cmd.Channels, catgr) && !cmd.CategoriesWhitelistMode {
 					checkmatch = false
@@ -1505,8 +1506,9 @@ func CCTriggerLimitFinder(ctx context.Context, ccmd *CustomCommand, guildID, use
 	}
 
 	limiter := CCLimits{
-		Limit: limit,
-		CCIDs: ccIDs,
+		LenMatched: len(matched),
+		Limit:      limit,
+		CCIDs:      ccIDs,
 	}
 
 	return &limiter, nil

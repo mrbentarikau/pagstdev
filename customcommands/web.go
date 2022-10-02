@@ -372,7 +372,7 @@ func handleUpdateCommand(w http.ResponseWriter, r *http.Request) (web.TemplateDa
 	var limiter *CCLimits
 	limiter, _ = CCTriggerLimitFinder(ctx, cmd, activeGuild.ID, templateData["User"].(*discordgo.User).ID)
 
-	if limiter != nil && limiter.Limit > 0 {
+	if limiter != nil && limiter.LenMatched == limiter.Limit {
 		/*
 			cookie := &http.Cookie{
 
