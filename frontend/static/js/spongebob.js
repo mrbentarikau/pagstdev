@@ -139,7 +139,6 @@ function navigate(url, method, data, updateHistory, maintainScroll, alertsOnly, 
 
 function showAlerts(alertsJson) {
 	var alerts = JSON.parse(alertsJson);
-	console.log("KRAAKA "+alerts)
 	if (!alerts) return;
 
 	const stack_bar_top = { "dir1": "down", "dir2": "right", "push": "top", "spacing1": 0, "spacing2": 0 };
