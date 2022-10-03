@@ -1015,7 +1015,7 @@ func randFloat(args ...interface{}) (float64, error) {
 		min = ToFloat64(args[0])
 		max = ToFloat64(args[1])
 	} else if len(args) == 1 {
-		max = ToFloat64(args[0])
+		max = tmplAbs(args[0])
 	}
 	diff := max - min
 	if diff <= 0 {
@@ -1033,7 +1033,7 @@ func randInt(args ...interface{}) (int, error) {
 		min = ToInt64(args[0])
 		max = ToInt64(args[1])
 	} else if len(args) == 1 {
-		max = ToInt64(args[0])
+		max = ToInt64(tmplAbs(args[0]))
 	}
 	diff := max - min
 	if diff <= 0 {
@@ -1171,10 +1171,19 @@ func castToStringSlice(rv reflect.Value) ([]string, bool) {
 	return ret, true
 }
 
-func sequence(start, stop int) ([]int, error) {
+func sequence(args ...interface{}) ([]int, error) {
+	start := int(0)
+	stop := int(10)
 
 	if stop < start {
 		return nil, errors.New("stop is less than start?")
+	}
+
+	if len(args) >= 2 {
+		start = tmplToInt(args[0])
+		stop = tmplToInt(args[1])
+	} else if len(args) == 1 {
+		stop = tmplToInt(tmplAbs(args[0]))
 	}
 
 	if stop-start > 100000 {
