@@ -1195,7 +1195,6 @@ func sequence(args ...interface{}) ([]int, error) {
 	}
 
 	out := make([]int, stop-start)
-	fmt.Println("KRAAKA", stop, start)
 	ri := 0
 	for i := start; i < stop; i++ {
 		out[ri] = i
