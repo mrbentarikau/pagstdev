@@ -1183,7 +1183,11 @@ func sequence(args ...interface{}) ([]int, error) {
 		start = tmplToInt(args[0])
 		stop = tmplToInt(args[1])
 	} else if len(args) == 1 {
-		stop = tmplToInt(tmplAbs(args[0]))
+		stop = tmplToInt(args[0])
+		if stop < 0 {
+			start = stop
+			stop = int(0)
+		}
 	}
 
 	if stop-start > 100000 {
@@ -1191,7 +1195,7 @@ func sequence(args ...interface{}) ([]int, error) {
 	}
 
 	out := make([]int, stop-start)
-
+	fmt.Println("KRAAKA", stop, start)
 	ri := 0
 	for i := start; i < stop; i++ {
 		out[ri] = i
