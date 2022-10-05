@@ -1,4 +1,4 @@
-package specialserver
+package specialservers
 
 import (
 	"fmt"
@@ -14,7 +14,7 @@ import (
 )
 
 func Commands() *dcmd.Container {
-	container, _ := commands.CommandSystem.Root.Sub("specialserver")
+	container, _ := commands.CommandSystem.Root.Sub("specialserver", "specialservers")
 	container.Description = "utility for adding special permissions to server/guild"
 	container.AddMidlewares(util.RequireBotAdmin)
 	container.AddCommand(addServer, addServer.GetTrigger())

@@ -51,7 +51,7 @@ import (
 	"github.com/botlabs-gg/yagpdb/stdcommands/setstatus"
 	"github.com/botlabs-gg/yagpdb/stdcommands/simpleembed"
 	"github.com/botlabs-gg/yagpdb/stdcommands/sleep"
-	"github.com/botlabs-gg/yagpdb/stdcommands/specialserver"
+	"github.com/botlabs-gg/yagpdb/stdcommands/specialservers"
 	"github.com/botlabs-gg/yagpdb/stdcommands/statedbg"
 	"github.com/botlabs-gg/yagpdb/stdcommands/stateinfo"
 	"github.com/botlabs-gg/yagpdb/stdcommands/thanks"
@@ -157,7 +157,7 @@ func (p *Plugin) AddCommands() {
 		voidservers.Command,
 	)
 
-	specialserver.Commands()
+	specialservers.Commands()
 	statedbg.Commands()
 
 	if !owldictionary.ShouldRegister() {
