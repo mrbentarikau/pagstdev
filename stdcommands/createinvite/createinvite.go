@@ -4,9 +4,9 @@ import (
 	"github.com/botlabs-gg/yagpdb/bot"
 	"github.com/botlabs-gg/yagpdb/commands"
 	"github.com/botlabs-gg/yagpdb/common"
-	"github.com/botlabs-gg/yagpdb/stdcommands/util"
 	"github.com/botlabs-gg/yagpdb/lib/dcmd"
 	"github.com/botlabs-gg/yagpdb/lib/discordgo"
+	"github.com/botlabs-gg/yagpdb/stdcommands/util"
 )
 
 var Command = &commands.YAGCommand{
@@ -14,7 +14,7 @@ var Command = &commands.YAGCommand{
 	CmdCategory:          commands.CategoryDebug,
 	HideFromCommandsPage: true,
 	Name:                 "createinvite",
-	Description:          "Maintenance command, creates a invite for the specified server",
+	Description:          "Maintenance command, creates an invite for the specified server",
 	HideFromHelp:         true,
 	RequiredArgs:         1,
 	Arguments: []*dcmd.ArgDef{

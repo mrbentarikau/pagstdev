@@ -5,7 +5,6 @@ import (
 	"github.com/botlabs-gg/yagpdb/bot/eventsystem"
 	"github.com/botlabs-gg/yagpdb/commands"
 	"github.com/botlabs-gg/yagpdb/common"
-	"github.com/botlabs-gg/yagpdb/stdcommands/addspecialserver"
 	"github.com/botlabs-gg/yagpdb/stdcommands/advice"
 	"github.com/botlabs-gg/yagpdb/stdcommands/allocstat"
 	"github.com/botlabs-gg/yagpdb/stdcommands/antifish"
@@ -48,11 +47,11 @@ import (
 	"github.com/botlabs-gg/yagpdb/stdcommands/ping"
 	"github.com/botlabs-gg/yagpdb/stdcommands/poll"
 	"github.com/botlabs-gg/yagpdb/stdcommands/quack"
-	"github.com/botlabs-gg/yagpdb/stdcommands/removespecialserver"
 	"github.com/botlabs-gg/yagpdb/stdcommands/roll"
 	"github.com/botlabs-gg/yagpdb/stdcommands/setstatus"
 	"github.com/botlabs-gg/yagpdb/stdcommands/simpleembed"
 	"github.com/botlabs-gg/yagpdb/stdcommands/sleep"
+	"github.com/botlabs-gg/yagpdb/stdcommands/specialserver"
 	"github.com/botlabs-gg/yagpdb/stdcommands/statedbg"
 	"github.com/botlabs-gg/yagpdb/stdcommands/stateinfo"
 	"github.com/botlabs-gg/yagpdb/stdcommands/thanks"
@@ -131,7 +130,6 @@ func (p *Plugin) AddCommands() {
 
 		// Maintenance
 		antifish.Command,
-		addspecialserver.Command,
 		allocstat.Command,
 		banserver.Command,
 		banserverowner.Command,
@@ -148,7 +146,6 @@ func (p *Plugin) AddCommands() {
 		listflags.Command,
 		memstats.Command,
 		pagstatus.Command,
-		removespecialserver.Command,
 		setstatus.Command,
 		sleep.Command,
 		stateinfo.Command,
@@ -160,6 +157,7 @@ func (p *Plugin) AddCommands() {
 		voidservers.Command,
 	)
 
+	specialserver.Commands()
 	statedbg.Commands()
 
 	if !owldictionary.ShouldRegister() {
