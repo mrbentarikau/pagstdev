@@ -16,8 +16,13 @@ import (
 	"github.com/botlabs-gg/yagpdb/lib/discordgo"
 	"github.com/botlabs-gg/yagpdb/lib/dstate"
 	"github.com/botlabs-gg/yagpdb/safebrowsing"
+
+	"golang.org/x/text/runes"
+	"golang.org/x/text/transform"
+	"golang.org/x/text/unicode/norm"
 )
 
+var tChain = transform.Chain(norm.NFD, runes.Remove(runes.In(unicode.Mn)), norm.NFC)
 var forwardSlashReplacer = strings.NewReplacer("\\", "")
 
 /////////////////////////////////////////////////////////////
@@ -146,7 +151,8 @@ type WordListTrigger struct {
 	Blacklist bool
 }
 type WorldListTriggerData struct {
-	ListID int64
+	ListID           int64
+	NormalizeUnicode bool
 }
 
 func (wl *WordListTrigger) Kind() RulePartType {
@@ -180,6 +186,12 @@ func (wl *WordListTrigger) UserSettings() []*SettingDef {
 			Key:  "ListID",
 			Kind: SettingTypeList,
 		},
+		{
+			Name:    "Unicode normalization",
+			Key:     "NormalizeUnicode",
+			Kind:    SettingTypeBool,
+			Default: false,
+		},
 	}
 }
 
@@ -194,6 +206,10 @@ func (wl *WordListTrigger) CheckMessage(triggerCtx *TriggerContext, cs *dstate.C
 	messageFields := strings.Fields(mdStripped)
 
 	for _, mf := range messageFields {
+		if dataCast.NormalizeUnicode {
+			mf, _, _ = transform.String(tChain, mf)
+		}
+
 		contained := false
 		for _, w := range list.Content {
 			if strings.EqualFold(mf, w) {
@@ -1200,8 +1216,9 @@ type NameWordlistTrigger struct {
 	Blacklist bool
 }
 type NameWordlistTriggerData struct {
-	ListID          int64
-	ExcludeUsername bool
+	ListID           int64
+	ExcludeUsername  bool
+	NormalizeUnicode bool
 }
 
 func (nwl *NameWordlistTrigger) Kind() RulePartType {
@@ -1241,6 +1258,12 @@ func (nwl *NameWordlistTrigger) UserSettings() []*SettingDef {
 			Kind:    SettingTypeBool,
 			Default: false,
 		},
+		{
+			Name:    "Unicode normalization",
+			Key:     "NormalizeUnicode",
+			Kind:    SettingTypeBool,
+			Default: false,
+		},
 	}
 }
 
@@ -1263,6 +1286,10 @@ func (nwl *NameWordlistTrigger) CheckName(t *TriggerContext) (bool, error) {
 
 	var contained bool
 	for _, mf := range fields {
+		if dataCast.NormalizeUnicode {
+			mf, _, _ = transform.String(tChain, mf)
+		}
+
 		for _, w := range list.Content {
 			if strings.EqualFold(mf, w) {
 				if nwl.Blacklist {
@@ -1347,7 +1374,8 @@ type UsernameWordlistTrigger struct {
 	Blacklist bool
 }
 type UsernameWorldlistData struct {
-	ListID int64
+	ListID           int64
+	NormalizeUnicode bool
 }
 
 func (uwl *UsernameWordlistTrigger) Kind() RulePartType {
@@ -1381,6 +1409,12 @@ func (uwl *UsernameWordlistTrigger) UserSettings() []*SettingDef {
 			Key:  "ListID",
 			Kind: SettingTypeList,
 		},
+		{
+			Name:    "Unicode normalization",
+			Key:     "NormalizeUnicode",
+			Kind:    SettingTypeBool,
+			Default: false,
+		},
 	}
 }
 
@@ -1395,6 +1429,10 @@ func (uwl *UsernameWordlistTrigger) CheckUsername(t *TriggerContext) (bool, erro
 	fields := strings.Fields(PrepareMessageForWordCheck(t.MS.User.Username))
 
 	for _, mf := range fields {
+		if dataCast.NormalizeUnicode {
+			mf, _, _ = transform.String(tChain, mf)
+		}
+
 		contained := false
 		for _, w := range list.Content {
 			if strings.EqualFold(mf, w) {
