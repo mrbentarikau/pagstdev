@@ -28,7 +28,8 @@ var forwardSlashReplacer = strings.NewReplacer("\\", "")
 /////////////////////////////////////////////////////////////
 
 type BaseRegexTriggerData struct {
-	Regex string `valid:",1,250"`
+	Regex            string `valid:",1,250"`
+	NormalizeUnicode bool
 }
 
 type BaseRegexTrigger struct {
@@ -51,6 +52,12 @@ func (r BaseRegexTrigger) UserSettings() []*SettingDef {
 			Kind: SettingTypeString,
 			Min:  1,
 			Max:  250,
+		},
+		{
+			Name:    "Unicode normalization",
+			Key:     "NormalizeUnicode",
+			Kind:    SettingTypeBool,
+			Default: false,
 		},
 	}
 }
@@ -1007,7 +1014,13 @@ func (r *MessageRegexTrigger) CheckMessage(triggerCtx *TriggerContext, cs *dstat
 	}
 
 	re := item.Value().(*regexp.Regexp)
-	if re.MatchString(m.Content) {
+
+	mContent := m.Content
+	if dataCast.NormalizeUnicode {
+		mContent, _, _ = transform.String(tChain, mContent)
+	}
+
+	if re.MatchString(mContent) {
 		if r.BaseRegexTrigger.Inverse {
 			return false, nil
 		}
@@ -1124,8 +1137,9 @@ type NameRegexTrigger struct {
 }
 
 type NameRegexTriggerData struct {
-	Regex           string `valid:",1,250"`
-	ExcludeUsername bool
+	Regex            string `valid:",1,250"`
+	ExcludeUsername  bool
+	NormalizeUnicode bool
 }
 
 func (nr NameRegexTrigger) Kind() RulePartType {
@@ -1167,6 +1181,12 @@ func (nr *NameRegexTrigger) UserSettings() []*SettingDef {
 			Kind:    SettingTypeBool,
 			Default: false,
 		},
+		{
+			Name:    "Unicode normalization",
+			Key:     "NormalizeUnicode",
+			Kind:    SettingTypeBool,
+			Default: false,
+		},
 	}
 }
 
@@ -1188,6 +1208,11 @@ func (nr *NameRegexTrigger) CheckName(t *TriggerContext) (bool, error) {
 
 	username := t.MS.User.Username
 	nickname := t.MS.Member.Nick
+
+	if dataCast.NormalizeUnicode {
+		username, _, _ = transform.String(tChain, username)
+		nickname, _, _ = transform.String(tChain, nickname)
+	}
 
 	if dataCast.ExcludeUsername {
 		username = ""
@@ -1351,8 +1376,13 @@ func (r *UsernameRegexTrigger) CheckUsername(t *TriggerContext) (bool, error) {
 		return false, nil
 	}
 
+	username := t.MS.User.Username
+	if dataCast.NormalizeUnicode {
+		username, _, _ = transform.String(tChain, username)
+	}
+
 	re := item.Value().(*regexp.Regexp)
-	if re.MatchString(t.MS.User.Username) {
+	if re.MatchString(username) {
 		if r.BaseRegexTrigger.Inverse {
 			return false, nil
 		}
