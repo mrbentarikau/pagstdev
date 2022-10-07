@@ -6,7 +6,6 @@ require (
 	emperror.dev/errors v0.4.3
 	github.com/AYLIEN/aylien_textapi_go v0.6.0
 	github.com/AlekSi/pointer v1.1.0
-	github.com/KtorZPersonal/go-iso-codes v0.0.0-20160925135154-03678d5d921e
 	github.com/Masterminds/go-fileserver v0.0.0-20150404113552-04d61ae6d130
 	github.com/NYTimes/gziphandler v1.1.1
 	github.com/PuerkitoBio/goquery v1.5.1
@@ -46,6 +45,7 @@ require (
 	github.com/mitchellh/cli v1.1.2
 	github.com/mmcdole/gofeed v1.1.3
 	github.com/natefinch/lumberjack v2.0.0+incompatible
+	github.com/oragono/confusables v0.0.0-20201108231250-4ab98ab61fb1
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.12.1
