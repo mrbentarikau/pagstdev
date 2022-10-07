@@ -1237,10 +1237,10 @@ func CheckMatch(globalPrefix string, cmd *models.CustomCommand, msg string) (mat
 	}
 
 	cmdMatch := "(?m)"
-	if !cmd.TextTriggerCaseSensitive {
+	if !cmd.TextTriggerCaseSensitive && cmd.TriggerType == 0 {
 		cmdMatch += "(?i)"
 	}
-	if !cmd.RegexTriggerCaseSensitive {
+	if !cmd.RegexTriggerCaseSensitive && cmd.TriggerType != 0 {
 		cmdMatch += "(?i)"
 	}
 
@@ -1252,7 +1252,7 @@ func CheckMatch(globalPrefix string, cmd *models.CustomCommand, msg string) (mat
 	case CommandTriggerStartsWith:
 		cmdMatch += `\A` + regexp.QuoteMeta(regexTrigger)
 	case CommandTriggerContains:
-		cmdMatch += `.*` + regexp.QuoteMeta(regexTrigger)
+		cmdMatch += regexp.QuoteMeta(regexTrigger)
 	case CommandTriggerRegex:
 		cmdMatch += regexTrigger
 	case CommandTriggerExact:
@@ -1368,10 +1368,10 @@ type CCLimits struct {
 func CCTriggerLimitFinder(ctx context.Context, ccmdID, guildID, userID int64) (*CCLimits, error) {
 	cc, err := models.CustomCommands(qm.Where("guild_id = ? AND local_id = ?", guildID, ccmdID), qm.Load("Group")).OneG(ctx)
 	if err != nil {
-		return nil, errors.WrapIf(err, "Retrieving full custom command model for limiter")
+		return nil, errors.WrapIf(err, "retrieving full custom command model for limiter")
 	}
 
-	if cc.TriggerType == 10 || cc.TriggerType == 69 || cc.TriggerType == 5 {
+	if cc.TriggerType == 10 || cc.TriggerType == 5 {
 		return nil, nil
 	}
 
@@ -1462,7 +1462,20 @@ func CCTriggerLimitFinder(ctx context.Context, ccmdID, guildID, userID int64) (*
 			}
 
 		} else if checkmatch {
-			if didMatch, _, _ := CheckMatch(prefix, cmd, fmt.Sprintf("%s%s %s", prefix, cc.TextTrigger, common.BotUser.Username)); didMatch {
+			var ccTrigger, ccMsg string
+			if cc.TriggerType == 0 {
+				ccTrigger = cc.TextTrigger
+				ccMsg = fmt.Sprintf("%s%s %s", prefix, ccTrigger, common.BotUser.Username)
+			} else {
+				ccTrigger = cc.RegexTrigger
+				if cc.TriggerType == 4 {
+					ccMsg = ccTrigger
+				} else {
+					ccMsg = fmt.Sprintf("%s %s", ccTrigger, common.BotUser.Username)
+				}
+			}
+
+			if didMatch, _, _ := CheckMatch(prefix, cmd, ccMsg); didMatch {
 				matched = append(matched, &TriggeredCC{
 					CC: cmd,
 				})
