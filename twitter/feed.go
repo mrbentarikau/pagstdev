@@ -257,8 +257,11 @@ func createTweetEmbed(tweet *twitter.Tweet) *discordgo.MessageEmbed {
 			URL:     "https://twitter.com/" + tweet.User.ScreenName + "/status/" + tweet.IDStr,
 		},
 		Description: html.UnescapeString(text),
-		Timestamp:   timeStr,
-		Color:       0x38A1F3,
+		Footer: &discordgo.MessageEmbedFooter{
+			IconURL: "https://abs.twimg.com/icons/apple-touch-icon-192x192.png",
+			Text:    "Twitter"},
+		Timestamp: timeStr,
+		Color:     0x38A1F3,
 	}
 
 	if tweet.Entities != nil && len(tweet.Entities.Media) > 0 {
