@@ -1276,6 +1276,11 @@ func CheckMatch(globalPrefix string, cmd *models.CustomCommand, msg string) (mat
 
 	re := item.Value().(*regexp.Regexp)
 
+	if cmd.TriggerType != 0 && cmd.NormalizeUnicode {
+		msg = common.NormalizeAccents(msg)
+		msg = common.NormalizeConfusables(msg)
+	}
+
 	idx := re.FindStringIndex(msg)
 	if idx == nil {
 		return false, "", nil

@@ -161,8 +161,9 @@ type CustomCommand struct {
 
 	GroupID int64
 
-	ShowErrors     bool `schema:"show_errors"`
-	ThreadsEnabled bool `schema:"threads_enabled"`
+	ShowErrors       bool `schema:"show_errors"`
+	ThreadsEnabled   bool `schema:"threads_enabled"`
+	NormalizeUnicode bool `json:"normalize_unicode" schema:"normalize_unicode"`
 }
 
 var _ web.CustomValidator = (*CustomCommand)(nil)
@@ -259,7 +260,8 @@ func (cc *CustomCommand) ToDBModel() *models.CustomCommand {
 
 		ShowErrors: cc.ShowErrors,
 
-		ThreadsEnabled: cc.ThreadsEnabled,
+		ThreadsEnabled:   cc.ThreadsEnabled,
+		NormalizeUnicode: cc.NormalizeUnicode,
 
 		DateUpdated: null.TimeFrom(time.Now()),
 	}

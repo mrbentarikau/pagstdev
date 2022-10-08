@@ -16,12 +16,9 @@ import (
 	"github.com/botlabs-gg/yagpdb/lib/discordgo"
 	"github.com/botlabs-gg/yagpdb/lib/dstate"
 	"github.com/botlabs-gg/yagpdb/safebrowsing"
-
 	"golang.org/x/text/runes"
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/norm"
-
-	"github.com/oragono/confusables"
 )
 
 var tChain = transform.Chain(norm.NFD, runes.Remove(runes.In(unicode.Mn)), norm.NFC)
@@ -56,7 +53,7 @@ func (r BaseRegexTrigger) UserSettings() []*SettingDef {
 			Max:  250,
 		},
 		{
-			Name:    "Normalize Unicode & confusables",
+			Name:    "Normalize Unicode accents & confusables",
 			Key:     "NormalizeUnicode",
 			Kind:    SettingTypeBool,
 			Default: false,
@@ -196,7 +193,7 @@ func (wl *WordListTrigger) UserSettings() []*SettingDef {
 			Kind: SettingTypeList,
 		},
 		{
-			Name:    "Normalize Unicode & confusables",
+			Name:    "Normalize Unicode accents & confusables",
 			Key:     "NormalizeUnicode",
 			Kind:    SettingTypeBool,
 			Default: false,
@@ -216,8 +213,8 @@ func (wl *WordListTrigger) CheckMessage(triggerCtx *TriggerContext, cs *dstate.C
 
 	for _, mf := range messageFields {
 		if dataCast.NormalizeUnicode {
-			mf, _, _ = transform.String(tChain, mf)
-			mf = confusables.SkeletonTweaked(mf)
+			mf = common.NormalizeAccents(mf)
+			mf = common.NormalizeConfusables(mf)
 		}
 
 		contained := false
@@ -1020,8 +1017,8 @@ func (r *MessageRegexTrigger) CheckMessage(triggerCtx *TriggerContext, cs *dstat
 
 	mContent := m.Content
 	if dataCast.NormalizeUnicode {
-		mContent, _, _ = transform.String(tChain, mContent)
-		mContent = confusables.SkeletonTweaked(mContent)
+		mContent = common.NormalizeAccents(mContent)
+		mContent = common.NormalizeConfusables(mContent)
 	}
 
 	if re.MatchString(mContent) {
@@ -1186,7 +1183,7 @@ func (nr *NameRegexTrigger) UserSettings() []*SettingDef {
 			Default: false,
 		},
 		{
-			Name:    "Normalize Unicode & confusables",
+			Name:    "Normalize Unicode accents & confusables",
 			Key:     "NormalizeUnicode",
 			Kind:    SettingTypeBool,
 			Default: false,
@@ -1214,10 +1211,10 @@ func (nr *NameRegexTrigger) CheckName(t *TriggerContext) (bool, error) {
 	nickname := t.MS.Member.Nick
 
 	if dataCast.NormalizeUnicode {
-		username, _, _ = transform.String(tChain, username)
-		nickname, _, _ = transform.String(tChain, nickname)
-		username = confusables.SkeletonTweaked(username)
-		username = confusables.SkeletonTweaked(nickname)
+		username = common.NormalizeAccents(username)
+		nickname = common.NormalizeAccents(nickname)
+		username = common.NormalizeConfusables(username)
+		nickname = common.NormalizeConfusables(nickname)
 	}
 
 	if dataCast.ExcludeUsername {
@@ -1290,7 +1287,7 @@ func (nwl *NameWordlistTrigger) UserSettings() []*SettingDef {
 			Default: false,
 		},
 		{
-			Name:    "Normalize Unicode & confusables",
+			Name:    "Normalize Unicode accents & confusables",
 			Key:     "NormalizeUnicode",
 			Kind:    SettingTypeBool,
 			Default: false,
@@ -1318,8 +1315,8 @@ func (nwl *NameWordlistTrigger) CheckName(t *TriggerContext) (bool, error) {
 	var contained bool
 	for _, mf := range fields {
 		if dataCast.NormalizeUnicode {
-			mf, _, _ = transform.String(tChain, mf)
-			mf = confusables.SkeletonTweaked(mf)
+			mf = common.NormalizeAccents(mf)
+			mf = common.NormalizeConfusables(mf)
 		}
 
 		for _, w := range list.Content {
@@ -1385,8 +1382,8 @@ func (r *UsernameRegexTrigger) CheckUsername(t *TriggerContext) (bool, error) {
 
 	username := t.MS.User.Username
 	if dataCast.NormalizeUnicode {
-		username, _, _ = transform.String(tChain, username)
-		username = confusables.SkeletonTweaked(username)
+		username = common.NormalizeAccents(username)
+		username = common.NormalizeConfusables(username)
 	}
 
 	re := item.Value().(*regexp.Regexp)
@@ -1448,7 +1445,7 @@ func (uwl *UsernameWordlistTrigger) UserSettings() []*SettingDef {
 			Kind: SettingTypeList,
 		},
 		{
-			Name:    "Normalize Unicode & confusables",
+			Name:    "Normalize Unicode accents & confusables",
 			Key:     "NormalizeUnicode",
 			Kind:    SettingTypeBool,
 			Default: false,
@@ -1468,8 +1465,8 @@ func (uwl *UsernameWordlistTrigger) CheckUsername(t *TriggerContext) (bool, erro
 
 	for _, mf := range fields {
 		if dataCast.NormalizeUnicode {
-			mf, _, _ = transform.String(tChain, mf)
-			mf = confusables.SkeletonTweaked(mf)
+			mf = common.NormalizeAccents(mf)
+			mf = common.NormalizeConfusables(mf)
 		}
 
 		contained := false

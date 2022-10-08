@@ -162,14 +162,14 @@
                                     <div class="col-sm-12">
                                         <div class="form-group">
                                             <label>Trigger (<span class="trigger-length-counter">{{toRune .CC.TextTrigger|len}}</span>/256)</label>
-                                             <div class="input-group mb-2">
+                                            <div class="input-group mb-2">
                                                 <div class="input-group-prepend" id="command-trigger-prepended-prefix">
                                                     <div class="input-group-text">{{.CommandPrefix}}</div>
                                                 </div>
                                                 <input type="text" class="pagst-trigger form-control" name="trigger" placeholder="void"
                                                 value="{{.CC.TextTrigger}}" oninput="onTriggerChanged(this)">
                                             </div>
-                                            {{checkbox "case_sensitive" "case_sensitive" "Case Sensitive?" .CC.TextTriggerCaseSensitive}}
+                                            {{checkbox "case_sensitive" "case_sensitive" "Case Sensitive" .CC.TextTriggerCaseSensitive}}
                                         </div>
                                     </div>
                                 </div>
@@ -181,9 +181,17 @@
                                             <label>Trigger (<span class="trigger-length-counter">{{or (toRune .CC.RegexTrigger|len) (toRune .CC.TextTrigger|len)}}</span>/256)</label>
                                             <input type="text" class="pagst-trigger form-control" name="regex_trigger" placeholder="void"
                                                 value="{{or .CC.RegexTrigger .CC.TextTrigger}}" oninput="onTriggerChanged(this)">
-
-                                            {{checkbox "regex_case_sensitive" "regex_case_sensitive" "Case Sensitive?" .CC.RegexTriggerCaseSensitive}}
                                         </div>
+                                        <table class="mb-3">
+                                            <tr>
+                                                <td style="padding-right:42px">
+                                                    {{checkbox "regex_case_sensitive" "regex_case_sensitive" "Regex Case Sensitive" .CC.RegexTriggerCaseSensitive}}
+                                                </td>
+                                                <td>
+                                                    {{checkbox "normalize_unicode" "normalize_unicode" "Normalize Unicode Accents & Confusables" .CC.NormalizeUnicode}}
+                                                </td>
+                                            </tr>
+                                        </table>
                                     </div>
                                 </div>
                             </div>

@@ -1166,6 +1166,23 @@ func castToStringSlice(rv reflect.Value) ([]string, bool) {
 	return ret, true
 }
 
+func tmplNormalizeAccents(arg interface{}) string {
+	msg := ToString(arg)
+	return common.NormalizeAccents(msg)
+}
+
+func tmplNormalizeConfusables(arg interface{}) string {
+	msg := ToString(arg)
+	return common.NormalizeConfusables(msg)
+}
+
+func tmplReplaceEmojis(msg, repl string) string {
+	if common.ContainsEmoji(msg) {
+		msg = common.ReplaceEmojis(msg, repl)
+	}
+	return msg
+}
+
 func sequence(args ...interface{}) ([]int, error) {
 	start := int(0)
 	stop := int(10)

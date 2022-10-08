@@ -45,23 +45,25 @@ var (
 		"toString":          ToString, // don't ask why we have 2 of these
 
 		// string manipulation
-		"hasPrefix":   strings.HasPrefix,
-		"hasSuffix":   strings.HasSuffix,
-		"joinStr":     joinStrings,
-		"lower":       strings.ToLower,
-		"print":       withOutputLimit(fmt.Sprint, MaxStringLength),
-		"println":     withOutputLimit(fmt.Sprintln, MaxStringLength),
-		"printf":      withOutputLimitf(fmt.Sprintf, MaxStringLength),
-		"slice":       slice,
-		"split":       strings.Split,
-		"title":       cases.Title(language.Und).String,
-		"trim":        trimString(""),
-		"trimLeft":    trimString("left"),
-		"trimRight":   trimString("right"),
-		"trimSpace":   strings.TrimSpace,
-		"upper":       strings.ToUpper,
-		"urlescape":   url.PathEscape,
-		"urlunescape": url.PathUnescape,
+		"hasPrefix":            strings.HasPrefix,
+		"hasSuffix":            strings.HasSuffix,
+		"joinStr":              joinStrings,
+		"lower":                strings.ToLower,
+		"normalizeAccents":     tmplNormalizeAccents,
+		"normalizeConfusables": tmplNormalizeConfusables,
+		"print":                withOutputLimit(fmt.Sprint, MaxStringLength),
+		"println":              withOutputLimit(fmt.Sprintln, MaxStringLength),
+		"printf":               withOutputLimitf(fmt.Sprintf, MaxStringLength),
+		"slice":                slice,
+		"split":                strings.Split,
+		"title":                cases.Title(language.Und).String,
+		"trim":                 trimString(""),
+		"trimLeft":             trimString("left"),
+		"trimRight":            trimString("right"),
+		"trimSpace":            strings.TrimSpace,
+		"upper":                strings.ToUpper,
+		"urlescape":            url.PathEscape,
+		"urlunescape":          url.PathUnescape,
 
 		// regexp
 		"reQuoteMeta": regexp.QuoteMeta,
@@ -145,6 +147,7 @@ var (
 		"humanizeTimeSinceDays":   tmplHumanizeTimeSinceDays,
 
 		// testing grounds
+		"replaceEmojis": tmplReplaceEmojis,
 	}
 
 	contextSetupFuncs = []ContextSetupFunc{}
