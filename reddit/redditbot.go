@@ -415,13 +415,20 @@ func (p *PostHandlerImpl) createPostMessage(post *reddit.Link) (string, *discord
 		}
 	}
 
+	var authorInfo *reddit.Account
 	if len(embed.Description) >= 140 {
-		authorInfo, err := p.redditClient.GetUserInfo(post.Author)
+		authorInfo, err = p.redditClient.GetUserInfo(post.Author)
 		if err == nil {
 			authorIcon = html.UnescapeString(authorInfo.IconImg)
 		}
 
 		embed.Author.IconURL = authorIcon
+
+	}
+
+	if len(embed.Description) >= 280 {
+		embed.Author.IconURL = ""
+		embed.Thumbnail = &discordgo.MessageEmbedThumbnail{URL: html.UnescapeString(authorInfo.IconImg)}
 	}
 
 	if post.Ups > 1 {
