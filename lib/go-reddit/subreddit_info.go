@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func (c *Client) GetSubredditAbout(where string) (*SubredditAboutData, error) {
+func (c *Client) GetSubredditInfo(where string) (*SubredditInfoData, error) {
 	url := fmt.Sprintf("%s/r/%s/about.json", baseURL, where)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -21,7 +21,7 @@ func (c *Client) GetSubredditAbout(where string) (*SubredditAboutData, error) {
 	}
 	defer resp.Body.Close()
 
-	var result *SubredditAbout
+	var result *SubredditInfo
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	if err != nil {
 		return nil, err
@@ -30,12 +30,12 @@ func (c *Client) GetSubredditAbout(where string) (*SubredditAboutData, error) {
 	return &result.Data, nil
 }
 
-type SubredditAbout struct {
-	Kind string             `json:"kind"`
-	Data SubredditAboutData `json:"data"`
+type SubredditInfo struct {
+	Kind string            `json:"kind"`
+	Data SubredditInfoData `json:"data"`
 }
 
-type SubredditAboutData struct {
+type SubredditInfoData struct {
 	UserFlairBackgroundColor       interface{}   `json:"user_flair_background_color"`
 	SubmitTextHTML                 string        `json:"submit_text_html"`
 	RestrictPosting                bool          `json:"restrict_posting"`

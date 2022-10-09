@@ -335,16 +335,21 @@ func (p *PostHandlerImpl) createPostMessage(post *reddit.Link) (string, *discord
 		feedSpeed = "Slow feed"
 	}
 
-	var subredditIcon string
-	subredditAbout, err := p.redditClient.GetSubredditAbout(post.Subreddit)
+	var subredditIcon, authorIcon string
+	subredditInfo, err := p.redditClient.GetSubredditInfo(post.Subreddit)
 	if err == nil {
-		subredditIcon = html.UnescapeString(subredditAbout.CommunityIcon)
+		subredditIcon = html.UnescapeString(subredditInfo.CommunityIcon)
+	}
+	authorInfo, err := p.redditClient.GetUserInfo(post.Author)
+	if err == nil {
+		authorIcon = html.UnescapeString(authorInfo.IconImg)
 	}
 
 	embed := &discordgo.MessageEmbed{
 		Author: &discordgo.MessageEmbedAuthor{
-			URL:  "https://reddit.com/u/" + post.Author,
-			Name: fmt.Sprint("u/", post.Author),
+			URL:     "https://reddit.com/u/" + post.Author,
+			Name:    fmt.Sprint("u/", post.Author),
+			IconURL: authorIcon,
 		},
 		Provider: &discordgo.MessageEmbedProvider{
 			Name: "Reddit",
