@@ -45,7 +45,7 @@ func (c *Client) GetUserInfo(username string) (*Account, error) {
 
 	req.Header.Add("User-Agent", c.userAgent)
 
-	resp, err := c.http.Get(url)
+	resp, err := c.http.Do(req)
 	if err != nil {
 		return nil, err
 	}

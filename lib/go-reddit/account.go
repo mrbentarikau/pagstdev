@@ -7,66 +7,6 @@ import (
 )
 
 // Account contains user account information.
-type AccountOld struct {
-	CommentKarma int     `json:"comment_karma"`
-	Created      float32 `json:"created"`
-	CreatedUtc   float32 `json:"created_utc"`
-	Features     struct {
-		ActivityServiceRead    bool `json:"activity_service_read"`
-		ActivityServiceWrite   bool `json:"activity_service_write"`
-		AdblockTest            bool `json:"adblock_test"`
-		AdsAuction             bool `json:"ads_auction"`
-		AdsAutoExtend          bool `json:"ads_auto_extend"`
-		AdsAutoRefund          bool `json:"ads_auto_refund"`
-		AdserverReporting      bool `json:"adserver_reporting"`
-		AdzerkDoNotTrack       bool `json:"adzerk_do_not_track"`
-		AdzerkReporting2       bool `json:"adzerk_reporting_2"`
-		DoNotTrack             bool `json:"do_not_track"`
-		EuCookiePolicy         bool `json:"eu_cookie_policy"`
-		ExpandoEvents          bool `json:"expando_events"`
-		ForceHTTPS             bool `json:"force_https"`
-		GiveHstsGrants         bool `json:"give_hsts_grants"`
-		HTTPSRedirect          bool `json:"https_redirect"`
-		ImageUploads           bool `json:"image_uploads"`
-		ImgurGifConversion     bool `json:"imgur_gif_conversion"`
-		LegacySearchPref       bool `json:"legacy_search_pref"`
-		LiveHappeningNow       bool `json:"live_happening_now"`
-		MoatTracking           bool `json:"moat_tracking"`
-		MobileNativeBanner     bool `json:"mobile_native_banner"`
-		MobileSettings         bool `json:"mobile_settings"`
-		MobileWebTargeting     bool `json:"mobile_web_targeting"`
-		NewLoggedinCachePolicy bool `json:"new_loggedin_cache_policy"`
-		NewReportDialog        bool `json:"new_report_dialog"`
-		OrangeredsAsEmails     bool `json:"orangereds_as_emails"`
-		OutboundClicktracking  bool `json:"outbound_clicktracking"`
-		PauseAds               bool `json:"pause_ads"`
-		PostEmbed              bool `json:"post_embed"`
-		ScreenviewEvents       bool `json:"screenview_events"`
-		ScrollEvents           bool `json:"scroll_events"`
-		ShowNewIcons           bool `json:"show_new_icons"`
-		StickyComments         bool `json:"sticky_comments"`
-		SubredditRules         bool `json:"subreddit_rules"`
-		Timeouts               bool `json:"timeouts"`
-		UpgradeCookies         bool `json:"upgrade_cookies"`
-		YoutubeScraper         bool `json:"youtube_scraper"`
-	} `json:"features"`
-	GoldCreddits            int    `json:"gold_creddits"`
-	GoldExpiration          int    `json:"gold_expiration"`
-	HasVerifiedEmail        bool   `json:"has_verified_email"`
-	HideFromRobots          bool   `json:"hide_from_robots"`
-	ID                      string `json:"id"`
-	InBeta                  bool   `json:"in_beta"`
-	InboxCount              int    `json:"inbox_count"`
-	IsEmployee              bool   `json:"is_employee"`
-	IsGold                  bool   `json:"is_gold"`
-	IsMod                   bool   `json:"is_mod"`
-	IsSuspended             bool   `json:"is_suspended"`
-	LinkKarma               int    `json:"link_karma"`
-	Name                    string `json:"name"`
-	Over18                  bool   `json:"over_18"`
-	SuspensionExpirationUtc int    `json:"suspension_expiration_utc"`
-}
-
 type Account struct {
 	IsEmployee           bool   `json:"is_employee"`
 	HasVisitedNewProfile bool   `json:"has_visited_new_profile"`
@@ -169,6 +109,42 @@ type Account struct {
 		SpezModal                                          bool `json:"spez_modal"`
 		MwebXpromoModalListingClickDailyDismissibleAndroid bool `json:"mweb_xpromo_modal_listing_click_daily_dismissible_android"`
 		ExpensiveCoinsPackage                              bool `json:"expensive_coins_package"`
+		ActivityServiceRead                                bool `json:"activity_service_read"`
+		ActivityServiceWrite                               bool `json:"activity_service_write"`
+		AdblockTest                                        bool `json:"adblock_test"`
+		AdsAuction                                         bool `json:"ads_auction"`
+		AdsAutoExtend                                      bool `json:"ads_auto_extend"`
+		AdsAutoRefund                                      bool `json:"ads_auto_refund"`
+		AdserverReporting                                  bool `json:"adserver_reporting"`
+		AdzerkDoNotTrack                                   bool `json:"adzerk_do_not_track"`
+		AdzerkReporting2                                   bool `json:"adzerk_reporting_2"`
+		EuCookiePolicy                                     bool `json:"eu_cookie_policy"`
+		ExpandoEvents                                      bool `json:"expando_events"`
+		ForceHTTPS                                         bool `json:"force_https"`
+		GiveHstsGrants                                     bool `json:"give_hsts_grants"`
+		HTTPSRedirect                                      bool `json:"https_redirect"`
+		ImageUploads                                       bool `json:"image_uploads"`
+		ImgurGifConversion                                 bool `json:"imgur_gif_conversion"`
+		LegacySearchPref                                   bool `json:"legacy_search_pref"`
+		LiveHappeningNow                                   bool `json:"live_happening_now"`
+		MoatTracking                                       bool `json:"moat_tracking"`
+		MobileNativeBanner                                 bool `json:"mobile_native_banner"`
+		MobileSettings                                     bool `json:"mobile_settings"`
+		MobileWebTargeting                                 bool `json:"mobile_web_targeting"`
+		NewLoggedinCachePolicy                             bool `json:"new_loggedin_cache_policy"`
+		NewReportDialog                                    bool `json:"new_report_dialog"`
+		OrangeredsAsEmails                                 bool `json:"orangereds_as_emails"`
+		OutboundClicktracking                              bool `json:"outbound_clicktracking"`
+		PauseAds                                           bool `json:"pause_ads"`
+		PostEmbed                                          bool `json:"post_embed"`
+		ScreenviewEvents                                   bool `json:"screenview_events"`
+		ScrollEvents                                       bool `json:"scroll_events"`
+		ShowNewIcons                                       bool `json:"show_new_icons"`
+		StickyComments                                     bool `json:"sticky_comments"`
+		SubredditRules                                     bool `json:"subreddit_rules"`
+		Timeouts                                           bool `json:"timeouts"`
+		UpgradeCookies                                     bool `json:"upgrade_cookies"`
+		YoutubeScraper                                     bool `json:"youtube_scraper"`
 	} `json:"features"`
 	CanEditName             bool        `json:"can_edit_name"`
 	IsBlocked               bool        `json:"is_blocked"`
