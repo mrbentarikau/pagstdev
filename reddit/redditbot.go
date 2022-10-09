@@ -341,16 +341,10 @@ func (p *PostHandlerImpl) createPostMessage(post *reddit.Link) (string, *discord
 		subredditIcon = html.UnescapeString(subredditInfo.CommunityIcon)
 	}
 
-	authorInfo, err := p.redditClient.GetUserInfo(post.Author)
-	if err == nil {
-		authorIcon = html.UnescapeString(authorInfo.IconImg)
-	}
-
 	embed := &discordgo.MessageEmbed{
 		Author: &discordgo.MessageEmbedAuthor{
-			URL:     "https://reddit.com/u/" + post.Author,
-			Name:    fmt.Sprint("u/", post.Author),
-			IconURL: authorIcon,
+			URL:  "https://reddit.com/u/" + post.Author,
+			Name: fmt.Sprint("u/", post.Author),
 		},
 		Provider: &discordgo.MessageEmbedProvider{
 			Name: "Reddit",
@@ -377,9 +371,9 @@ func (p *PostHandlerImpl) createPostMessage(post *reddit.Link) (string, *discord
 		embed.Footer.Text += "new self post"
 		postSelftext := re.ReplaceAllString(post.Selftext, " ")
 		if post.Spoiler {
-			embed.Description += "|| " + common.CutStringShort(html.UnescapeString(postSelftext), 250) + " ||"
+			embed.Description += "|| " + common.CutStringShort(html.UnescapeString(postSelftext), 512) + " ||"
 		} else {
-			embed.Description += common.CutStringShort(html.UnescapeString(postSelftext), 250)
+			embed.Description += common.CutStringShort(html.UnescapeString(postSelftext), 512)
 		}
 
 		embed.Color = 0xc3fc7e
@@ -394,9 +388,9 @@ func (p *PostHandlerImpl) createPostMessage(post *reddit.Link) (string, *discord
 			embed.Color = 0xc3fc7e
 			parentSelftext := re.ReplaceAllString(post.CrosspostParentList[0].Selftext, " ")
 			if parent.Spoiler {
-				embed.Description += "|| " + common.CutStringShort(html.UnescapeString(parentSelftext), 250) + " ||"
+				embed.Description += "|| " + common.CutStringShort(html.UnescapeString(parentSelftext), 512) + " ||"
 			} else {
-				embed.Description += common.CutStringShort(html.UnescapeString(parentSelftext), 250)
+				embed.Description += common.CutStringShort(html.UnescapeString(parentSelftext), 512)
 			}
 		} else {
 			// cross post was a link most likely
@@ -419,6 +413,15 @@ func (p *PostHandlerImpl) createPostMessage(post *reddit.Link) (string, *discord
 				URL: post.URL,
 			}
 		}
+	}
+
+	if len(embed.Description) >= 140 {
+		authorInfo, err := p.redditClient.GetUserInfo(post.Author)
+		if err == nil {
+			authorIcon = html.UnescapeString(authorInfo.IconImg)
+		}
+
+		embed.Author.IconURL = authorIcon
 	}
 
 	if post.Ups > 1 {
