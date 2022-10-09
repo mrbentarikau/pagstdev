@@ -86,11 +86,11 @@ func (p *Plugin) runBot() {
 	feedLock.Lock()
 
 	if os.Getenv("YAGPDB_REDDIT_FAST_FEED_DISABLED") == "" {
-		fastFeed = NewPostFetcher(p.redditClient, false, NewPostHandler(false))
+		fastFeed = NewPostFetcher(p.redditClient, false, NewPostHandler(false, p.redditClient))
 		go fastFeed.Run()
 	}
 
-	slowFeed = NewPostFetcher(p.redditClient, true, NewPostHandler(true))
+	slowFeed = NewPostFetcher(p.redditClient, true, NewPostHandler(true, p.redditClient))
 	go slowFeed.Run()
 
 	feedLock.Unlock()
@@ -102,17 +102,19 @@ type KeyFastFeeds string
 var configCache sync.Map
 
 type PostHandlerImpl struct {
-	Slow        bool
-	ratelimiter *Ratelimiter
+	Slow         bool
+	ratelimiter  *Ratelimiter
+	redditClient *reddit.Client
 }
 
-func NewPostHandler(slow bool) PostHandler {
+func NewPostHandler(slow bool, redditClient *reddit.Client) PostHandler {
 	rl := NewRatelimiter()
 	go rl.RunGCLoop()
 
 	return &PostHandlerImpl{
-		Slow:        slow,
-		ratelimiter: rl,
+		Slow:         slow,
+		ratelimiter:  rl,
+		redditClient: redditClient,
 	}
 }
 
@@ -333,6 +335,12 @@ func (p *PostHandlerImpl) createPostMessage(post *reddit.Link) (string, *discord
 		feedSpeed = "Slow feed"
 	}
 
+	var subredditIcon string
+	subredditAbout, err := p.redditClient.GetSubredditAbout(post.Subreddit)
+	if err == nil {
+		subredditIcon = html.UnescapeString(subredditAbout.CommunityIcon)
+	}
+
 	embed := &discordgo.MessageEmbed{
 		Author: &discordgo.MessageEmbedAuthor{
 			URL:  "https://reddit.com/u/" + post.Author,
@@ -345,7 +353,8 @@ func (p *PostHandlerImpl) createPostMessage(post *reddit.Link) (string, *discord
 		//Description: "**" + html.UnescapeString(post.Title) + "**\n",
 		Description: "",
 		Footer: &discordgo.MessageEmbedFooter{
-			Text: feedSpeed + " of type: ",
+			Text:    feedSpeed + " of type: ",
+			IconURL: subredditIcon,
 		},
 		Timestamp: time.Unix(int64(post.CreatedUtc), 0).UTC().Format(time.RFC3339),
 	}
@@ -407,9 +416,9 @@ func (p *PostHandlerImpl) createPostMessage(post *reddit.Link) (string, *discord
 	}
 
 	if post.Ups > 1 {
-		embed.Footer.Text += fmt.Sprintf("\nRating: %d ⬆ %d ⬇\n\nr/%s", post.Ups, post.Downs, post.Subreddit)
+		embed.Footer.Text += fmt.Sprintf("\nRating: %d ⬆ %d ⬇\nr/%s", post.Ups, post.Downs, post.Subreddit)
 	} else {
-		embed.Footer.Text += "\n\nr/" + post.Subreddit
+		embed.Footer.Text += "\nr/" + post.Subreddit
 	}
 
 	return plainMessage, embed
