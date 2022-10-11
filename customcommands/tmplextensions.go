@@ -587,7 +587,7 @@ func tmplDBGet(ctx *templates.Context) interface{} {
 
 		member, err := bot.GetMember(ctx.GS.ID, dbEntry.UserID)
 		if err != nil {
-			ctx.LogEntry().WithError(err).Error("[cc] dbGet failed retrieving member")
+			//	ctx.LogEntry().WithError(err).Error("[cc] dbGet failed retrieving member")
 			return dbEntry, nil
 		}
 
