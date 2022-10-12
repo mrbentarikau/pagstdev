@@ -291,15 +291,15 @@ func (cc *CustomCommand) ToDBModel() *models.CustomCommand {
 	return pqCommand
 }
 
-func CmdRunsInCategory(cc *models.CustomCommand, channel int64) bool {
+func CmdRunsInCategory(cc *models.CustomCommand, parentChannel int64) bool {
 	if cc.GroupID.Valid {
 		// check group restrictions
-		if common.ContainsInt64Slice(cc.R.Group.IgnoreCategories, channel) {
+		if common.ContainsInt64Slice(cc.R.Group.IgnoreCategories, parentChannel) {
 			return false
 		}
 
 		if len(cc.R.Group.WhitelistCategories) > 0 {
-			if !common.ContainsInt64Slice(cc.R.Group.WhitelistCategories, channel) {
+			if !common.ContainsInt64Slice(cc.R.Group.WhitelistCategories, parentChannel) {
 				return false
 			}
 		}
@@ -307,7 +307,7 @@ func CmdRunsInCategory(cc *models.CustomCommand, channel int64) bool {
 
 	// check command specific restrictions
 	for _, v := range cc.Categories {
-		if v == channel {
+		if v == parentChannel {
 			return cc.CategoriesWhitelistMode
 		}
 	}

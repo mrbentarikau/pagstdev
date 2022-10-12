@@ -1371,6 +1371,7 @@ type CCLimits struct {
 }
 
 func CCTriggerLimitFinder(ctx context.Context, ccmdID, guildID, userID int64) (*CCLimits, error) {
+	// retrieving CC to be saved from database
 	cc, err := models.CustomCommands(qm.Where("guild_id = ? AND local_id = ?", guildID, ccmdID), qm.Load("Group")).OneG(ctx)
 	if err != nil {
 		return nil, errors.WrapIf(err, "retrieving full custom command model for limiter")
@@ -1418,7 +1419,8 @@ func CCTriggerLimitFinder(ctx context.Context, ccmdID, guildID, userID int64) (*
 			}
 		}
 
-		if cc.ChannelsWhitelistMode || cc.RolesWhitelistMode || cc.CategoriesWhitelistMode {
+		// if cc.ChannelsWhitelistMode || cc.RolesWhitelistMode || cc.CategoriesWhitelistMode {
+		if len(cc.Channels) > 0 || len(cc.Roles) > 0 || len(cc.Categories) > 0 {
 
 			for _, chanl := range cc.Channels {
 				cs := gs.GetChannel(chanl)
@@ -1443,9 +1445,17 @@ func CCTriggerLimitFinder(ctx context.Context, ccmdID, guildID, userID int64) (*
 			}
 
 			for _, catgr := range cc.Categories {
-				if common.ContainsInt64Slice(cmd.Categories, catgr) && cmd.CategoriesWhitelistMode {
+				var cmdCategories = []int64{}
+				if cmd.GroupID.Valid {
+					cmdCategories = append(cmdCategories, cmd.R.Group.IgnoreCategories...)
+					cmdCategories = append(cmdCategories, cmd.R.Group.WhitelistCategories...)
+				}
+
+				cmdCategories = append(cmdCategories, cmd.Categories...)
+
+				if common.ContainsInt64Slice(cmdCategories, catgr) && cmd.CategoriesWhitelistMode {
 					break
-				} else if common.ContainsInt64Slice(cmd.Channels, catgr) && !cmd.CategoriesWhitelistMode {
+				} else if common.ContainsInt64Slice(cmdCategories, catgr) && !cmd.CategoriesWhitelistMode {
 					checkmatch = false
 				}
 			}
