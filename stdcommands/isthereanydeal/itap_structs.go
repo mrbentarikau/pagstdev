@@ -1,9 +1,10 @@
 package isthereanydeal
 
 type ItadComplete struct {
-	Search   ItadSearch
-	Price    ItadPrice
 	GameInfo ItadGameInfo
+	Price    ItadPrice
+	PriceLow ItadShopPriceLowest
+	Search   ItadSearch
 }
 
 type ItadSearch struct {
@@ -47,6 +48,20 @@ type ItadPlainPriceList struct {
 	Urls struct {
 		Game string `json:"game"`
 	} `json:"urls,omitempty"`
+}
+
+type ItadShopPriceLowest struct {
+	Meta struct {
+		Currency string `json:"currency"`
+	} `json:".meta"`
+	Data    map[string][]ItadPriceLowest  `json:"data,omitempty"`
+	Compact map[string]map[string]float64 `json:"-"`
+}
+
+type ItadPriceLowest struct {
+	Shop  string  `json:"shop"`
+	Price float64 `json:"price"`
+	//Compact map[string]float64 `json:"-"`
 }
 
 type ItadGameInfo struct {

@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/botlabs-gg/yagpdb/bot/paginatedmessages"
 	"github.com/botlabs-gg/yagpdb/commands"
@@ -14,12 +15,10 @@ import (
 )
 
 var (
-	hltbScheme = "https"
-	hltbHost   = "howlongtobeat.com"
-	hltbURL    = fmt.Sprintf("%s://%s/", hltbScheme, hltbHost)
-	//hltbHostPath = "search_results"
+	hltbScheme   = "https"
+	hltbHost     = "howlongtobeat.com"
+	hltbURL      = fmt.Sprintf("%s://%s/", hltbScheme, hltbHost)
 	hltbHostPath = "api/search"
-	//hltbRawQuery = "page=1"
 	hltbRawQuery = ""
 )
 
@@ -94,7 +93,7 @@ var Command = &commands.YAGCommand{
 					return paginatedEmbed, nil
 				})
 			if err != nil {
-				return "Something went wrong", nil
+				return "Something went wrong making the paginated message", nil
 			}
 		} else {
 			return hltbEmbed, nil
@@ -107,8 +106,9 @@ var Command = &commands.YAGCommand{
 func embedCreator(hltbData []HowlongToBeatData, i int, paginated bool) *discordgo.MessageEmbed {
 	embed := &discordgo.MessageEmbed{
 		Author: &discordgo.MessageEmbedAuthor{
-			Name: normaliseTitle(hltbData[i].GameName),
-			URL:  hltbData[i].GameURL,
+			Name:    normaliseTitle(hltbData[i].GameName),
+			URL:     hltbData[i].GameURL,
+			IconURL: "https://howlongtobeat.com/img/icons/favicon-96x96.png",
 		},
 
 		Color: int(rand.Int63n(16777215)),
@@ -116,25 +116,36 @@ func embedCreator(hltbData []HowlongToBeatData, i int, paginated bool) *discordg
 			URL: hltbData[i].ImageURL,
 		},
 	}
+
 	if hltbData[i].CompMain > 0 {
 		embed.Fields = append(embed.Fields,
 			&discordgo.MessageEmbedField{Name: "Main Story", Value: hltbData[i].CompMainHumanize + fmt.Sprintf(" (%.2fh)", hltbData[i].CompMainDur.Hours())})
 	}
+
 	if hltbData[i].CompPlus > 0 {
 		embed.Fields = append(embed.Fields,
 			&discordgo.MessageEmbedField{Name: "Main + Extra", Value: hltbData[i].CompPlusHumanize + fmt.Sprintf(" (%.2fh)", hltbData[i].CompPlusDur.Hours())})
 	}
+
 	if hltbData[i].Comp100 > 0 {
 		embed.Fields = append(embed.Fields,
 			&discordgo.MessageEmbedField{Name: "Completionist", Value: hltbData[i].Comp100Humanize + fmt.Sprintf(" (%.2fh)", hltbData[i].Comp100Dur.Hours())})
 	}
+
 	if hltbData[i].ReviewScore > 0 {
 		embed.Fields = append(embed.Fields,
 			&discordgo.MessageEmbedField{Name: "Review Score", Value: fmt.Sprintf("%d%%", hltbData[i].ReviewScore)})
 	}
+
 	if paginated {
 		embed.Description = fmt.Sprintf("Term similarity: %.1f%%", hltbData[i].JaroWinklerSimilarity*100)
 	}
+
+	if !paginated {
+		embed.Footer = &discordgo.MessageEmbedFooter{Text: "howlongtobeat.com"}
+		embed.Timestamp = time.Now().Format(time.RFC3339)
+	}
+
 	return embed
 }
 

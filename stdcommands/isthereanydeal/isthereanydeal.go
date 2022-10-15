@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/botlabs-gg/yagpdb/bot/paginatedmessages"
 	"github.com/botlabs-gg/yagpdb/commands"
@@ -73,7 +74,6 @@ var Command = &commands.YAGCommand{
 		}
 
 		querySearch := fmt.Sprintf("%s/v02/search/search/?key=%s&q=%s&limit=%d", itadAPIHost, itadAPIKey, url.QueryEscape(queryTitle), queryLimit)
-
 		body, err := util.RequestFromAPI(querySearch)
 		if err != nil {
 			return "nil", err
@@ -92,12 +92,45 @@ var Command = &commands.YAGCommand{
 		itadSearchResults := itadSearch.Data.Results
 
 		var plainsBuilder strings.Builder
+		var plainsSlice = make([]string, 0)
 		for _, v := range itadSearchResults {
 			if plainsBuilder.Len() != 0 {
 				plainsBuilder.WriteString(",")
 			}
 
 			plainsBuilder.WriteString(v.Plain)
+			plainsSlice = append(plainsSlice, v.Plain)
+		}
+
+		var itadPriceLow ItadShopPriceLowest
+		for i := 0; i <= len(plainsSlice)/5; i++ {
+			var joinedPlains string
+			if (len(plainsSlice)-i*5)/5 != 0 {
+				joinedPlains = strings.Join(plainsSlice[i*5:i*5+5], ",")
+			} else {
+				joinedPlains = strings.Join(plainsSlice[i*5:], ",")
+			}
+
+			if joinedPlains != "" {
+				queryPriceLow := fmt.Sprintf("%s/v01/game/storelow/?key=%s&plains=%s", itadAPIHost, itadAPIKey, joinedPlains)
+				body, err = util.RequestFromAPI(queryPriceLow)
+				if err != nil {
+					return nil, err
+				}
+
+				err = json.Unmarshal([]byte(body), &itadPriceLow)
+				if err != nil {
+					return nil, err
+				}
+
+				itadPriceLow.Compact = make(map[string]map[string]float64)
+				for k, v := range itadPriceLow.Data {
+					itadPriceLow.Compact[k] = make(map[string]float64)
+					for _, vv := range v {
+						itadPriceLow.Compact[k][vv.Shop] = vv.Price
+					}
+				}
+			}
 		}
 
 		queryPrice := fmt.Sprintf("%s/v01/game/prices/?key=%s&plains=%s&country=%s", itadAPIHost, itadAPIKey, plainsBuilder.String(), country)
@@ -147,6 +180,7 @@ var Command = &commands.YAGCommand{
 		itadComplete := &ItadComplete{
 			Search:   itadSearch,
 			Price:    itadPrice,
+			PriceLow: itadPriceLow,
 			GameInfo: itadGameInfo,
 		}
 
@@ -161,7 +195,7 @@ var Command = &commands.YAGCommand{
 					return paginatedEmbed, nil
 				})
 			if err != nil {
-				return "Something went wrong", nil
+				return "Something went wrong making the paginated messages", nil
 			}
 		} else {
 			return itadEmbed, nil
@@ -172,32 +206,60 @@ var Command = &commands.YAGCommand{
 }
 
 func embedCreator(itadComplete *ItadComplete, i int, paginated bool) *discordgo.MessageEmbed {
-	var embedDescription, embedPriceNew, embedPriceOld string
+	var embedDescription, embedPriceLow, embedPriceNew, embedPriceOld string
+	var embedPriceNewAvg, embedPriceLowAvg, embedPriceOldAvg string
+	var priceNewAvg, priceLowAvg, priceOldAvg float64
 	embedCurrency := Currency[itadComplete.Price.Meta.Currency]
-	embedPricingHeader := "`Price Cut | Current | Regular |` Store\n"
+	embedPricingHeader := "`Price Cut | Current | Lowest | Regular |` Store\n"
 	embedDescription = embedPricingHeader
 
 	itadPriceDataListSlice := itadComplete.Price.Data[itadComplete.Search.Data.Results[i].Plain].List
+	//itadComplete.PriceLowSlice
 
-	if len(itadPriceDataListSlice) == 0 {
+	lenItadPriceDataList := len(itadPriceDataListSlice)
+	if lenItadPriceDataList == 0 {
 		embedDescription = "```No tracked stores are currently selling this game in this region/country...```"
 	}
 
 	for _, v := range itadPriceDataListSlice {
+		priceLow := itadComplete.PriceLow.Compact[itadComplete.Search.Data.Results[i].Plain][v.Shop.ID]
 		if itadComplete.Price.Meta.Currency == "EUR" {
 			embedPriceNew = fmt.Sprintf("%.2f%s", v.PriceNew, embedCurrency)
+			embedPriceLow = fmt.Sprintf("%.2f%s", priceLow, embedCurrency)
 			embedPriceOld = fmt.Sprintf("%.2f%s", v.PriceOld, embedCurrency)
 		} else {
 			embedPriceNew = fmt.Sprintf("%s%.2f", embedCurrency, v.PriceNew)
+			embedPriceLow = fmt.Sprintf("%s%.2f", embedCurrency, priceLow)
 			embedPriceOld = fmt.Sprintf("%s%.2f", embedCurrency, v.PriceOld)
 		}
+		priceLowAvg += priceLow
+		priceNewAvg += v.PriceNew
+		priceOldAvg += v.PriceOld
 
-		embedDescription += fmt.Sprintf("`%9s | %7s | %7s |` [%s](%s)\n",
+		embedDescription += fmt.Sprintf("`%9s | %7s | %6s | %7s |` [%s](%s)\n",
 			fmt.Sprintf("%d%%", v.PriceCut),
 			embedPriceNew,
+			embedPriceLow,
 			embedPriceOld,
 			v.Shop.Name,
 			v.URL,
+		)
+	}
+
+	if lenItadPriceDataList != 0 {
+		if itadComplete.Price.Meta.Currency == "EUR" {
+			embedPriceNewAvg = fmt.Sprintf("%.2f%s", priceNewAvg/float64(lenItadPriceDataList), embedCurrency)
+			embedPriceLowAvg = fmt.Sprintf("%.2f%s", priceLowAvg/float64(lenItadPriceDataList), embedCurrency)
+			embedPriceOldAvg = fmt.Sprintf("%.2f%s", priceOldAvg/float64(lenItadPriceDataList), embedCurrency)
+		} else {
+			embedPriceNewAvg = fmt.Sprintf("%s%.2f", embedCurrency, priceNewAvg/float64(lenItadPriceDataList))
+			embedPriceLowAvg = fmt.Sprintf("%s%.2f", embedCurrency, priceLowAvg/float64(lenItadPriceDataList))
+			embedPriceOldAvg = fmt.Sprintf("%s%.2f", embedCurrency, priceOldAvg/float64(lenItadPriceDataList))
+		}
+		embedDescription += fmt.Sprintf("`Average     %7s | %6s | %7s |`\n",
+			embedPriceNewAvg,
+			embedPriceLowAvg,
+			embedPriceOldAvg,
 		)
 	}
 
@@ -215,6 +277,11 @@ func embedCreator(itadComplete *ItadComplete, i int, paginated bool) *discordgo.
 		Thumbnail: &discordgo.MessageEmbedThumbnail{
 			URL: itadComplete.GameInfo.Data[itadComplete.Search.Data.Results[i].Plain].Image,
 		},
+	}
+
+	if !paginated {
+		embed.Footer = &discordgo.MessageEmbedFooter{Text: "isthereanydeal.com"}
+		embed.Timestamp = time.Now().Format(time.RFC3339)
 	}
 
 	return embed
