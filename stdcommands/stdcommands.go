@@ -37,6 +37,7 @@ import (
 	"github.com/botlabs-gg/yagpdb/stdcommands/info"
 	"github.com/botlabs-gg/yagpdb/stdcommands/inspire"
 	"github.com/botlabs-gg/yagpdb/stdcommands/invite"
+	"github.com/botlabs-gg/yagpdb/stdcommands/isthereanydeal"
 	"github.com/botlabs-gg/yagpdb/stdcommands/leaveserver"
 	"github.com/botlabs-gg/yagpdb/stdcommands/listflags"
 	"github.com/botlabs-gg/yagpdb/stdcommands/listroles"
@@ -165,7 +166,13 @@ func (p *Plugin) AddCommands() {
 		return
 	}
 
+	if !isthereanydeal.ShouldRegister() {
+		common.GetPluginLogger(p).Warn("IsThereAnyDeal API token not provided, skipping adding isthereanydeal command...")
+		return
+	}
+
 	commands.AddRootCommands(p, owldictionary.Command)
+	commands.AddRootCommands(p, isthereanydeal.Command)
 
 }
 
