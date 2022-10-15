@@ -214,7 +214,6 @@ func embedCreator(itadComplete *ItadComplete, i int, paginated bool) *discordgo.
 	embedDescription = embedPricingHeader
 
 	itadPriceDataListSlice := itadComplete.Price.Data[itadComplete.Search.Data.Results[i].Plain].List
-	//itadComplete.PriceLowSlice
 
 	lenItadPriceDataList := len(itadPriceDataListSlice)
 	if lenItadPriceDataList == 0 {
