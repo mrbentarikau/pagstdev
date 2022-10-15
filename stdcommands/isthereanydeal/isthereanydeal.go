@@ -76,13 +76,17 @@ var Command = &commands.YAGCommand{
 
 		body, err := util.RequestFromAPI(querySearch)
 		if err != nil {
-			return nil, err
+			return "nil", err
 		}
 
 		var itadSearch ItadSearch
 		err = json.Unmarshal([]byte(body), &itadSearch)
 		if err != nil {
 			return nil, err
+		}
+
+		if len(itadSearch.Data.Results) == 0 {
+			return "Game title not found", nil
 		}
 
 		itadSearchResults := itadSearch.Data.Results
