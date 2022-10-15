@@ -24,15 +24,21 @@ var Command = &commands.YAGCommand{
 	DefaultEnabled:            true,
 	ApplicationCommandEnabled: true,
 	Cooldown:                  3,
-	Arguments: []*dcmd.ArgDef{
-		{Name: "Mindfulness", Type: &dcmd.IntArg{Min: 1, Max: 25}},
+	ArgSwitches: []*dcmd.ArgDef{
+		{Name: "mindfulness", Help: "Generates Mindful Quotes!"},
 	},
 
 	RunFunc: func(data *dcmd.Data) (interface{}, error) {
 		var pm *paginatedmessages.PaginatedMessage
+		var paginatedView bool
+
 		query := "https://inspirobot.me/api?generate=true"
 
-		if data.Args[0].Str() != "" {
+		if data.Switches["mindfulness"].Value != nil && data.Switches["mindfulness"].Value.(bool) {
+			paginatedView = true
+		}
+
+		if paginatedView {
 			var ID = time.Now().UTC().Unix()
 
 			query = fmt.Sprintf("https://inspirobot.me/api?generateFlow=1&sessionID=%d", ID)
@@ -52,7 +58,7 @@ var Command = &commands.YAGCommand{
 			inspireArray = arrayMaker(inspireArray, mindfulness)
 
 			pm, err = paginatedmessages.CreatePaginatedMessage(
-				data.GuildData.GS.ID, data.ChannelID, 1, data.Args[0].Int(), func(p *paginatedmessages.PaginatedMessage, page int) (*discordgo.MessageEmbed, error) {
+				data.GuildData.GS.ID, data.ChannelID, 1, 25, func(p *paginatedmessages.PaginatedMessage, page int) (*discordgo.MessageEmbed, error) {
 					if page-1 == len(inspireArray) {
 						requestBody, err := util.RequestFromAPI(query)
 						if err != nil {
