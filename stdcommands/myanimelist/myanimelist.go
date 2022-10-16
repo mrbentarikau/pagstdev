@@ -44,6 +44,7 @@ var Command = &commands.YAGCommand{
 	},
 	ApplicationCommandEnabled: false,
 	DefaultEnabled:            false,
+	Cooldown:                  5,
 	RunFunc: func(data *dcmd.Data) (interface{}, error) {
 		var extraHeaders = map[string]string{"X-MAL-CLIENT-ID": confMalAPIKey.GetString()}
 		var queryManga bool
