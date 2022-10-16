@@ -111,7 +111,7 @@ var Command = &commands.YAGCommand{
 
 			body, err = util.RequestFromAPI(queryDetails, extraHeaders)
 			if err != nil {
-				return "nil", err
+				return "No such title found", err
 			}
 
 			err = json.Unmarshal([]byte(body), &animeDetails)
