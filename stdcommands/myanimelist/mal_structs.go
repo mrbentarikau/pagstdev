@@ -87,31 +87,9 @@ type AnimeMangaDetails struct {
 		Medium string `json:"medium"`
 		Large  string `json:"large"`
 	} `json:"pictures"`
-	Background   string `json:"background"`
-	RelatedAnime []struct {
-		Node struct {
-			ID          int    `json:"id"`
-			Title       string `json:"title"`
-			MainPicture struct {
-				Medium string `json:"medium"`
-				Large  string `json:"large"`
-			} `json:"main_picture"`
-		} `json:"node"`
-		RelationType          string `json:"relation_type"`
-		RelationTypeFormatted string `json:"relation_type_formatted"`
-	} `json:"related_anime"`
-	RelatedManga []struct {
-		Node struct {
-			ID          int    `json:"id"`
-			Title       string `json:"title"`
-			MainPicture struct {
-				Medium string `json:"medium"`
-				Large  string `json:"large"`
-			} `json:"main_picture"`
-		} `json:"node,omitempty"`
-		RelationType          string `json:"relation_type"`
-		RelationTypeFormatted string `json:"relation_type_formatted"`
-	} `json:"related_manga"`
+	Background      string    `json:"background"`
+	RelatedAnime    []Related `json:"related_anime"`
+	RelatedManga    []Related `json:"related_manga"`
 	Recommendations []struct {
 		Node struct {
 			ID          int    `json:"id"`
@@ -143,6 +121,26 @@ type AnimeMangaDetails struct {
 			Name string `json:"name"`
 		} `json:"node"`
 	} `json:"serialization"`
+}
+
+type Related struct {
+	Node struct {
+		ID          int    `json:"id"`
+		Title       string `json:"title"`
+		MainPicture struct {
+			Medium string `json:"medium"`
+			Large  string `json:"large"`
+		} `json:"main_picture"`
+	} `json:"node"`
+	RelationType          string `json:"relation_type"`
+	RelationTypeFormatted string `json:"relation_type_formatted"`
+}
+
+func (a AnimeMangaDetails) Related() []Related {
+	if len(a.RelatedAnime) == 0 {
+		return a.RelatedManga
+	}
+	return a.RelatedAnime
 }
 
 type AnimeRanking struct {

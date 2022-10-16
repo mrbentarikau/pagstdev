@@ -148,7 +148,9 @@ var Command = &commands.YAGCommand{
 
 func embedCreator(malData MyAnimeListData, i int, paginated, isManga bool) *discordgo.MessageEmbed {
 	var authorsBuilder, genresBuilder, relatedBuilder, serializationBuilder, studiosBuilder, synonymsBuilder strings.Builder
-	for _, v := range malData.AMData[i].Genres {
+	var mData = malData.AMData[i]
+
+	for _, v := range mData.Genres {
 		if genresBuilder.Len() != 0 {
 			genresBuilder.WriteString(", ")
 		}
@@ -156,7 +158,7 @@ func embedCreator(malData MyAnimeListData, i int, paginated, isManga bool) *disc
 		genresBuilder.WriteString("`" + v.Name + "`")
 	}
 
-	for _, v := range malData.AMData[i].RelatedAnime {
+	for _, v := range mData.Related() {
 		if relatedBuilder.Len() != 0 {
 			relatedBuilder.WriteString(", ")
 		}
@@ -164,15 +166,7 @@ func embedCreator(malData MyAnimeListData, i int, paginated, isManga bool) *disc
 		relatedBuilder.WriteString(v.Node.Title)
 	}
 
-	for _, v := range malData.AMData[i].RelatedManga {
-		if relatedBuilder.Len() != 0 {
-			relatedBuilder.WriteString(", ")
-		}
-
-		relatedBuilder.WriteString(v.Node.Title)
-	}
-
-	for _, v := range malData.AMData[i].Authors {
+	for _, v := range mData.Authors {
 		if authorsBuilder.Len() != 0 {
 			authorsBuilder.WriteString("; ")
 		}
@@ -180,7 +174,7 @@ func embedCreator(malData MyAnimeListData, i int, paginated, isManga bool) *disc
 		authorsBuilder.WriteString(v.Node.LastName + ", " + v.Node.FirstName + " (" + v.Role + ")")
 	}
 
-	for _, v := range malData.AMData[i].Serialization {
+	for _, v := range mData.Serialization {
 		if serializationBuilder.Len() != 0 {
 			serializationBuilder.WriteString(", ")
 		}
@@ -188,7 +182,7 @@ func embedCreator(malData MyAnimeListData, i int, paginated, isManga bool) *disc
 		serializationBuilder.WriteString(v.Node.Name)
 	}
 
-	for _, v := range malData.AMData[i].Studios {
+	for _, v := range mData.Studios {
 		if studiosBuilder.Len() != 0 {
 			studiosBuilder.WriteString(", ")
 		}
@@ -196,7 +190,7 @@ func embedCreator(malData MyAnimeListData, i int, paginated, isManga bool) *disc
 		studiosBuilder.WriteString(v.Name)
 	}
 
-	for _, v := range malData.AMData[i].AlternativeTitles.Synonyms {
+	for _, v := range mData.AlternativeTitles.Synonyms {
 		if synonymsBuilder.Len() != 0 {
 			synonymsBuilder.WriteString(", ")
 		}
@@ -204,9 +198,64 @@ func embedCreator(malData MyAnimeListData, i int, paginated, isManga bool) *disc
 		synonymsBuilder.WriteString("`" + v + "`")
 	}
 
-	authorURL := fmt.Sprintf("https://myanimelist.net/anime/%d", malData.AMData[i].ID)
+	authorURL := fmt.Sprintf("https://myanimelist.net/anime/%d", mData.ID)
 	if isManga {
-		authorURL = fmt.Sprintf("https://myanimelist.net/manga/%d", malData.AMData[i].ID)
+		authorURL = fmt.Sprintf("https://myanimelist.net/manga/%d", mData.ID)
+	}
+
+	mediaType := mData.MediaType
+	if len(mediaType) <= 3 {
+		mediaType = strings.ToUpper(mediaType)
+	} else {
+		mediaType = cases.Title(language.Und).String(mediaType)
+	}
+
+	var dateField, relatedField *discordgo.MessageEmbedField
+	startDate := mData.StartDate
+	endDate := mData.EndDate
+	if startDate != "" {
+		var timeLayout = "2006-01-02"
+		var formatLayout = "Jan 02, 2006"
+
+		startDateTime, err := time.Parse(timeLayout, startDate)
+		if err != nil {
+			startDate = "?"
+		} else {
+			startDate = startDateTime.Format(formatLayout)
+		}
+
+		if endDate == "" {
+			endDate = "?"
+		} else {
+			endDateTime, err := time.Parse(timeLayout, endDate)
+			if err != nil {
+				endDate = "?"
+			} else {
+				endDate = endDateTime.Format(formatLayout)
+			}
+		}
+
+		if isManga {
+			dateField = &discordgo.MessageEmbedField{Name: "Published", Value: fmt.Sprintf("%s to %s", startDate, endDate)}
+			relatedField = &discordgo.MessageEmbedField{Name: "Related Manga", Value: common.CutStringShort(relatedBuilder.String(), 280)}
+		} else {
+			dateField = &discordgo.MessageEmbedField{Name: "Aired", Value: fmt.Sprintf("%s to %s", startDate, endDate)}
+			relatedField = &discordgo.MessageEmbedField{Name: "Related Anime", Value: common.CutStringShort(relatedBuilder.String(), 280)}
+		}
+	}
+
+	var synonyms string
+	if synonymsBuilder.String() != "" {
+		synonyms = "Synonyms: " + synonymsBuilder.String()
+	}
+	enAltTitle := mData.AlternativeTitles.En
+	jaAltTitle := mData.AlternativeTitles.Ja
+	if enAltTitle != "" {
+		enAltTitle = "`" + enAltTitle + "`,"
+	}
+
+	if jaAltTitle != "" {
+		jaAltTitle = "`" + jaAltTitle + "`"
 	}
 
 	embed := &discordgo.MessageEmbed{
@@ -216,111 +265,43 @@ func embedCreator(malData MyAnimeListData, i int, paginated, isManga bool) *disc
 			IconURL: "https://upload.wikimedia.org/wikipedia/commons/7/7a/MyAnimeList_Logo.png",
 		},
 
-		Title:       malData.AMData[i].Title,
-		Description: common.CutStringShort(malData.AMData[i].Synopsis, 512),
+		Title:       mData.Title,
+		Description: common.CutStringShort(mData.Synopsis, 512),
 
 		Thumbnail: &discordgo.MessageEmbedThumbnail{URL: malData.AMData[i].MainPicture.Medium},
 		//Image:     &discordgo.MessageEmbedImage{URL: malData.AnimeData[i].Pictures[0].Medium},
 
 		Color: int(rand.Int63n(16777215)),
 
-		Fields: []*discordgo.MessageEmbedField{},
+		Fields: []*discordgo.MessageEmbedField{
+			{Name: "Type", Value: mediaType, Inline: true},
+			{Name: "Episodes", Value: fmt.Sprintf("%d", mData.NumEpisodes), Inline: true},
+			{Name: "Chapters", Value: fmt.Sprintf("%d", mData.NumVolumes), Inline: true},
+			{Name: "Volumes", Value: fmt.Sprintf("%d", mData.NumChapters), Inline: true},
+			{Name: "Rating", Value: cases.Title(language.Und).String(mData.Rating), Inline: true},
+			dateField,
+			{Name: "Duration", Value: fmt.Sprintf("%s per ep.", common.HumanizeDurationShort(common.DurationPrecisionMinutes, time.Second*time.Duration(mData.AverageEpisodeDuration))), Inline: true},
+			{Name: "Source", Value: cases.Title(language.Und).String(mData.Source), Inline: true},
+			{Name: "Studio", Value: studiosBuilder.String(), Inline: true},
+			{Name: "Authors", Value: authorsBuilder.String(), Inline: true},
+			{Name: "Alternative Titles", Value: fmt.Sprintf("%s %s\n%s", enAltTitle, jaAltTitle, synonyms)},
+			{Name: "Genres", Value: genresBuilder.String()},
+			relatedField,
+			{Name: "Serialization", Value: common.CutStringShort(serializationBuilder.String(), 280)},
+			{Name: "MAL Score", Value: fmt.Sprintf("**%.2f** (by %s users)", mData.Mean, util.HumanizeThousands(mData.NumScoringUsers)), Inline: true},
+			{Name: "MAL Rank & Popularity", Value: fmt.Sprintf("#%d and #%d", mData.Rank, mData.Popularity), Inline: true},
+		},
 	}
 
-	if malData.AMData[i].MediaType != "" {
-		mediaType := malData.AMData[i].MediaType
-		if len(mediaType) <= 3 {
-			mediaType = strings.ToUpper(mediaType)
+	var cleanFields []*discordgo.MessageEmbedField
+	for _, v := range embed.Fields {
+		if v.Value == "" || v.Value == "0" {
+			continue
 		}
-		embed.Fields = append(embed.Fields, &discordgo.MessageEmbedField{Name: "Type", Value: cases.Title(language.Und).String(mediaType), Inline: true})
+		cleanFields = append(cleanFields, v)
 	}
 
-	if malData.AMData[i].NumEpisodes > 0 {
-		embed.Fields = append(embed.Fields, &discordgo.MessageEmbedField{Name: "Episodes", Value: fmt.Sprintf("%d", malData.AMData[i].NumEpisodes), Inline: true})
-	}
-
-	if malData.AMData[i].NumVolumes > 0 {
-		embed.Fields = append(embed.Fields, &discordgo.MessageEmbedField{Name: "Chapters", Value: fmt.Sprintf("%d", malData.AMData[i].NumVolumes), Inline: true})
-	}
-
-	if malData.AMData[i].NumChapters > 0 {
-		embed.Fields = append(embed.Fields, &discordgo.MessageEmbedField{Name: "Volumes", Value: fmt.Sprintf("%d", malData.AMData[i].NumChapters), Inline: true})
-	}
-
-	if malData.AMData[i].Rating != "" {
-		embed.Fields = append(embed.Fields, &discordgo.MessageEmbedField{Name: "Rating", Value: cases.Title(language.Und).String(malData.AMData[i].Rating), Inline: true})
-	}
-
-	if malData.AMData[i].StartDate != "" || malData.AMData[i].EndDate != "" {
-		endDate := malData.AMData[i].EndDate
-		if endDate == "" {
-			endDate = "?"
-		}
-
-		if isManga {
-			embed.Fields = append(embed.Fields, &discordgo.MessageEmbedField{Name: "Published", Value: fmt.Sprintf("%s to %s", malData.AMData[i].StartDate, endDate)})
-		} else {
-			embed.Fields = append(embed.Fields, &discordgo.MessageEmbedField{Name: "Aired", Value: fmt.Sprintf("%s to %s", malData.AMData[i].StartDate, endDate)})
-		}
-	}
-
-	if malData.AMData[i].AverageEpisodeDuration > 0 {
-		embed.Fields = append(embed.Fields, &discordgo.MessageEmbedField{Name: "Duration", Value: fmt.Sprintf("%s per ep.", common.HumanizeDurationShort(common.DurationPrecisionMinutes, time.Second*time.Duration(malData.AMData[i].AverageEpisodeDuration))), Inline: true})
-	}
-
-	if malData.AMData[i].Source != "" {
-		embed.Fields = append(embed.Fields, &discordgo.MessageEmbedField{Name: "Source", Value: cases.Title(language.Und).String(malData.AMData[i].Source), Inline: true})
-	}
-
-	if studiosBuilder.String() != "" {
-		embed.Fields = append(embed.Fields, &discordgo.MessageEmbedField{Name: "Studio", Value: studiosBuilder.String(), Inline: true})
-	}
-
-	if authorsBuilder.String() != "" {
-		embed.Fields = append(embed.Fields, &discordgo.MessageEmbedField{Name: "Authors", Value: authorsBuilder.String(), Inline: true})
-	}
-
-	if malData.AMData[i].AlternativeTitles.En != "" || malData.AMData[i].AlternativeTitles.Ja != "" || synonymsBuilder.String() != "" {
-		var synonyms string
-		if synonymsBuilder.String() != "" {
-			synonyms = "Synonyms: " + synonymsBuilder.String()
-		}
-		enAltTitle := malData.AMData[i].AlternativeTitles.En
-		jaAltTitle := malData.AMData[i].AlternativeTitles.Ja
-		if enAltTitle != "" {
-			enAltTitle = "`" + enAltTitle + "`,"
-		}
-
-		if jaAltTitle != "" {
-			jaAltTitle = "`" + jaAltTitle + "`"
-		}
-
-		embed.Fields = append(embed.Fields, &discordgo.MessageEmbedField{Name: "Alternative Titles", Value: fmt.Sprintf("%s %s\n%s", enAltTitle, jaAltTitle, synonyms)})
-	}
-
-	if genresBuilder.String() != "" {
-		embed.Fields = append(embed.Fields, &discordgo.MessageEmbedField{Name: "Genres", Value: genresBuilder.String()})
-	}
-
-	if relatedBuilder.String() != "" {
-		if isManga {
-			embed.Fields = append(embed.Fields, &discordgo.MessageEmbedField{Name: "Related Manga", Value: common.CutStringShort(relatedBuilder.String(), 280)})
-		} else {
-			embed.Fields = append(embed.Fields, &discordgo.MessageEmbedField{Name: "Related Anime", Value: common.CutStringShort(relatedBuilder.String(), 280)})
-		}
-	}
-
-	if serializationBuilder.String() != "" {
-		embed.Fields = append(embed.Fields, &discordgo.MessageEmbedField{Name: "Serialization", Value: common.CutStringShort(serializationBuilder.String(), 280)})
-	}
-
-	if malData.AMData[i].Mean > 0 {
-		embed.Fields = append(embed.Fields, &discordgo.MessageEmbedField{Name: "MAL Score", Value: fmt.Sprintf("**%.2f** (by %s users)", malData.AMData[i].Mean, util.HumanizeThousands(malData.AMData[i].NumScoringUsers)), Inline: true})
-	}
-
-	if malData.AMData[i].Rank > 0 || malData.AMData[i].Popularity > 0 {
-		embed.Fields = append(embed.Fields, &discordgo.MessageEmbedField{Name: "MAL Rank & Popularity", Value: fmt.Sprintf("#%d and #%d", malData.AMData[i].Rank, malData.AMData[i].Popularity), Inline: true})
-	}
+	embed.Fields = cleanFields
 
 	if !paginated {
 		embed.Footer = &discordgo.MessageEmbedFooter{Text: "myanimelist.net"}
