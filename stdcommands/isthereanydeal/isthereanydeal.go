@@ -77,7 +77,7 @@ var Command = &commands.YAGCommand{
 		querySearch := fmt.Sprintf("%s/v02/search/search/?key=%s&q=%s&limit=%d", itadAPIHost, itadAPIKey, url.QueryEscape(queryTitle), queryLimit)
 		body, err := util.RequestFromAPI(querySearch)
 		if err != nil {
-			return "nil", err
+			return "No such title found", err
 		}
 
 		err = json.Unmarshal([]byte(body), &itadSearch)

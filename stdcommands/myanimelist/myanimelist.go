@@ -78,7 +78,7 @@ var Command = &commands.YAGCommand{
 
 		body, err := util.RequestFromAPI(querySearch, extraHeaders)
 		if err != nil {
-			return "nil", err
+			return "No such title found", err
 		}
 
 		err = json.Unmarshal([]byte(body), &malSearch)
@@ -111,7 +111,7 @@ var Command = &commands.YAGCommand{
 
 			body, err = util.RequestFromAPI(queryDetails, extraHeaders)
 			if err != nil {
-				return "No such title found", err
+				return nil, err
 			}
 
 			err = json.Unmarshal([]byte(body), &animeDetails)
