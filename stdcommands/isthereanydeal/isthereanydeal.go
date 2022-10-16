@@ -72,13 +72,14 @@ var Command = &commands.YAGCommand{
 			paginatedView = true
 		}
 
+		// Searching for the game
+		var itadSearch ItadSearch
 		querySearch := fmt.Sprintf("%s/v02/search/search/?key=%s&q=%s&limit=%d", itadAPIHost, itadAPIKey, url.QueryEscape(queryTitle), queryLimit)
 		body, err := util.RequestFromAPI(querySearch)
 		if err != nil {
 			return "nil", err
 		}
 
-		var itadSearch ItadSearch
 		err = json.Unmarshal([]byte(body), &itadSearch)
 		if err != nil {
 			return nil, err
@@ -101,44 +102,48 @@ var Command = &commands.YAGCommand{
 			plainsSlice = append(plainsSlice, v.Plain)
 		}
 
+		// Query for lowest price in stores (plains)
 		var itadPriceLow ItadShopPriceLowest
-		for i := 0; i <= len(plainsSlice)/5; i++ {
-			var joinedPlains string
-			if (len(plainsSlice)-i*5)/5 != 0 {
-				joinedPlains = strings.Join(plainsSlice[i*5:i*5+5], ",")
-			} else {
-				joinedPlains = strings.Join(plainsSlice[i*5:], ",")
-			}
-
-			if joinedPlains != "" {
-				queryPriceLow := fmt.Sprintf("%s/v01/game/storelow/?key=%s&plains=%s", itadAPIHost, itadAPIKey, joinedPlains)
-				body, err = util.RequestFromAPI(queryPriceLow)
-				if err != nil {
-					return nil, err
+		if !compactView {
+			for i := 0; i <= len(plainsSlice)/5; i++ {
+				var joinedPlains string
+				if (len(plainsSlice)-i*5)/5 != 0 {
+					joinedPlains = strings.Join(plainsSlice[i*5:i*5+5], ",")
+				} else {
+					joinedPlains = strings.Join(plainsSlice[i*5:], ",")
 				}
 
-				err = json.Unmarshal([]byte(body), &itadPriceLow)
-				if err != nil {
-					return nil, err
-				}
+				if joinedPlains != "" {
+					queryPriceLow := fmt.Sprintf("%s/v01/game/storelow/?key=%s&plains=%s", itadAPIHost, itadAPIKey, joinedPlains)
+					body, err = util.RequestFromAPI(queryPriceLow)
+					if err != nil {
+						return nil, err
+					}
 
-				itadPriceLow.Compact = make(map[string]map[string]float64)
-				for k, v := range itadPriceLow.Data {
-					itadPriceLow.Compact[k] = make(map[string]float64)
-					for _, vv := range v {
-						itadPriceLow.Compact[k][vv.Shop] = vv.Price
+					err = json.Unmarshal([]byte(body), &itadPriceLow)
+					if err != nil {
+						return nil, err
+					}
+
+					itadPriceLow.Compact = make(map[string]map[string]float64)
+					for k, v := range itadPriceLow.Data {
+						itadPriceLow.Compact[k] = make(map[string]float64)
+						for _, vv := range v {
+							itadPriceLow.Compact[k][vv.Shop] = vv.Price
+						}
 					}
 				}
 			}
 		}
 
+		// Query for store prices (discount, regular)
+		var itadPrice ItadPrice
 		queryPrice := fmt.Sprintf("%s/v01/game/prices/?key=%s&plains=%s&country=%s", itadAPIHost, itadAPIKey, plainsBuilder.String(), country)
 		body, err = util.RequestFromAPI(queryPrice)
 		if err != nil {
 			return nil, err
 		}
 
-		var itadPrice ItadPrice
 		err = json.Unmarshal([]byte(body), &itadPrice)
 		if err != nil {
 			return nil, err
@@ -164,16 +169,19 @@ var Command = &commands.YAGCommand{
 			return compactData, nil
 		}
 
-		queryInfo := fmt.Sprintf("%s/v01/game/info/?key=%s&plains=%s", itadAPIHost, itadAPIKey, plainsBuilder.String())
-		body, err = util.RequestFromAPI(queryInfo)
-		if err != nil {
-			return nil, err
-		}
-
+		// Query for thumbnail image and other game info
 		var itadGameInfo ItadGameInfo
-		err = json.Unmarshal([]byte(body), &itadGameInfo)
-		if err != nil {
-			return nil, err
+		if !compactView {
+			queryInfo := fmt.Sprintf("%s/v01/game/info/?key=%s&plains=%s", itadAPIHost, itadAPIKey, plainsBuilder.String())
+			body, err = util.RequestFromAPI(queryInfo)
+			if err != nil {
+				return nil, err
+			}
+
+			err = json.Unmarshal([]byte(body), &itadGameInfo)
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		itadComplete := &ItadComplete{
