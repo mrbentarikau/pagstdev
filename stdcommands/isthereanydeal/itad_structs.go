@@ -9,15 +9,18 @@ type ItadComplete struct {
 
 type ItadSearch struct {
 	Data struct {
-		Results []struct {
-			ID    int    `json:"id"`
-			Plain string `json:"plain"`
-			Title string `json:"title"`
-		} `json:"results"`
-		Urls struct {
+		Results []ItadSearchResult `json:"results"`
+		Urls    struct {
 			Search string `json:"search"`
 		} `json:"urls"`
 	} `json:"data"`
+}
+
+type ItadSearchResult struct {
+	ID                    int    `json:"id"`
+	Plain                 string `json:"plain"`
+	Title                 string `json:"title"`
+	JaroWinklerSimilarity float64
 }
 
 type ItadPlains struct {

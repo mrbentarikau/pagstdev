@@ -42,6 +42,7 @@ import (
 	"github.com/botlabs-gg/yagpdb/stdcommands/listflags"
 	"github.com/botlabs-gg/yagpdb/stdcommands/listroles"
 	"github.com/botlabs-gg/yagpdb/stdcommands/memstats"
+	"github.com/botlabs-gg/yagpdb/stdcommands/myanimelist"
 	"github.com/botlabs-gg/yagpdb/stdcommands/openweathermap"
 	"github.com/botlabs-gg/yagpdb/stdcommands/owldictionary"
 	"github.com/botlabs-gg/yagpdb/stdcommands/pagstatus"
@@ -162,17 +163,23 @@ func (p *Plugin) AddCommands() {
 	statedbg.Commands()
 
 	if !owldictionary.ShouldRegister() {
-		common.GetPluginLogger(p).Warn("Owlbot API token not provided, skipping adding dictionary command...")
+		common.GetPluginLogger(p).Warn("Owlbot API token not provided, skipping adding owldictionary command...")
 		return
 	}
 
 	if !isthereanydeal.ShouldRegister() {
-		common.GetPluginLogger(p).Warn("IsThereAnyDeal API token not provided, skipping adding isthereanydeal command...")
+		common.GetPluginLogger(p).Warn("IsThereAnyDeal API key not provided, skipping adding isthereanydeal command...")
 		return
 	}
 
-	commands.AddRootCommands(p, owldictionary.Command)
+	if !myanimelist.ShouldRegister() {
+		common.GetPluginLogger(p).Warn("MyAnimelist API key not provided, skipping adding myanimelist command...")
+		return
+	}
+
 	commands.AddRootCommands(p, isthereanydeal.Command)
+	commands.AddRootCommands(p, myanimelist.Command)
+	commands.AddRootCommands(p, owldictionary.Command)
 
 }
 
