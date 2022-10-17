@@ -125,7 +125,7 @@ var Command = &commands.YAGCommand{
 		}
 		var malData []AnimeMangaDetails = animeData
 
-		footerText := "myanimelist.net"
+		footerText := malURI
 		var footerSimilarity string
 		if malData[0].JaroWinklerSimilarity > 0 {
 			footerSimilarity = fmt.Sprintf("\nTitle similarity: %.2f%%", malData[0].JaroWinklerSimilarity*100)
