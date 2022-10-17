@@ -127,14 +127,27 @@ var Command = &commands.YAGCommand{
 
 		malEmbed := embedCreator(malData, 0, paginatedView, queryManga, topHundred)
 
+		footerText := "myanimelist.net"
+		var footerSimilarity string
+		if malData.AMData[0].JaroWinklerSimilarity > 0 {
+			footerSimilarity = fmt.Sprintf("\nTitle similarity: %.2f%%", malData.AMData[0].JaroWinklerSimilarity*100)
+		}
+		var footerExtra = fmt.Sprintf("%s%s", footerText, footerSimilarity)
 		var pm *paginatedmessages.PaginatedMessage
 		if paginatedView {
 			pm, err = paginatedmessages.CreatePaginatedMessage(
 				data.GuildData.GS.ID, data.ChannelID, 1, len(malData.AMData), func(p *paginatedmessages.PaginatedMessage, page int) (*discordgo.MessageEmbed, error) {
 					i := page - 1
 					paginatedEmbed := embedCreator(malData, i, paginatedView, queryManga, topHundred)
+
+					var footerSimilarity string
+					if malData.AMData[i].JaroWinklerSimilarity*100 > 0 {
+						footerSimilarity = fmt.Sprintf("\nTitle similarity: %.2f%%", malData.AMData[i].JaroWinklerSimilarity*100)
+					}
+
+					p.FooterExtra = []string{fmt.Sprintf("%s%s", footerText, footerSimilarity)}
 					return paginatedEmbed, nil
-				})
+				}, footerExtra)
 			if err != nil {
 				return "Something went wrong making the paginated messages", nil
 			}

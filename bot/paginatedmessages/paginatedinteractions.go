@@ -1,6 +1,7 @@
 package paginatedmessages
 
 import (
+	"fmt"
 	"strconv"
 	"sync"
 	"time"
@@ -87,7 +88,7 @@ func createNavigationButtons(prevDisabled bool, nextDisabled bool) []discordgo.M
 	}
 }
 
-func CreatePaginatedMessage(guildID, channelID int64, initPage, maxPages int, pagerFunc PagerFunc) (*PaginatedMessage, error) {
+func CreatePaginatedMessage(guildID, channelID int64, initPage, maxPages int, pagerFunc PagerFunc, footerExtra ...string) (*PaginatedMessage, error) {
 	if initPage < 1 {
 		initPage = 1
 	}
@@ -100,6 +101,7 @@ func CreatePaginatedMessage(guildID, channelID int64, initPage, maxPages int, pa
 		lastUpdateTime: time.Now(),
 		stopCh:         make(chan bool),
 		Navigate:       pagerFunc,
+		FooterExtra:    footerExtra,
 	}
 
 	embed, err := pagerFunc(pm, initPage)
@@ -108,6 +110,9 @@ func CreatePaginatedMessage(guildID, channelID int64, initPage, maxPages int, pa
 	}
 
 	footer := "Page " + strconv.Itoa(initPage)
+	if len(footerExtra) > 0 {
+		footer = fmt.Sprintf("%s\n%s", footerExtra[0], footer)
+	}
 	nextButtonDisabled := false
 	if pm.MaxPage > 0 {
 		footer += "/" + strconv.Itoa(pm.MaxPage)
@@ -183,6 +188,10 @@ func (p *PaginatedMessage) HandlePageButtonClick(ic *discordgo.InteractionCreate
 
 	p.CurrentPage = newPage
 	footer := "Page " + strconv.Itoa(newPage)
+	if len(p.FooterExtra) > 0 {
+		footer = fmt.Sprintf("%s\n%s", p.FooterExtra[0], footer)
+	}
+
 	nextButtonDisabled := false
 	if p.MaxPage > 0 {
 		footer += "/" + strconv.Itoa(p.MaxPage)
@@ -232,6 +241,9 @@ OUTER:
 		// remove the navigation buttons
 		lastMessage := p.LastResponse
 		footer := "Page " + strconv.Itoa(p.CurrentPage)
+		if len(p.FooterExtra) > 0 {
+			footer = fmt.Sprintf("%s\n%s", p.FooterExtra[0], footer)
+		}
 		if p.MaxPage > 0 {
 			footer += "/" + strconv.Itoa(p.MaxPage)
 		}

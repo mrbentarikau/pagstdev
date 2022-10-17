@@ -67,6 +67,7 @@ type PaginatedMessage struct {
 	LastResponse *discordgo.MessageEmbed
 	Navigate     func(p *PaginatedMessage, newPage int) (*discordgo.MessageEmbed, error)
 	Broken       bool
+	FooterExtra  []string
 
 	stopped        bool
 	stopCh         chan bool

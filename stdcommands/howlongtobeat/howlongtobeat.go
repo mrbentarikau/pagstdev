@@ -81,6 +81,12 @@ var Command = &commands.YAGCommand{
 
 		hltbEmbed := embedCreator(parsedData, 0, paginatedView)
 
+		footerText := "howlongtobeat.com"
+		var footerSimilarity string
+		if hltbQuery.Data[0].JaroWinklerSimilarity > 0 {
+			footerSimilarity = fmt.Sprintf("Term similarity: %.2f%%", hltbQuery.Data[0].JaroWinklerSimilarity*100)
+		}
+		footerExtra := fmt.Sprintf("%s\n%s", footerText, footerSimilarity)
 		var pm *paginatedmessages.PaginatedMessage
 		if paginatedView {
 			pm, err = paginatedmessages.CreatePaginatedMessage(
@@ -90,8 +96,15 @@ var Command = &commands.YAGCommand{
 						return parsedData[i].JaroWinklerSimilarity > parsedData[j].JaroWinklerSimilarity
 					})
 					paginatedEmbed := embedCreator(parsedData, i, paginatedView)
+
+					var footerSimilarity string
+					if hltbQuery.Data[i].JaroWinklerSimilarity*100 > 0 {
+						footerSimilarity = fmt.Sprintf("Term similarity: %.2f%%", hltbQuery.Data[i].JaroWinklerSimilarity*100)
+					}
+
+					p.FooterExtra = []string{fmt.Sprintf("%s\n%s", footerText, footerSimilarity)}
 					return paginatedEmbed, nil
-				})
+				}, footerExtra)
 			if err != nil {
 				return "Something went wrong making the paginated message", nil
 			}
@@ -106,11 +119,12 @@ var Command = &commands.YAGCommand{
 func embedCreator(hltbData []HowlongToBeatData, i int, paginated bool) *discordgo.MessageEmbed {
 	embed := &discordgo.MessageEmbed{
 		Author: &discordgo.MessageEmbedAuthor{
-			Name:    normaliseTitle(hltbData[i].GameName),
+			Name:    "HowLongToBeat",
 			URL:     hltbData[i].GameURL,
 			IconURL: "https://howlongtobeat.com/img/icons/favicon-96x96.png",
 		},
 
+		Title: normaliseTitle(hltbData[i].GameName),
 		Color: int(rand.Int63n(16777215)),
 		Thumbnail: &discordgo.MessageEmbedThumbnail{
 			URL: hltbData[i].ImageURL,
@@ -135,10 +149,6 @@ func embedCreator(hltbData []HowlongToBeatData, i int, paginated bool) *discordg
 	if hltbData[i].ReviewScore > 0 {
 		embed.Fields = append(embed.Fields,
 			&discordgo.MessageEmbedField{Name: "Review Score", Value: fmt.Sprintf("%d%%", hltbData[i].ReviewScore)})
-	}
-
-	if paginated {
-		embed.Description = fmt.Sprintf("Term similarity: %.1f%%", hltbData[i].JaroWinklerSimilarity*100)
 	}
 
 	if !paginated {
