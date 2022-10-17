@@ -14,6 +14,17 @@ type AnimeMangaList struct {
 
 type AnimeMangaListNode struct {
 	Node AnimeMangaDetails `json:"node"`
+	// for user queries
+	ListStatus struct {
+		Status             string    `json:"status"`
+		Score              int       `json:"score"`
+		NumWatchedEpisodes int       `json:"num_watched_episodes"`
+		IsRewatching       bool      `json:"is_rewatching"`
+		IsRereading        bool      `json:"is_rereading"`
+		NumVolumesRead     int       `json:"num_volumes_read"`
+		NumChaptersRead    int       `json:"num_chapters_read"`
+		UpdatedAt          time.Time `json:"updated_at"`
+	} `json:"list_status,omitempty"`
 }
 
 type AnimeMangaDetails struct {
@@ -132,30 +143,4 @@ func (a AnimeMangaDetails) Related() []Related {
 		return a.RelatedManga
 	}
 	return a.RelatedAnime
-}
-
-type UserAnimeList struct {
-	Data []struct {
-		Node struct {
-			ID          int    `json:"id"`
-			Title       string `json:"title"`
-			MainPicture struct {
-				Medium string `json:"medium"`
-				Large  string `json:"large"`
-			} `json:"main_picture"`
-		} `json:"node"`
-		ListStatus struct {
-			Status             string    `json:"status"`
-			Score              int       `json:"score"`
-			NumWatchedEpisodes int       `json:"num_watched_episodes"`
-			IsRewatching       bool      `json:"is_rewatching"`
-			IsRereading        bool      `json:"is_rereading"`
-			NumVolumesRead     int       `json:"num_volumes_read"`
-			NumChaptersRead    int       `json:"num_chapters_read"`
-			UpdatedAt          time.Time `json:"updated_at"`
-		} `json:"list_status,omitempty"`
-	} `json:"data"`
-	Paging struct {
-		Next string `json:"next"`
-	} `json:"paging"`
 }

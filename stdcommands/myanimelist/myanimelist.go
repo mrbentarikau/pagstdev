@@ -36,7 +36,7 @@ var Command = &commands.YAGCommand{
 	CmdCategory: commands.CategoryFun,
 	Name:        "MyAnimeList",
 	Aliases:     []string{"mal"},
-	Description: "Queries [MyAnimeList](https://myanimelist.net) for anime and manga.",
+	Description: "Queries [MyAnimeList](" + malURI + ") for anime and manga.",
 	Arguments: []*dcmd.ArgDef{
 		{Name: "Title", Type: dcmd.String},
 	},
