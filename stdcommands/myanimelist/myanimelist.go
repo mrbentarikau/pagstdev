@@ -43,8 +43,8 @@ var Command = &commands.YAGCommand{
 		{Name: "p", Help: "Paginated output"},
 		{Name: "top100", Help: "Top 100 titles by ranking"},
 	},
-	ApplicationCommandEnabled: false,
-	DefaultEnabled:            false,
+	ApplicationCommandEnabled: true,
+	DefaultEnabled:            true,
 	Cooldown:                  5,
 	RunFunc: func(data *dcmd.Data) (interface{}, error) {
 		var extraHeaders = map[string]string{"X-MAL-CLIENT-ID": confMalAPIKey.GetString()}
@@ -150,17 +150,17 @@ type malBuilder struct {
 	strings.Builder
 }
 
-func (mb *malBuilder) Sep(sep string) {
+func (mb *malBuilder) SepAndWrite(sep, value string) {
 	if mb.Len() != 0 {
 		mb.WriteString(sep)
 	}
+	mb.WriteString(value)
 }
 
 func amIDNameToBuilder(anIDN []AnimatedMangaIDName) malBuilder {
 	var builder malBuilder
 	for _, v := range anIDN {
-		builder.Sep(", ")
-		builder.WriteString("`" + v.Name + "`")
+		builder.SepAndWrite(", ", "`"+v.Name+"`")
 	}
 	return builder
 }
@@ -173,29 +173,25 @@ func embedCreator(malData MyAnimeListData, i int, paginated, isManga, isTopHundr
 	studiosBuilder = amIDNameToBuilder(mData.Studios)
 
 	for _, v := range mData.Related() {
-		relatedBuilder.Sep(", ")
-		relatedBuilder.WriteString(v.Node.Title)
+		relatedBuilder.SepAndWrite(", ", v.Node.Title)
 	}
 
 	for _, v := range mData.Authors {
-		authorsBuilder.Sep("; ")
 		if v.Node.FirstName != "" {
 			v.Node.FirstName = ", " + v.Node.FirstName
 		}
 		if v.Role != "" {
 			v.Role = " (" + v.Role + ")"
 		}
-		authorsBuilder.WriteString(v.Node.LastName + v.Node.FirstName + v.Role)
+		authorsBuilder.SepAndWrite("; ", v.Node.LastName+v.Node.FirstName+v.Role)
 	}
 
 	for _, v := range mData.Serialization {
-		serializationBuilder.Sep(", ")
-		serializationBuilder.WriteString(v.Node.Name)
+		serializationBuilder.SepAndWrite(", ", v.Node.Name)
 	}
 
 	for _, v := range mData.AlternativeTitles.Synonyms {
-		synonymsBuilder.Sep(", ")
-		synonymsBuilder.WriteString("`" + v + "`")
+		synonymsBuilder.SepAndWrite(", ", "`"+v+"`")
 	}
 
 	mediaType := mData.MediaType
