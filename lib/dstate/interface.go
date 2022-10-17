@@ -1,6 +1,7 @@
 package dstate
 
 import (
+	"errors"
 	"strconv"
 	"strings"
 	"time"
@@ -265,6 +266,13 @@ func (c *ChannelState) IsPrivate() bool {
 	}
 
 	return false
+}
+
+func (c *ChannelState) Mention() (string, error) {
+	if c == nil {
+		return "", errors.New("channel not found")
+	}
+	return "<#" + discordgo.StrID(c.ID) + ">", nil
 }
 
 // A fully cached member

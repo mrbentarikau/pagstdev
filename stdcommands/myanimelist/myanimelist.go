@@ -295,15 +295,11 @@ func embedCreator(malData MyAnimeListData, i int, paginated, isManga bool) *disc
 
 	var cleanFields []*discordgo.MessageEmbedField
 	for _, v := range embed.Fields {
-		if v.Value == "" || v.Value == "0" {
-			continue
-		}
-		if isManga && v.Name == "Duration" {
+		if v.Value == "" || v.Value == "0" || (isManga && v.Name == "Duration") {
 			continue
 		}
 		cleanFields = append(cleanFields, v)
 	}
-
 	embed.Fields = cleanFields
 
 	if !paginated {
