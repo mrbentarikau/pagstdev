@@ -7,28 +7,24 @@ type MyAnimeListData struct {
 }
 
 type AnimeMangaList struct {
-	Data   []AnimeMangaListNode `json:"data"`
+	Data    []AnimeMangaListNode `json:"data"`
+	Ranking struct {
+		Rank int `json:"rank"`
+	} `json:"ranking"`
 	Paging struct {
 		Next string `json:"next"`
 	} `json:"paging"`
 }
 
 type AnimeMangaListNode struct {
-	Node struct {
-		ID          int    `json:"id"`
-		Title       string `json:"title"`
-		MainPicture struct {
-			Medium string `json:"medium"`
-			Large  string `json:"large"`
-		} `json:"main_picture"`
-		JaroWinklerSimilarity float64
-	} `json:"node"`
+	Node AnimeMangaDetails `json:"node"`
 }
 
 type AnimeMangaDetails struct {
-	ID          int    `json:"id"`
-	Title       string `json:"title"`
-	MainPicture struct {
+	ID                    int    `json:"id"`
+	Title                 string `json:"title"`
+	JaroWinklerSimilarity float64
+	MainPicture           struct {
 		Medium string `json:"medium"`
 		Large  string `json:"large"`
 	} `json:"main_picture"`
@@ -140,25 +136,6 @@ func (a AnimeMangaDetails) Related() []Related {
 		return a.RelatedManga
 	}
 	return a.RelatedAnime
-}
-
-type AnimeRanking struct {
-	Data []struct {
-		Node struct {
-			ID          int    `json:"id"`
-			Title       string `json:"title"`
-			MainPicture struct {
-				Medium string `json:"medium"`
-				Large  string `json:"large"`
-			} `json:"main_picture"`
-		} `json:"node"`
-		Ranking struct {
-			Rank int `json:"rank"`
-		} `json:"ranking"`
-	} `json:"data"`
-	Paging struct {
-		Next string `json:"next"`
-	} `json:"paging"`
 }
 
 type UserAnimeList struct {

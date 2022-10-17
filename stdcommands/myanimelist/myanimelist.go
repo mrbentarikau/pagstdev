@@ -41,17 +41,15 @@ var Command = &commands.YAGCommand{
 		{Name: "manga", Help: "Search for mangas"},
 		{Name: "nsfw", Help: "NSFW enabled (MAL does not show some things)"},
 		{Name: "p", Help: "Paginated output"},
+		{Name: "top100", Help: "Top 100 titles by ranking"},
 	},
 	ApplicationCommandEnabled: false,
 	DefaultEnabled:            false,
 	Cooldown:                  5,
 	RunFunc: func(data *dcmd.Data) (interface{}, error) {
 		var extraHeaders = map[string]string{"X-MAL-CLIENT-ID": confMalAPIKey.GetString()}
-		var queryManga bool
 		var queryLimit = 25
-		var embedPages = 1
-		var paginatedView bool
-		var nsfw bool
+		var nsfw, paginatedView, queryManga, topHundred bool
 
 		var malSearch AnimeMangaList
 		var malData MyAnimeListData
@@ -68,13 +66,28 @@ var Command = &commands.YAGCommand{
 
 		if data.Switches["p"].Value != nil && data.Switches["p"].Value.(bool) {
 			paginatedView = true
-			embedPages = 5
 		}
 
+		if data.Switches["top100"].Value != nil && data.Switches["top100"].Value.(bool) {
+			topHundred = true
+			queryLimit = 100
+			paginatedView = true
+		}
+
+		queryFields := "id,title,main_picture,alternative_titles,start_date,end_date,synopsis,mean,rank,popularity,num_list_users,num_scoring_users,nsfw,created_at,updated_at,media_type,status,genres,num_volumes,num_chapters,authors{first_name,last_name},num_episodes,start_season,broadcast,source,average_episode_duration,rating,pictures,background,related_anime,related_manga,studios,serialization{name}"
+
 		// Initial search for titles
-		querySearch := fmt.Sprintf("%s/anime?q=%s&limit=%d&nsfw=%t", malRequestURI, url.QueryEscape(queryTitle), queryLimit, nsfw)
-		if queryManga {
-			querySearch = fmt.Sprintf("%s/manga?q=%s&limit=%d&nsfw=%t", malRequestURI, url.QueryEscape(queryTitle), queryLimit, nsfw)
+		var querySearch string
+		if !topHundred {
+			querySearch = fmt.Sprintf("%s/anime?q=%s&fields=%s&limit=%d&nsfw=%t", malRequestURI, url.QueryEscape(queryTitle), queryFields, queryLimit, nsfw)
+			if queryManga {
+				querySearch = fmt.Sprintf("%s/manga?q=%s&fields=%s&limit=%d&nsfw=%t", malRequestURI, url.QueryEscape(queryTitle), queryFields, queryLimit, nsfw)
+			}
+		} else {
+			querySearch = fmt.Sprintf("%s/anime/ranking?ranking_type=all&fields=%s&limit=%d'", malRequestURI, queryFields, queryLimit)
+			if queryManga {
+				querySearch = fmt.Sprintf("%s/manga/ranking?ranking_type=all&fields=%s&limit=%d'", malRequestURI, queryFields, queryLimit)
+			}
 		}
 
 		body, err := util.RequestFromAPI(querySearch, extraHeaders)
@@ -87,52 +100,35 @@ var Command = &commands.YAGCommand{
 			return nil, err
 		}
 
-		var animeSearchDataNode []AnimeMangaListNode
-		for _, node := range malSearch.Data {
-			node.Node.JaroWinklerSimilarity = jarowinkler.Similarity([]rune(queryTitle), []rune(node.Node.Title))
-			animeSearchDataNode = append(animeSearchDataNode, node)
-		}
+		if !topHundred {
+			var animeSearchDataNode []AnimeMangaListNode
+			for _, node := range malSearch.Data {
+				node.Node.JaroWinklerSimilarity = jarowinkler.Similarity([]rune(queryTitle), []rune(node.Node.Title))
+				animeSearchDataNode = append(animeSearchDataNode, node)
+			}
 
-		// sort the search results more closer to title's similarity
-		malSearch.Data = animeSearchDataNode
-		sort.SliceStable(malSearch.Data, func(i, j int) bool {
-			return malSearch.Data[i].Node.JaroWinklerSimilarity > malSearch.Data[j].Node.JaroWinklerSimilarity
-		})
+			// sort the search results more closer to title's similarity
+			malSearch.Data = animeSearchDataNode
+			sort.SliceStable(malSearch.Data, func(i, j int) bool {
+				return malSearch.Data[i].Node.JaroWinklerSimilarity > malSearch.Data[j].Node.JaroWinklerSimilarity
+			})
+		}
 
 		// Query for details of the title
 		var animeData []AnimeMangaDetails
-		var animeDetails AnimeMangaDetails
-
-		for i := 0; i < embedPages; i++ {
-			queryDetails := fmt.Sprintf("%s/anime/%d?fields=id,title,main_picture,alternative_titles,start_date,end_date,synopsis,mean,rank,popularity,num_list_users,num_scoring_users,nsfw,created_at,updated_at,media_type,status,genres,num_episodes,start_season,broadcast,source,average_episode_duration,rating,pictures,related_anime,related_manga,studios&nsfw=%t", malRequestURI, malSearch.Data[i].Node.ID, nsfw)
-
-			if queryManga {
-				queryDetails = fmt.Sprintf("%s/manga/%d?fields=id,title,main_picture,alternative_titles,start_date,end_date,synopsis,mean,rank,popularity,num_list_users,num_scoring_users,nsfw,created_at,updated_at,media_type,status,genres,num_volumes,num_chapters,authors{first_name,last_name},pictures,background,related_anime,related_manga,serialization{name}&nsfw=%t", malRequestURI, malSearch.Data[i].Node.ID, nsfw)
-			}
-
-			body, err = util.RequestFromAPI(queryDetails, extraHeaders)
-			if err != nil {
-				return nil, err
-			}
-
-			err = json.Unmarshal([]byte(body), &animeDetails)
-			if err != nil {
-				return nil, err
-			}
-
-			animeData = append(animeData, animeDetails)
+		for _, j := range malSearch.Data {
+			animeData = append(animeData, j.Node)
 		}
-
 		malData.AMData = animeData
 
-		malEmbed := embedCreator(malData, 0, paginatedView, queryManga)
+		malEmbed := embedCreator(malData, 0, paginatedView, queryManga, topHundred)
 
 		var pm *paginatedmessages.PaginatedMessage
 		if paginatedView {
 			pm, err = paginatedmessages.CreatePaginatedMessage(
 				data.GuildData.GS.ID, data.ChannelID, 1, len(malData.AMData), func(p *paginatedmessages.PaginatedMessage, page int) (*discordgo.MessageEmbed, error) {
 					i := page - 1
-					paginatedEmbed := embedCreator(malData, i, paginatedView, queryManga)
+					paginatedEmbed := embedCreator(malData, i, paginatedView, queryManga, topHundred)
 					return paginatedEmbed, nil
 				})
 			if err != nil {
@@ -165,7 +161,7 @@ func amIDNameToBuilder(anIDN []AnimatedMangaIDName) malBuilder {
 	return builder
 }
 
-func embedCreator(malData MyAnimeListData, i int, paginated, isManga bool) *discordgo.MessageEmbed {
+func embedCreator(malData MyAnimeListData, i int, paginated, isManga, isTopHundred bool) *discordgo.MessageEmbed {
 	var authorsBuilder, genresBuilder, relatedBuilder, serializationBuilder, studiosBuilder, synonymsBuilder malBuilder
 	var mData = malData.AMData[i]
 
@@ -196,11 +192,6 @@ func embedCreator(malData MyAnimeListData, i int, paginated, isManga bool) *disc
 	for _, v := range mData.AlternativeTitles.Synonyms {
 		synonymsBuilder.Sep(", ")
 		synonymsBuilder.WriteString("`" + v + "`")
-	}
-
-	authorURL := fmt.Sprintf("https://myanimelist.net/anime/%d", mData.ID)
-	if isManga {
-		authorURL = fmt.Sprintf("https://myanimelist.net/manga/%d", mData.ID)
 	}
 
 	mediaType := mData.MediaType
@@ -258,6 +249,27 @@ func embedCreator(malData MyAnimeListData, i int, paginated, isManga bool) *disc
 		jaAltTitle = "`" + jaAltTitle + "`"
 	}
 
+	var authorURL string
+	if !isTopHundred {
+		authorURL = fmt.Sprintf("https://myanimelist.net/anime/%d", mData.ID)
+		if isManga {
+			authorURL = fmt.Sprintf("https://myanimelist.net/manga/%d", mData.ID)
+		}
+	} else {
+		authorURL = "https://myanimelist.net/topanime.php"
+		if isManga {
+			authorURL = "https://myanimelist.net/topmanga.php"
+		}
+	}
+
+	var titleURL string
+	if isTopHundred {
+		titleURL = fmt.Sprintf("https://myanimelist.net/anime/%d", mData.ID)
+		if isManga {
+			titleURL = fmt.Sprintf("https://myanimelist.net/manga/%d", mData.ID)
+		}
+	}
+
 	embed := &discordgo.MessageEmbed{
 		Author: &discordgo.MessageEmbedAuthor{
 			Name:    "MyAnimeList",
@@ -266,12 +278,10 @@ func embedCreator(malData MyAnimeListData, i int, paginated, isManga bool) *disc
 		},
 
 		Title:       mData.Title,
+		URL:         titleURL,
 		Description: common.CutStringShort(mData.Synopsis, 512),
-
-		Thumbnail: &discordgo.MessageEmbedThumbnail{URL: malData.AMData[i].MainPicture.Medium},
-		//Image:     &discordgo.MessageEmbedImage{URL: malData.AnimeData[i].Pictures[0].Medium},
-
-		Color: int(rand.Int63n(16777215)),
+		Thumbnail:   &discordgo.MessageEmbedThumbnail{URL: malData.AMData[i].MainPicture.Medium},
+		Color:       int(rand.Int63n(16777215)),
 
 		Fields: []*discordgo.MessageEmbedField{
 			{Name: "Type", Value: mediaType, Inline: true},
