@@ -2,10 +2,6 @@ package myanimelist
 
 import "time"
 
-type MyAnimeListData struct {
-	AMData []AnimeMangaDetails
-}
-
 type AnimeMangaList struct {
 	Data    []AnimeMangaListNode `json:"data"`
 	Ranking struct {

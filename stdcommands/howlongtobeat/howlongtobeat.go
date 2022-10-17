@@ -79,8 +79,6 @@ var Command = &commands.YAGCommand{
 			return compactData, nil
 		}
 
-		hltbEmbed := embedCreator(parsedData, 0, paginatedView)
-
 		footerText := "howlongtobeat.com"
 		var footerSimilarity string
 		if hltbQuery.Data[0].JaroWinklerSimilarity > 0 {
@@ -109,6 +107,7 @@ var Command = &commands.YAGCommand{
 				return "Something went wrong making the paginated message", nil
 			}
 		} else {
+			hltbEmbed := embedCreator(parsedData, 0, paginatedView)
 			return hltbEmbed, nil
 		}
 

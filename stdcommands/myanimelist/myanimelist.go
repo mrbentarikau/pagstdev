@@ -22,7 +22,10 @@ import (
 	"golang.org/x/text/language"
 )
 
-var malRequestURI = "https://api.myanimelist.net/v2"
+var scheme = "https"
+var malHost = "myanimelist.net"
+var malRequestURI = fmt.Sprintf("%s://api.%s/v2", scheme, malHost)
+var malURI = fmt.Sprintf("%s://%s", scheme, malHost)
 var confMalAPIKey = config.RegisterOption("yagpdb.mal_api_key", "MyAnimeList API key", "")
 
 func ShouldRegister() bool {
@@ -50,9 +53,7 @@ var Command = &commands.YAGCommand{
 		var extraHeaders = map[string]string{"X-MAL-CLIENT-ID": confMalAPIKey.GetString()}
 		var queryLimit = 25
 		var nsfw, paginatedView, queryManga, topHundred bool
-
 		var malSearch AnimeMangaList
-		var malData MyAnimeListData
 
 		queryTitle := data.Args[0].Str()
 
@@ -76,7 +77,7 @@ var Command = &commands.YAGCommand{
 
 		queryFields := "id,title,main_picture,alternative_titles,start_date,end_date,synopsis,mean,rank,popularity,num_list_users,num_scoring_users,nsfw,created_at,updated_at,media_type,status,genres,num_volumes,num_chapters,authors{first_name,last_name},num_episodes,start_season,broadcast,source,average_episode_duration,rating,pictures,background,related_anime,related_manga,studios,serialization{name}"
 
-		// Initial search for titles
+		// Query for the title
 		var querySearch string
 		if !topHundred {
 			querySearch = fmt.Sprintf("%s/anime?q=%s&fields=%s&limit=%d&nsfw=%t", malRequestURI, url.QueryEscape(queryTitle), queryFields, queryLimit, nsfw)
@@ -118,31 +119,28 @@ var Command = &commands.YAGCommand{
 			})
 		}
 
-		// Query for details of the title
 		var animeData []AnimeMangaDetails
 		for _, j := range malSearch.Data {
 			animeData = append(animeData, j.Node)
 		}
-		malData.AMData = animeData
-
-		malEmbed := embedCreator(malData, 0, paginatedView, queryManga, topHundred)
+		var malData []AnimeMangaDetails = animeData
 
 		footerText := "myanimelist.net"
 		var footerSimilarity string
-		if malData.AMData[0].JaroWinklerSimilarity > 0 {
-			footerSimilarity = fmt.Sprintf("\nTitle similarity: %.2f%%", malData.AMData[0].JaroWinklerSimilarity*100)
+		if malData[0].JaroWinklerSimilarity > 0 {
+			footerSimilarity = fmt.Sprintf("\nTitle similarity: %.2f%%", malData[0].JaroWinklerSimilarity*100)
 		}
 		var footerExtra = fmt.Sprintf("%s%s", footerText, footerSimilarity)
 		var pm *paginatedmessages.PaginatedMessage
 		if paginatedView {
 			pm, err = paginatedmessages.CreatePaginatedMessage(
-				data.GuildData.GS.ID, data.ChannelID, 1, len(malData.AMData), func(p *paginatedmessages.PaginatedMessage, page int) (*discordgo.MessageEmbed, error) {
+				data.GuildData.GS.ID, data.ChannelID, 1, len(malData), func(p *paginatedmessages.PaginatedMessage, page int) (*discordgo.MessageEmbed, error) {
 					i := page - 1
 					paginatedEmbed := embedCreator(malData, i, paginatedView, queryManga, topHundred)
 
 					var footerSimilarity string
-					if malData.AMData[i].JaroWinklerSimilarity*100 > 0 {
-						footerSimilarity = fmt.Sprintf("\nTitle similarity: %.2f%%", malData.AMData[i].JaroWinklerSimilarity*100)
+					if malData[i].JaroWinklerSimilarity*100 > 0 {
+						footerSimilarity = fmt.Sprintf("\nTitle similarity: %.2f%%", malData[i].JaroWinklerSimilarity*100)
 					}
 
 					p.FooterExtra = []string{fmt.Sprintf("%s%s", footerText, footerSimilarity)}
@@ -152,6 +150,7 @@ var Command = &commands.YAGCommand{
 				return "Something went wrong making the paginated messages", nil
 			}
 		} else {
+			malEmbed := embedCreator(malData, 0, paginatedView, queryManga, topHundred)
 			return malEmbed, nil
 		}
 
@@ -178,9 +177,9 @@ func amIDNameToBuilder(anIDN []AnimatedMangaIDName) malBuilder {
 	return builder
 }
 
-func embedCreator(malData MyAnimeListData, i int, paginated, isManga, isTopHundred bool) *discordgo.MessageEmbed {
+func embedCreator(malData []AnimeMangaDetails, i int, paginated, isManga, isTopHundred bool) *discordgo.MessageEmbed {
 	var authorsBuilder, genresBuilder, relatedBuilder, serializationBuilder, studiosBuilder, synonymsBuilder malBuilder
-	var mData = malData.AMData[i]
+	var mData = malData[i]
 
 	genresBuilder = amIDNameToBuilder(mData.Genres)
 	studiosBuilder = amIDNameToBuilder(mData.Studios)
@@ -262,24 +261,18 @@ func embedCreator(malData MyAnimeListData, i int, paginated, isManga, isTopHundr
 		jaAltTitle = "`" + jaAltTitle + "`"
 	}
 
-	var authorURL string
+	var authorURL, titleURL string
 	if !isTopHundred {
-		authorURL = fmt.Sprintf("https://myanimelist.net/anime/%d", mData.ID)
+		authorURL = fmt.Sprintf("%s/anime/%d", malURI, mData.ID)
 		if isManga {
-			authorURL = fmt.Sprintf("https://myanimelist.net/manga/%d", mData.ID)
+			authorURL = fmt.Sprintf("%s/manga/%d", malURI, mData.ID)
 		}
 	} else {
-		authorURL = "https://myanimelist.net/topanime.php"
+		authorURL = malURI + "/topanime.php"
+		titleURL = fmt.Sprintf("%s/anime/%d", malURI, mData.ID)
 		if isManga {
-			authorURL = "https://myanimelist.net/topmanga.php"
-		}
-	}
-
-	var titleURL string
-	if isTopHundred {
-		titleURL = fmt.Sprintf("https://myanimelist.net/anime/%d", mData.ID)
-		if isManga {
-			titleURL = fmt.Sprintf("https://myanimelist.net/manga/%d", mData.ID)
+			authorURL = malURI + "/topmanga.php"
+			titleURL = fmt.Sprintf("%s/manga/%d", malURI, mData.ID)
 		}
 	}
 
@@ -298,7 +291,7 @@ func embedCreator(malData MyAnimeListData, i int, paginated, isManga, isTopHundr
 		Title:       mData.Title,
 		URL:         titleURL,
 		Description: common.CutStringShort(mData.Synopsis, 512),
-		Thumbnail:   &discordgo.MessageEmbedThumbnail{URL: malData.AMData[i].MainPicture.Medium},
+		Thumbnail:   &discordgo.MessageEmbedThumbnail{URL: mData.MainPicture.Large},
 		Color:       int(rand.Int63n(16777215)),
 
 		Fields: []*discordgo.MessageEmbedField{
@@ -331,7 +324,7 @@ func embedCreator(malData MyAnimeListData, i int, paginated, isManga, isTopHundr
 	embed.Fields = cleanFields
 
 	if !paginated {
-		embed.Footer = &discordgo.MessageEmbedFooter{Text: "myanimelist.net"}
+		embed.Footer = &discordgo.MessageEmbedFooter{Text: malURI}
 		embed.Timestamp = time.Now().Format(time.RFC3339)
 	}
 
