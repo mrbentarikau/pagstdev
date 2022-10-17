@@ -39,7 +39,7 @@ var Command = &commands.YAGCommand{
 	},
 	ArgSwitches: []*dcmd.ArgDef{
 		{Name: "manga", Help: "Search for mangas"},
-		{Name: "nsfw", Help: "NSFW enabled (MAL does not show some things)"},
+		{Name: "nsfw", Help: "NSFW enabled"},
 		{Name: "p", Help: "Paginated output"},
 		{Name: "top100", Help: "Top 100 titles by ranking"},
 	},
@@ -305,7 +305,7 @@ func embedCreator(malData MyAnimeListData, i int, paginated, isManga, isTopHundr
 
 	var cleanFields []*discordgo.MessageEmbedField
 	for _, v := range embed.Fields {
-		if v.Value == "" || v.Value == "0" || (isManga && v.Name == "Duration") {
+		if v == nil || v.Value == "" || v.Value == "0" || (isManga && v.Name == "Duration") {
 			continue
 		}
 		cleanFields = append(cleanFields, v)
