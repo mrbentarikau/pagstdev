@@ -146,55 +146,55 @@ var Command = &commands.YAGCommand{
 	},
 }
 
+type malBuilder struct {
+	strings.Builder
+}
+
+func (mb *malBuilder) Sep(sep string) {
+	if mb.Len() != 0 {
+		mb.WriteString(sep)
+	}
+}
+
+func amIDNameToBuilder(anIDN []AnimatedMangaIDName) malBuilder {
+	var builder malBuilder
+	for _, v := range anIDN {
+		builder.Sep(", ")
+		builder.WriteString("`" + v.Name + "`")
+	}
+	return builder
+}
+
 func embedCreator(malData MyAnimeListData, i int, paginated, isManga bool) *discordgo.MessageEmbed {
-	var authorsBuilder, genresBuilder, relatedBuilder, serializationBuilder, studiosBuilder, synonymsBuilder strings.Builder
+	var authorsBuilder, genresBuilder, relatedBuilder, serializationBuilder, studiosBuilder, synonymsBuilder malBuilder
 	var mData = malData.AMData[i]
 
-	for _, v := range mData.Genres {
-		if genresBuilder.Len() != 0 {
-			genresBuilder.WriteString(", ")
-		}
-
-		genresBuilder.WriteString("`" + v.Name + "`")
-	}
+	genresBuilder = amIDNameToBuilder(mData.Genres)
+	studiosBuilder = amIDNameToBuilder(mData.Studios)
 
 	for _, v := range mData.Related() {
-		if relatedBuilder.Len() != 0 {
-			relatedBuilder.WriteString(", ")
-		}
-
+		relatedBuilder.Sep(", ")
 		relatedBuilder.WriteString(v.Node.Title)
 	}
 
 	for _, v := range mData.Authors {
-		if authorsBuilder.Len() != 0 {
-			authorsBuilder.WriteString("; ")
+		authorsBuilder.Sep("; ")
+		if v.Node.FirstName != "" {
+			v.Node.FirstName = ", " + v.Node.FirstName
 		}
-
-		authorsBuilder.WriteString(v.Node.LastName + ", " + v.Node.FirstName + " (" + v.Role + ")")
+		if v.Role != "" {
+			v.Role = " (" + v.Role + ")"
+		}
+		authorsBuilder.WriteString(v.Node.LastName + v.Node.FirstName + v.Role)
 	}
 
 	for _, v := range mData.Serialization {
-		if serializationBuilder.Len() != 0 {
-			serializationBuilder.WriteString(", ")
-		}
-
+		serializationBuilder.Sep(", ")
 		serializationBuilder.WriteString(v.Node.Name)
 	}
 
-	for _, v := range mData.Studios {
-		if studiosBuilder.Len() != 0 {
-			studiosBuilder.WriteString(", ")
-		}
-
-		studiosBuilder.WriteString(v.Name)
-	}
-
 	for _, v := range mData.AlternativeTitles.Synonyms {
-		if synonymsBuilder.Len() != 0 {
-			synonymsBuilder.WriteString(", ")
-		}
-
+		synonymsBuilder.Sep(", ")
 		synonymsBuilder.WriteString("`" + v + "`")
 	}
 
@@ -296,6 +296,9 @@ func embedCreator(malData MyAnimeListData, i int, paginated, isManga bool) *disc
 	var cleanFields []*discordgo.MessageEmbedField
 	for _, v := range embed.Fields {
 		if v.Value == "" || v.Value == "0" {
+			continue
+		}
+		if isManga && v.Name == "Duration" {
 			continue
 		}
 		cleanFields = append(cleanFields, v)

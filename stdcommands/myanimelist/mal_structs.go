@@ -37,24 +37,21 @@ type AnimeMangaDetails struct {
 		En       string   `json:"en"`
 		Ja       string   `json:"ja"`
 	} `json:"alternative_titles"`
-	StartDate       string    `json:"start_date"`
-	EndDate         string    `json:"end_date"`
-	Synopsis        string    `json:"synopsis"`
-	Mean            float64   `json:"mean"`
-	Rank            int       `json:"rank"`
-	Popularity      int       `json:"popularity"`
-	NumListUsers    int       `json:"num_list_users"`
-	NumScoringUsers int64     `json:"num_scoring_users"`
-	Nsfw            string    `json:"nsfw"`
-	CreatedAt       time.Time `json:"created_at"`
-	UpdatedAt       time.Time `json:"updated_at"`
-	MediaType       string    `json:"media_type"`
-	Status          string    `json:"status"`
-	Genres          []struct {
-		ID   int    `json:"id"`
-		Name string `json:"name"`
-	} `json:"genres"`
-	MyListStatus struct {
+	StartDate       string                `json:"start_date"`
+	EndDate         string                `json:"end_date"`
+	Synopsis        string                `json:"synopsis"`
+	Mean            float64               `json:"mean"`
+	Rank            int                   `json:"rank"`
+	Popularity      int                   `json:"popularity"`
+	NumListUsers    int                   `json:"num_list_users"`
+	NumScoringUsers int64                 `json:"num_scoring_users"`
+	Nsfw            string                `json:"nsfw"`
+	CreatedAt       time.Time             `json:"created_at"`
+	UpdatedAt       time.Time             `json:"updated_at"`
+	MediaType       string                `json:"media_type"`
+	Status          string                `json:"status"`
+	Genres          []AnimatedMangaIDName `json:"genres"`
+	MyListStatus    struct {
 		Status             string    `json:"status"`
 		Score              int       `json:"score"`
 		NumEpisodesWatched int       `json:"num_episodes_watched"`
@@ -101,10 +98,7 @@ type AnimeMangaDetails struct {
 		} `json:"node"`
 		NumRecommendations int `json:"num_recommendations"`
 	} `json:"recommendations"`
-	Studios []struct {
-		ID   int    `json:"id"`
-		Name string `json:"name"`
-	} `json:"studios"`
+	Studios    []AnimatedMangaIDName `json:"studios"`
 	Statistics struct {
 		Status struct {
 			Watching    string `json:"watching"`
@@ -134,6 +128,11 @@ type Related struct {
 	} `json:"node"`
 	RelationType          string `json:"relation_type"`
 	RelationTypeFormatted string `json:"relation_type_formatted"`
+}
+
+type AnimatedMangaIDName struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
 }
 
 func (a AnimeMangaDetails) Related() []Related {
