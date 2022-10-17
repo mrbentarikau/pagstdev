@@ -113,6 +113,10 @@ var Command = &commands.YAGCommand{
 					joinedPlains = strings.Join(plainsSlice[i*5:], ",")
 				}
 
+				if !paginatedView {
+					joinedPlains = plainsSlice[0]
+				}
+
 				if joinedPlains != "" {
 					queryPriceLow := fmt.Sprintf("%s/v01/game/storelow/?key=%s&plains=%s", itadAPIHost, itadAPIKey, joinedPlains)
 					body, err = util.RequestFromAPI(queryPriceLow)
@@ -122,7 +126,7 @@ var Command = &commands.YAGCommand{
 
 					err = json.Unmarshal([]byte(body), &itadPriceLow)
 					if err != nil {
-						return nil, err
+						continue
 					}
 
 					itadPriceLow.Compact = make(map[string]map[string]float64)
@@ -132,6 +136,9 @@ var Command = &commands.YAGCommand{
 							itadPriceLow.Compact[k][vv.Shop] = vv.Price
 						}
 					}
+				}
+				if !paginatedView {
+					break
 				}
 			}
 		}
