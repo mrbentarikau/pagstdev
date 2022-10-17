@@ -90,9 +90,13 @@ var Command = &commands.YAGCommand{
 			}
 		}
 
+		if !topHundred && queryTitle == "" {
+			return "No title provided...", nil
+		}
+
 		body, err := util.RequestFromAPI(querySearch, extraHeaders)
 		if err != nil {
-			return "No such title found", err
+			return "No such title found...", err
 		}
 
 		err = json.Unmarshal([]byte(body), &malSearch)
