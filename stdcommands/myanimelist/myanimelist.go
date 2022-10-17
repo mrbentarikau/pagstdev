@@ -270,6 +270,11 @@ func embedCreator(malData MyAnimeListData, i int, paginated, isManga, isTopHundr
 		}
 	}
 
+	var malScore string
+	if mData.Mean > 0 {
+		malScore = fmt.Sprintf("**%.2f** (by %s users)", mData.Mean, util.HumanizeThousands(mData.NumScoringUsers))
+	}
+
 	embed := &discordgo.MessageEmbed{
 		Author: &discordgo.MessageEmbedAuthor{
 			Name:    "MyAnimeList",
@@ -298,7 +303,7 @@ func embedCreator(malData MyAnimeListData, i int, paginated, isManga, isTopHundr
 			{Name: "Genres", Value: genresBuilder.String()},
 			relatedField,
 			{Name: "Serialization", Value: common.CutStringShort(serializationBuilder.String(), 280)},
-			{Name: "MAL Score", Value: fmt.Sprintf("**%.2f** (by %s users)", mData.Mean, util.HumanizeThousands(mData.NumScoringUsers)), Inline: true},
+			{Name: "MAL Score", Value: malScore, Inline: true},
 			{Name: "MAL Rank & Popularity", Value: fmt.Sprintf("#%d and #%d", mData.Rank, mData.Popularity), Inline: true},
 		},
 	}
