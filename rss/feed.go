@@ -18,6 +18,7 @@ import (
 	"github.com/botlabs-gg/yagpdb/feeds"
 	"github.com/botlabs-gg/yagpdb/lib/discordgo"
 	"github.com/botlabs-gg/yagpdb/rss/models"
+
 	"github.com/mediocregopher/radix/v3"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/mmcdole/gofeed"
@@ -73,6 +74,7 @@ func (p *Plugin) checkGoFeed() {
 			logger.WithError(err).WithField("feed_url", feed.FeedURL).Warn("goFeed fetching RSS feed erred")
 			continue
 		}
+
 		go p.CheckRSSFeed(nil, parsedFeed, feed.FeedURL)
 	}
 }
@@ -153,39 +155,57 @@ func (p *Plugin) CheckRSSFeed(feedByte []byte, directFeed *gofeed.Feed, feedURL 
 	}
 
 	// This is a new feed, post it
-	return p.postRSSFeed(subs, parsedPublishedAt, parsedFeedURLProtocol, feed)
+	return p.postRSSFeed(subs, &lastRSSTime, parsedPublishedAt, lastRSSLink, parsedFeedURLProtocol, feed)
 
 }
 
-func (p *Plugin) postRSSFeed(subs models.RSSFeedSlice, publishedAt *time.Time, feedURL string, feed *gofeed.Feed) error {
-	var itemLink string
-	if len(feed.Items) > 0 {
-		itemLink = feed.Items[0].Link
+func (p *Plugin) postRSSFeed(subs models.RSSFeedSlice, lastRSSTime, publishedAt *time.Time, lastRSSLink, feedURL string, feed *gofeed.Feed) error {
+	var itemLink, lastLink string
+
+	// Let's reverse sort the feed last post last in items slice
+	for i, j := 0, len(feed.Items)-1; i < j; i, j = i+1, j-1 {
+		feed.Items[i], feed.Items[j] = feed.Items[j], feed.Items[i]
 	}
+
+	for feedNum, v := range feed.Items {
+		if lastRSSTime.After(*v.PublishedParsed) || time.Since(*v.PublishedParsed) > time.Minute*30 || lastRSSLink == v.Link {
+			continue
+		}
+
+		itemLink = v.Link
+		if lastLink == itemLink {
+			continue
+		}
+
+		lastLink = itemLink
+		publishedAt = v.PublishedParsed
+
+		for _, sub := range subs {
+			if sub.Enabled {
+				go p.sendNewRSSFeedMessage(sub.GuildID, sub.ChannelID, sub.MentionRole, feed, sub.FeedName, feedNum)
+				time.Sleep(100 * time.Millisecond)
+			}
+		}
+	}
+
 	err := common.MultipleCmds(
 		radix.FlatCmd(nil, "SET", KeyLastRSSFeedTime(removeProtocol(feedURL)), publishedAt.Unix()),
-		radix.FlatCmd(nil, "SET", KeyLastRSSFeedLink(removeProtocol(feedURL)), itemLink),
+		radix.FlatCmd(nil, "SET", KeyLastRSSFeedLink(removeProtocol(feedURL)), lastLink),
 	)
 	if err != nil {
 		return err
 	}
 
-	for _, sub := range subs {
-		if sub.Enabled {
-			go p.sendNewRSSFeedMessage(sub.GuildID, sub.ChannelID, sub.MentionRole, feed, feedURL, sub.FeedName)
-		}
-	}
-
 	return nil
 }
 
-func (p *Plugin) sendNewRSSFeedMessage(guildID, channelID, mentionRole int64, feed *gofeed.Feed, feedURL, feedName string) {
+func (p *Plugin) sendNewRSSFeedMessage(guildID, channelID, mentionRole int64, feed *gofeed.Feed, feedName string, feedNum int) {
 	var content string
 	var rssEmbed *discordgo.MessageEmbed
 
 	guildState := bot.State.GetGuild(guildID) //GuildSet
 	if guildState == nil {
-		logger.Error("sendNewVidMessage for guild not in state")
+		logger.Error("sendNewRSSFeedMessage for guild not in state")
 		return
 	}
 
@@ -202,7 +222,13 @@ func (p *Plugin) sendNewRSSFeedMessage(guildID, channelID, mentionRole int64, fe
 	}
 
 	if len(feed.Items) > 0 {
-		rssFeedTemplate.Item = rssFeedTemplate.Items[0]
+		rssFeedTemplate.Item = rssFeedTemplate.Items[feedNum]
+		rssFeedTemplate.Items = rssFeedTemplate.Items[:feedNum+1]
+	}
+
+	// Let's reverse feed back to last post first in items slice
+	for i, j := 0, len(rssFeedTemplate.Items)-1; i < j; i, j = i+1, j-1 {
+		rssFeedTemplate.Items[i], rssFeedTemplate.Items[j] = rssFeedTemplate.Items[j], rssFeedTemplate.Items[i]
 	}
 
 	ctx := templates.NewContext(guildState, guildState.GetChannel(channelID), nil) //needs GuildSet, ChannelState, MemberState
@@ -218,7 +244,7 @@ func (p *Plugin) sendNewRSSFeedMessage(guildID, channelID, mentionRole int64, fe
 		announceMsg.Announcement = dbAnnounceMsg.Announcement
 	}
 
-	rssEmbed = createRSSEmbed(feed, feedName)
+	rssEmbed = createRSSEmbed(feed, feedName, feedNum)
 	ctx.Data["RSSEmbed"] = rssEmbed
 
 	webhookUsername := "RSS Feed • " + common.ConfBotName.GetString()
@@ -253,13 +279,12 @@ func (p *Plugin) sendNewRSSFeedMessage(guildID, channelID, mentionRole int64, fe
 	}
 
 	go analytics.RecordActiveUnit(guildID, p, "posted_rssfeeds_message")
-
 	qm := &mqueue.QueuedElement{
-		GuildID:          guildID,
-		ChannelID:        channelID,
-		Source:           "rss",
-		SourceItemID:     "",
-		MessageStr:       content,
+		GuildID:      guildID,
+		ChannelID:    channelID,
+		Source:       "rss",
+		SourceItemID: "",
+		//MessageStr:       content,
 		MessageEmbed:     rssEmbed,
 		UseWebhook:       true,
 		WebhookUsername:  webhookUsername,
@@ -274,17 +299,25 @@ func (p *Plugin) sendNewRSSFeedMessage(guildID, channelID, mentionRole int64, fe
 		qm.UseWebhook = false
 	}*/
 
+	if strings.TrimSpace(strings.ReplaceAll(content, "\r\n", "")) != "" {
+		qm.MessageStr = content
+	} else {
+		if qm.MessageEmbed == nil {
+			return
+		}
+	}
+
 	mqueue.QueueMessage(qm)
 
 	feeds.MetricPostedMessages.With(prometheus.Labels{"source": "rssfeeds"}).Inc()
 }
 
-func createRSSEmbed(feed *gofeed.Feed, feedName string) *discordgo.MessageEmbed {
+func createRSSEmbed(feed *gofeed.Feed, feedName string, feedNum int) *discordgo.MessageEmbed {
 	var feedItem *gofeed.Item
 	var feedAuthor string
 
 	if len(feed.Items) > 0 {
-		feedItem = feed.Items[0]
+		feedItem = feed.Items[feedNum]
 	}
 
 	feedTime := feedItem.PublishedParsed

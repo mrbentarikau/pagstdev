@@ -9,7 +9,7 @@ import (
 	"github.com/botlabs-gg/yagpdb/lib/discordgo"
 )
 
-// The state system for yags
+// The state system for pagst
 // You are safe to read everything returned
 // You are NOT safe to modify anything returned, as that can cause race conditions
 type StateTracker interface {
