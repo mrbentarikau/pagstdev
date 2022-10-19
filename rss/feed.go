@@ -226,7 +226,7 @@ func (p *Plugin) sendNewRSSFeedMessage(guildID, channelID, mentionRole int64, fe
 		rssFeedTemplate.Items = rssFeedTemplate.Items[:feedNum+1]
 	}
 
-	// Let's reverse feed back to last post first in items slice
+	// Let's revert feed back to last post first in items slice
 	for i, j := 0, len(rssFeedTemplate.Items)-1; i < j; i, j = i+1, j-1 {
 		rssFeedTemplate.Items[i], rssFeedTemplate.Items[j] = rssFeedTemplate.Items[j], rssFeedTemplate.Items[i]
 	}
@@ -301,13 +301,11 @@ func (p *Plugin) sendNewRSSFeedMessage(guildID, channelID, mentionRole int64, fe
 
 	if strings.TrimSpace(strings.ReplaceAll(content, "\r\n", "")) != "" {
 		qm.MessageStr = content
-	} else {
-		if qm.MessageEmbed == nil {
-			return
-		}
 	}
 
-	mqueue.QueueMessage(qm)
+	if qm.MessageEmbed != nil {
+		mqueue.QueueMessage(qm)
+	}
 
 	feeds.MetricPostedMessages.With(prometheus.Labels{"source": "rssfeeds"}).Inc()
 }
