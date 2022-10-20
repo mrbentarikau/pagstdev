@@ -113,10 +113,6 @@ var Command = &commands.YAGCommand{
 					joinedPlains = strings.Join(plainsSlice[i*5:], ",")
 				}
 
-				if !paginatedView {
-					joinedPlains = plainsSlice[0]
-				}
-
 				if joinedPlains != "" {
 					queryPriceLow := fmt.Sprintf("%s/v01/game/storelow/?key=%s&plains=%s", itadAPIHost, itadAPIKey, joinedPlains)
 					body, err = util.RequestFromAPI(queryPriceLow)
