@@ -26,7 +26,7 @@ var Command = &commands.YAGCommand{
 		addr := "http://api.adviceslip.com/advice"
 		if data.Args[0].Str() != "" {
 			random = false
-			addr = "http://api.adviceslip.com/advice/search/" + url.QueryEscape(data.Args[0].Str())
+			addr = addr + "/search/" + url.QueryEscape(data.Args[0].Str())
 		}
 
 		resp, err := http.Get(addr)
