@@ -54,13 +54,13 @@ func (p *Plugin) updateGlobalCommands() {
 
 	for _, v := range CommandSystem.Root.Commands {
 		if cmd := p.yagCommandToSlashCommand(v); cmd != nil {
-			logger.Infof("%s is a global slash command: default enabled: %v", cmd.Name, *cmd.DefaultPermission)
+			logger.Infof("%s is a global application command: default enabled: %v", cmd.Name, *cmd.DefaultPermission)
 			result = append(result, cmd)
 		}
 	}
 
 	for _, v := range slashCommandsContainers {
-		logger.Infof("%s is a slash command container: default enabled: %v", v.container.Names[0], v.defaultPermissions)
+		logger.Infof("%s is an application command container: default enabled: %v", v.container.Names[0], v.defaultPermissions)
 		result = append(result, p.containerToSlashCommand(v))
 	}
 
@@ -69,7 +69,7 @@ func (p *Plugin) updateGlobalCommands() {
 	current := ""
 	err := common.RedisPool.Do(radix.Cmd(&current, "GET", "slash_commands_current"))
 	if err != nil {
-		logger.WithError(err).Error("failed retrieving current saved slash commands")
+		logger.WithError(err).Error("failed retrieving current saved application commands")
 		return
 	}
 
@@ -82,7 +82,7 @@ func (p *Plugin) updateGlobalCommands() {
 
 	ret, err := common.BotSession.ApplicationCommandBulkOverwrite(common.BotApplication.ID, 0, result)
 	if err != nil {
-		logger.WithError(err).Error("failed updating global slash commands")
+		logger.WithError(err).Error("failed updating global application commands")
 		return
 	}
 
@@ -172,8 +172,8 @@ func (p *Plugin) yagCommandToSlashCommand(cmd *dcmd.RegisteredCommand) *discordg
 	// KRAAKA adding context menu command
 	if cast.ApplicationCommandType == discordgo.UserApplicationCommand {
 		applicationCommand = &discordgo.ApplicationCommand{
-			Name:              strings.ToLower(cmd.Trigger.Names[0]),
 			DefaultPermission: &t,
+			Name:              strings.ToLower(cmd.Trigger.Names[0]),
 			NameLocalizations: cast.NameLocalizations,
 			Type:              discordgo.UserApplicationCommand,
 		}
@@ -181,9 +181,9 @@ func (p *Plugin) yagCommandToSlashCommand(cmd *dcmd.RegisteredCommand) *discordg
 
 	if cast.ApplicationCommandType == discordgo.MessageApplicationCommand {
 		applicationCommand = &discordgo.ApplicationCommand{
+			DefaultPermission: &t,
 			Name:              strings.ToLower(cmd.Trigger.Names[0]),
 			NameLocalizations: cast.NameLocalizations,
-			DefaultPermission: &t,
 			Type:              discordgo.MessageApplicationCommand,
 		}
 	}
@@ -376,9 +376,11 @@ func updateSlashCommandGuildPermissions(gs *dstate.GuildSet) (updated bool, err 
 
 func handleInteractionCreate(evt *eventsystem.EventData) {
 	interaction := evt.InteractionCreate()
+
 	if interaction.Type != discordgo.InteractionApplicationCommand {
 		return
 	}
+
 	if interaction.DataCommand == nil {
 		logger.Warn("Interaction had no data")
 		return

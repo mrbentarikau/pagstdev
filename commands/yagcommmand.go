@@ -159,6 +159,7 @@ type YAGCommand struct {
 	slashCommandID int64
 
 	IsResponseEphemeral bool
+	IsResponseModal     bool
 
 	CmdNoRun bool
 }
@@ -449,7 +450,7 @@ func (yc *YAGCommand) checkCanExecuteCommand(data *dcmd.Data, channelID int64) (
 		guild := data.GuildData.GS
 
 		if data.TriggerType != dcmd.TriggerTypeSlashCommands {
-			if hasPerms, _ := bot.BotHasPermissionGS(guild, data.ChannelID, discordgo.PermissionReadMessages|discordgo.PermissionSendMessages); !hasPerms {
+			if hasPerms, _ := bot.BotHasPermissionGS(guild, data.ChannelID, discordgo.PermissionViewChannel|discordgo.PermissionSendMessages); !hasPerms {
 				return false, nil, nil, nil
 			}
 		}
@@ -932,8 +933,9 @@ func (cs *YAGCommand) SetCooldownGuild(cc []*dcmd.Container, guildID int64) erro
 }
 
 func (yc *YAGCommand) Logger(data *dcmd.Data) *logrus.Entry {
-	l := logger.WithField("cmd", yc.FindNameFromContainerChain(data.ContainerChain))
+	var l *logrus.Entry
 	if data != nil {
+		l = logger.WithField("cmd", yc.FindNameFromContainerChain(data.ContainerChain))
 		if data.Author != nil {
 			l = l.WithField("user_n", data.Author.Username)
 			l = l.WithField("user_id", data.Author.ID)

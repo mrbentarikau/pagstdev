@@ -57,6 +57,7 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/tidwall/buntdb v1.2.8
 	github.com/tkuchiki/go-timezone v0.2.2
+	github.com/trubitsyn/go-zero-width v1.0.1
 	github.com/viant/assertly v0.4.8
 	github.com/viant/toolbox v0.24.0
 	github.com/vmihailenco/msgpack v4.0.4+incompatible
