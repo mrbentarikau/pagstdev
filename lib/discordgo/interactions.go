@@ -235,6 +235,7 @@ type Interaction struct {
 	Version int    `json:"version"`
 
 	DataCommand *ApplicationCommandInteractionData
+	DataModal   *ModalSubmitInteractionData
 }
 
 type interaction Interaction
@@ -280,6 +281,10 @@ func (i *Interaction) UnmarshalJSON(raw []byte) error {
 			return err
 		}
 		i.Data = v
+		err = json.Unmarshal(tmp.Data, &i.DataModal)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
