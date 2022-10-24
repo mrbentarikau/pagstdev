@@ -169,14 +169,20 @@ var cmds = []*commands.YAGCommand{
 				return out, nil
 			}
 
-			pm, err := paginatedmessages.CreatePaginatedMessage(
-				parsed.GuildData.GS.ID, parsed.ChannelID, 1, int(math.Ceil(float64(len(currentReminders))/float64(maxLength))), func(p *paginatedmessages.PaginatedMessage, page int) (*discordgo.MessageEmbed, error) {
-					i := page - 1
-					paginatedEmbed := embedCreator(currentReminders, i, maxLength, 0, parsed)
-					return paginatedEmbed, nil
-				})
-			if err != nil {
-				return fmt.Sprintf("Something went wrong: %s", err), nil
+			var pm *paginatedmessages.PaginatedMessage
+			if len(currentReminders) > 0 {
+				pm, err = paginatedmessages.CreatePaginatedMessage(
+					parsed.GuildData.GS.ID, parsed.ChannelID, 1, int(math.Ceil(float64(len(currentReminders))/float64(maxLength))), func(p *paginatedmessages.PaginatedMessage, page int) (*discordgo.MessageEmbed, error) {
+						i := page - 1
+						paginatedEmbed := embedCreator(currentReminders, i, maxLength, 0, parsed)
+						return paginatedEmbed, nil
+					})
+				if err != nil {
+					return fmt.Sprintf("Something went wrong: %s", err), nil
+				}
+			} else {
+				paginatedEmbed := embedCreator(currentReminders, 0, maxLength, 0, parsed)
+				return paginatedEmbed, nil
 			}
 
 			return pm, nil
@@ -419,13 +425,14 @@ func embedCreator(currentReminders []*Reminder, i, ml, flag int, parsed *dcmd.Da
 	embedDescription := []string{"Remove a reminder with `delreminder/rmreminder (id)` where id is the first number for each reminder above.\nTo clear all reminders, use `delreminder` with the `-a` switch.", "Remove a reminder with `delreminder/rmreminder (id)` where id is the first number for each reminder above."}
 
 	embed := &discordgo.MessageEmbed{
-		Title:       embedTitle[flag],
+		Title:       fmt.Sprintf("%s count %d", embedTitle[flag], len(currentReminders)),
 		Color:       int(rand.Int63n(16777215)),
 		Description: embedDescription[flag],
 		Thumbnail: &discordgo.MessageEmbedThumbnail{
 			URL: discordgo.EndpointUserAvatar(member.User.ID, member.User.Avatar),
 		},
 	}
+
 	for k, v := range currentReminders[i*ml:] {
 		var username string
 		if k < ml {
