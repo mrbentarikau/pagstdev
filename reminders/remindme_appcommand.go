@@ -107,7 +107,7 @@ func getModalComponents() []discordgo.MessageComponent {
 			Components: []discordgo.MessageComponent{
 				discordgo.TextInput{
 					CustomID:  RemindmeExtraNotes,
-					Label:     "Extra Notes for Reminder (optional):",
+					Label:     "Extra Notes (optional)",
 					Style:     discordgo.TextInputParagraph,
 					Required:  false,
 					MaxLength: 280,
@@ -119,7 +119,7 @@ func getModalComponents() []discordgo.MessageComponent {
 			Components: []discordgo.MessageComponent{
 				discordgo.TextInput{
 					CustomID:    RemindmeDueDate,
-					Label:       "DUE DATE (optional, defaults to 20m)",
+					Label:       "Due Date (optional, defaults to 20m)",
 					Style:       discordgo.TextInputShort,
 					Required:    false,
 					MaxLength:   32,
