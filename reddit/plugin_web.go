@@ -76,12 +76,15 @@ func (p *Plugin) InitWeb() {
 	redditMux.Use(web.RequirePermMW(discordgo.PermissionManageWebhooks))
 	redditMux.Use(baseData)
 
-	redditMux.Handle(pat.Get("/"), web.RenderHandler(HandleReddit, "cp_reddit"))
-	redditMux.Handle(pat.Get(""), web.RenderHandler(HandleReddit, "cp_reddit"))
+	mainGetHandler := web.ControllerHandler(p.HandleReddit, "cp_reddit")
+	addHandler := web.ControllerPostHandler(p.HandleNew, mainGetHandler, CreateForm{})
+
+	redditMux.Handle(pat.Get("/"), mainGetHandler)
+	redditMux.Handle(pat.Get(""), mainGetHandler)
 
 	// If only html forms allowed patch and delete.. if only
-	redditMux.Handle(pat.Post(""), web.FormParserMW(web.RenderHandler(HandleNew, "cp_reddit"), CreateForm{}))
-	redditMux.Handle(pat.Post("/"), web.FormParserMW(web.RenderHandler(HandleNew, "cp_reddit"), CreateForm{}))
+	redditMux.Handle(pat.Post(""), addHandler)
+	redditMux.Handle(pat.Post("/"), addHandler)
 	redditMux.Handle(pat.Post("/:item/update"), web.FormParserMW(web.RenderHandler(HandleModify, "cp_reddit"), UpdateForm{}))
 	redditMux.Handle(pat.Post("/:item/delete"), web.RenderHandler(HandleRemove, "cp_reddit"))
 }
@@ -108,17 +111,18 @@ func baseData(inner http.Handler) http.Handler {
 	return http.HandlerFunc(mw)
 }
 
-func HandleReddit(w http.ResponseWriter, r *http.Request) interface{} {
+// func HandleReddit(w http.ResponseWriter, r *http.Request) interface{}
+func (p *Plugin) HandleReddit(w http.ResponseWriter, r *http.Request) (web.TemplateData, error) {
 	ctx := r.Context()
 	_, templateData := web.GetBaseCPContextData(ctx)
 
 	currentConfig := ctx.Value(CurrentConfig).(models.RedditFeedSlice)
 	templateData["RedditConfig"] = currentConfig
 
-	return templateData
+	return templateData, nil
 }
 
-func HandleNew(w http.ResponseWriter, r *http.Request) interface{} {
+func (p *Plugin) HandleNew(w http.ResponseWriter, r *http.Request) (web.TemplateData, error) {
 	ctx := r.Context()
 	activeGuild, templateData := web.GetBaseCPContextData(ctx)
 
@@ -129,22 +133,22 @@ func HandleNew(w http.ResponseWriter, r *http.Request) interface{} {
 	newElem := ctx.Value(common.ContextKeyParsedForm).(*CreateForm)
 
 	if !newElem.DisableSubredditSearch {
-		if ok, err := SearchSubreddits(newElem.Subreddit); !ok {
+		if ok, err := p.redditClient.IsThereSubredditName(strings.ToLower(newElem.Subreddit)); !ok {
 			if err != nil {
-				return templateData.AddAlerts(web.ErrorAlert(fmt.Sprintf("Error quering Reddit %s", err)))
+				return templateData.AddAlerts(web.ErrorAlert(fmt.Sprintf("Error quering Reddit %s", err))), err
 			}
-			return templateData.AddAlerts(web.ErrorAlert(fmt.Sprintf(`No such subreddit r/%s<span class="ui-pnotify-text">Could be case-sensitive or try disabling the search...</span>`, newElem.Subreddit)))
+			return templateData.AddAlerts(web.ErrorAlert(fmt.Sprintf(`No such subreddit r/%s<span class="ui-pnotify-text">Could be case-sensitive or try disabling the search...</span>`, newElem.Subreddit))), err
 		}
 	}
 
 	ok := ctx.Value(common.ContextKeyFormOk).(bool)
 	if !ok {
-		return templateData
+		return templateData, nil
 	}
 
 	maxFeeds := MaxFeedForCtx(ctx)
 	if len(currentConfig) >= maxFeeds {
-		return templateData.AddAlerts(web.ErrorAlert(fmt.Sprintf("Max %d feeds allowed (or %d for premium servers)", GuildMaxFeedsNormal, GuildMaxFeedsPremium)))
+		return templateData.AddAlerts(web.ErrorAlert(fmt.Sprintf("Max %d feeds allowed (or %d for premium servers)", GuildMaxFeedsNormal, GuildMaxFeedsPremium))), nil
 	}
 
 	watchItem := &models.RedditFeed{
@@ -169,7 +173,7 @@ func HandleNew(w http.ResponseWriter, r *http.Request) interface{} {
 
 	err := watchItem.InsertG(ctx, boil.Infer())
 	if web.CheckErr(templateData, err, "Failed saving item :'(", web.CtxLogger(ctx).Error) {
-		return templateData
+		return templateData, err
 	}
 	currentConfig = append(currentConfig, watchItem)
 	sort.Slice(currentConfig, func(i, j int) bool {
@@ -185,7 +189,7 @@ func HandleNew(w http.ResponseWriter, r *http.Request) interface{} {
 		Slow:      newElem.Slow,
 	})
 
-	return templateData
+	return templateData, err
 }
 
 func HandleModify(w http.ResponseWriter, r *http.Request) interface{} {
