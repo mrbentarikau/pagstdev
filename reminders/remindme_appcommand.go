@@ -14,7 +14,6 @@ import (
 )
 
 var (
-	//AddReminderCustomID = "AddReminderAppCommand"
 	AddReminderCustomID = "Add Reminder"
 	RemindmeExtraNotes  = "remindme_modal_extra_notes"
 	RemindmeDueDate     = "remindme_modal_due_date"
@@ -34,7 +33,7 @@ func (p *Plugin) createRemindMeModal() *commands.YAGCommand {
 		ApplicationCommandType:    3,
 		IsResponseModal:           true,
 		IsResponseEphemeral:       true,
-		NameLocalizations:         remindmeLocalizations,
+		NameLocalizations:         remindmeLocalizations["AppName"],
 
 		Arguments: []*dcmd.ArgDef{
 			{Name: "Message", Type: dcmd.String},
@@ -67,12 +66,14 @@ func (p *Plugin) createRemindMeModal() *commands.YAGCommand {
 			}
 
 			ic := parsed.SlashCommandTriggerData.Interaction
+			locale := ic.Locale
+
 			params := &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseModal,
 				Data: &discordgo.InteractionResponseData{
 					CustomID:   AddReminderCustomID,
-					Title:      "Remind Me",
-					Components: getModalComponents(),
+					Title:      getTranslation("ModalTitle", locale),
+					Components: getModalComponents(locale),
 					Flags:      64,
 				},
 			}
@@ -87,7 +88,15 @@ func (p *Plugin) createRemindMeModal() *commands.YAGCommand {
 	}
 }
 
-func getModalComponents() []discordgo.MessageComponent {
+func getTranslation(key string, locale discordgo.Locale) string {
+	if localeValue, ok := (*remindmeLocalizations[key])[locale]; !ok {
+		return (*remindmeLocalizations[key])["en-GB"]
+	} else {
+		return localeValue
+	}
+}
+
+func getModalComponents(locale discordgo.Locale) []discordgo.MessageComponent {
 	return []discordgo.MessageComponent{
 		/*
 			discordgo.ActionsRow{
@@ -107,7 +116,7 @@ func getModalComponents() []discordgo.MessageComponent {
 			Components: []discordgo.MessageComponent{
 				discordgo.TextInput{
 					CustomID:  RemindmeExtraNotes,
-					Label:     "Extra Notes (optional)",
+					Label:     getTranslation("ExtraNotes", locale),
 					Style:     discordgo.TextInputParagraph,
 					Required:  false,
 					MaxLength: 280,
@@ -119,7 +128,7 @@ func getModalComponents() []discordgo.MessageComponent {
 			Components: []discordgo.MessageComponent{
 				discordgo.TextInput{
 					CustomID:    RemindmeDueDate,
-					Label:       "Due Date (optional, defaults to 20m)",
+					Label:       getTranslation("WhenDate", locale),
 					Style:       discordgo.TextInputShort,
 					Required:    false,
 					MaxLength:   32,
@@ -132,11 +141,12 @@ func getModalComponents() []discordgo.MessageComponent {
 
 func (p *Plugin) handleRemindmeInteractionCreate(ic *discordgo.InteractionCreate) {
 	if ic.Type != discordgo.InteractionModalSubmit {
+		// Not a modal interaction
 		return
 	}
 
 	if ic.DataCommand == nil && ic.DataModal == nil && (p.RemindmeData == ModalData{}) {
-		logger.Warn("Modal interaction had no data")
+		// Modal interaction had no data
 		return
 	}
 
