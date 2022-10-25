@@ -96,13 +96,14 @@ var Command = &commands.YAGCommand{
 		}
 
 		body, err := util.RequestFromAPI(querySearch, extraHeaders)
+
 		if err != nil {
 			return "No such title found...", err
 		}
 
 		err = json.Unmarshal([]byte(body), &malSearch)
 		if err != nil {
-			return nil, err
+			return "error unmarshaling " + malHost + " query, site could be under maintenance", err
 		}
 
 		if !topHundred {
