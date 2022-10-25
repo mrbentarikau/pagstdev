@@ -8,7 +8,7 @@ var (
 			"bg":    "създайте напомняне",
 			"cs":    "vytvořit připomínku",
 			"da":    "legg til påminnelse",
-			"de":    "Erinnerung erstellen",
+			"de":    "erinnerung erstellen",
 			"el":    "προσθήκη υπενθύμισης",
 			"en-GB": "add reminder",
 			"en-US": "add reminder",
@@ -39,8 +39,12 @@ var (
 		"ModalTitle": {
 			"en-GB": "Remind Me",
 			"en-US": "Remind Me",
-			"de":    "Erinnere mich",
+			"de":    "Erinnere Mich",
 			"fi":    "Muistuta Mua",
+			"ja":    "を思い出させてください。",
+			"lt":    "Priminti Man",
+			"pl":    "Przypomnij Mi",
+			"sv-SE": "Påminn Mig",
 			"ru":    "Напомни Мне",
 		},
 		"ExtraNotes": {
@@ -48,6 +52,10 @@ var (
 			"en-US": "Extra Notes (optional)",
 			"de":    "Zusätzliche Notizen",
 			"fi":    "Lisämerkinnät (valinnainen)",
+			"ja":    "エクストラノート（オプション）",
+			"lt":    "Papildomos Pastabos (neprivaloma)",
+			"pl":    "Notatki (opcjonalne)",
+			"sv-SE": "Extra Noter (valfritt)",
 			"ru":    "Экстра-примечания (опционально)",
 		},
 		"WhenDate": {
@@ -55,6 +63,9 @@ var (
 			"en-US": "When (optional, defaults to 20m)",
 			"de":    "Wann (optional, Standardwert ist 20m)",
 			"fi":    "Kun (valinnainen, oletusarvo 20m)",
+			"lt":    "Kada (neprivaloma, numatytasis 20m)",
+			"pl":    "Kiedy (opcjonalne, domyślnie 20min)",
+			"sv-SE": "När (valfritt, standard 20m)",
 			"ru":    "Когда (опционально, по умолчанию 20м)",
 		},
 	}

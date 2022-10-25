@@ -16,7 +16,7 @@ import (
 var (
 	AddReminderCustomID = "Add Reminder"
 	RemindmeExtraNotes  = "remindme_modal_extra_notes"
-	RemindmeDueDate     = "remindme_modal_due_date"
+	RemindmeWhenDate    = "remindme_modal_when_date"
 )
 
 func (p *Plugin) createRemindMeModal() *commands.YAGCommand {
@@ -127,7 +127,7 @@ func getModalComponents(locale discordgo.Locale) []discordgo.MessageComponent {
 		discordgo.ActionsRow{
 			Components: []discordgo.MessageComponent{
 				discordgo.TextInput{
-					CustomID:    RemindmeDueDate,
+					CustomID:    RemindmeWhenDate,
 					Label:       getTranslation("WhenDate", locale),
 					Style:       discordgo.TextInputShort,
 					Required:    false,
