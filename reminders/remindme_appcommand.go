@@ -10,6 +10,8 @@ import (
 	"github.com/botlabs-gg/yagpdb/common"
 	"github.com/botlabs-gg/yagpdb/lib/dcmd"
 	"github.com/botlabs-gg/yagpdb/lib/discordgo"
+	"github.com/botlabs-gg/yagpdb/rsvp"
+	"github.com/botlabs-gg/yagpdb/timezonecompanion"
 	zws "github.com/trubitsyn/go-zero-width"
 )
 
@@ -132,7 +134,7 @@ func getModalComponents(locale discordgo.Locale) []discordgo.MessageComponent {
 					Style:       discordgo.TextInputShort,
 					Required:    false,
 					MaxLength:   32,
-					Placeholder: fmt.Sprintf("e.g 5m, %d-12-31, tomorrow, etc", time.Now().UTC().Year()),
+					Placeholder: fmt.Sprintf("e.g 5m, %d-12-31 12:34, tomorrow, etc", time.Now().UTC().Year()),
 				},
 			},
 		},
@@ -166,12 +168,20 @@ func (p *Plugin) handleRemindmeInteractionCreate(ic *discordgo.InteractionCreate
 
 		reminderContent += fmt.Sprintf("\n\nJump to message: [jump](%schannels/%d/%d/%d)", discordgo.EndpointDiscord, p.RemindmeData.GuildID, p.RemindmeData.ChannelID, p.RemindmeData.MessageID)
 
+		var now time.Time
 		durationStr := icDataModelComps[1].(*discordgo.ActionsRow).Components[0].(*discordgo.TextInput).Value
 		if durationStr != "" {
 			duration, err = common.ParseDuration(durationStr)
 			if err != nil || duration == 0 {
 				dateParser := createDateParser()
-				t, err := dateParser.Parse(durationStr, time.Now().UTC())
+
+				registeredTimezone := timezonecompanion.GetUserTimezone(p.RemindmeData.AuthorID)
+				if registeredTimezone == nil || rsvp.UTCRegex.MatchString(durationStr) {
+					registeredTimezone = time.UTC
+				}
+
+				now = time.Now().In(registeredTimezone)
+				t, err := dateParser.Parse(durationStr, now)
 				if err == nil && t != nil {
 					when = t.Time
 				}
@@ -202,7 +212,8 @@ func (p *Plugin) handleRemindmeInteractionCreate(ic *discordgo.InteractionCreate
 		}
 
 		if when.Before(time.Now().Add(time.Minute*4 + time.Second*59)) {
-			responseContent = "Reminder must be set at least 5 minutes from now..."
+			responseContent = "Reminder must be set at least **5 minutes** from now..."
+			responseContent += fmt.Sprintf("```\n\nwhen: %s\nvs\nnow: %s```\nUse `settimezone` to adjust your timezone better.", when.Format(time.RFC822), now.Format(time.RFC822))
 			properTime = false
 		}
 
