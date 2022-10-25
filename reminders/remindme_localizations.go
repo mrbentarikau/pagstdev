@@ -50,7 +50,7 @@ var (
 		"ExtraNotes": {
 			"en-GB": "Extra Notes (optional)",
 			"en-US": "Extra Notes (optional)",
-			"de":    "Zusätzliche Notizen",
+			"de":    "Zusätzliche Notizen (optional)",
 			"fi":    "Lisämerkinnät (valinnainen)",
 			"ja":    "エクストラノート（オプション）",
 			"lt":    "Papildomos Pastabos (neprivaloma)",
