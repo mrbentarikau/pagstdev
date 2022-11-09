@@ -160,6 +160,7 @@ func HandleLogsCP(w http.ResponseWriter, r *http.Request) (web.TemplateData, err
 		}
 	}
 	tmpl["ConfBlacklistedChannels"] = blacklistedChannels
+	tmpl["UsernameTrackingEnabled"] = confEnableUsernameTracking.GetBool()
 
 	return tmpl, nil
 }
