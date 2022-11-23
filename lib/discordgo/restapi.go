@@ -3427,6 +3427,33 @@ func (s *Session) BatchEditGuildApplicationCommandsPermissions(applicationID int
 	return
 }
 
+/* KRAAKA START CHANGING MAYBE
+// InteractionRespond creates the response to an interaction.
+// interaction : Interaction instance.
+// resp        : Response message data.
+func (s *Session) InteractionRespond(interaction *Interaction, resp *InteractionResponse) error {
+	s.httpInteractionsMu.Lock()
+	if respondFunc, ok := s.httpInteractions[interaction.ID]; ok {
+		s.httpInteractionsMu.Unlock()
+		return respondFunc(resp)
+	}
+	s.httpInteractionsMu.Unlock()
+
+	endpoint := EndpointInteractionResponse(interaction.ID, interaction.Token)
+
+	if resp.Data != nil && len(resp.Data.Files) > 0 {
+		contentType, body, err := MultipartBodyWithJSON(resp, resp.Data.Files)
+		if err != nil {
+			return err
+		}
+		_, err = s.request("POST", endpoint, contentType, body, endpoint, 0)
+		return err
+	}
+	_, err := s.RequestWithBucketID("POST", endpoint, *resp, endpoint)
+	return err
+}
+*/
+
 // CreateInteractionResponse Create a response to an Interaction from the gateway. Takes an Interaction response.
 // POST /interactions/{interaction.id}/{interaction.token}/callback
 func (s *Session) CreateInteractionResponse(interactionID int64, token string, data *InteractionResponse) (err error) {

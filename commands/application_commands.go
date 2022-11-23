@@ -167,6 +167,7 @@ func (p *Plugin) yagCommandToSlashCommand(cmd *dcmd.RegisteredCommand) *discordg
 		Description:       common.CutStringShort(cast.Description, 100),
 		DefaultPermission: &t,
 		Options:           opts,
+		NSFW:              cast.NSFW,
 	}
 
 	// KRAAKA adding context menu command
@@ -176,6 +177,7 @@ func (p *Plugin) yagCommandToSlashCommand(cmd *dcmd.RegisteredCommand) *discordg
 			Name:              strings.ToLower(cmd.Trigger.Names[0]),
 			NameLocalizations: cast.NameLocalizations,
 			Type:              discordgo.UserApplicationCommand,
+			NSFW:              cast.NSFW,
 		}
 	}
 
@@ -185,6 +187,7 @@ func (p *Plugin) yagCommandToSlashCommand(cmd *dcmd.RegisteredCommand) *discordg
 			Name:              strings.ToLower(cmd.Trigger.Names[0]),
 			NameLocalizations: cast.NameLocalizations,
 			Type:              discordgo.MessageApplicationCommand,
+			NSFW:              cast.NSFW,
 		}
 	}
 

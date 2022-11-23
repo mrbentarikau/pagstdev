@@ -297,9 +297,10 @@ func embedCreator(itadComplete *ItadComplete, i int, paginated, compact bool) *d
 
 	embed := &discordgo.MessageEmbed{
 		Author: &discordgo.MessageEmbedAuthor{
-			Name:    "IsThereAnyDeal",
-			URL:     itadComplete.Price.Data[itadComplete.Search.Data.Results[i].Plain].Urls.Game,
-			IconURL: "https://raw.githubusercontent.com/IsThereAnyDeal/AugmentedSteam/master/src/img/itad.png",
+			Name: "IsThereAnyDeal",
+			URL:  itadComplete.Price.Data[itadComplete.Search.Data.Results[i].Plain].Urls.Game,
+			//IconURL: "https://raw.githubusercontent.com/IsThereAnyDeal/AugmentedSteam/master/src/img/itad.png",
+			IconURL: "https://d2uym1p5obf9p8.cloudfront.net/images/favicon.png",
 		},
 
 		Title:       itadComplete.Search.Data.Results[i].Title,

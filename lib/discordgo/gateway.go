@@ -437,7 +437,7 @@ func (g *GatewayConnectionManager) ChannelVoiceJoin(gID, cID int64, mute, deaf b
 	debug.PrintStack()
 
 	g.mu.Lock()
-	voice, _ = g.voiceConnections[gID]
+	voice = g.voiceConnections[gID]
 
 	if voice == nil {
 		voice = &VoiceConnection{

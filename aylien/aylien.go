@@ -67,8 +67,8 @@ func (p *Plugin) AddCommands() {
 		Arguments: []*dcmd.ArgDef{
 			{Name: "text", Type: dcmd.String},
 		},
-		ApplicationCommandEnabled: true,
-		DefaultEnabled:            true,
+		ApplicationCommandEnabled: false,
+		DefaultEnabled:            false,
 		RunFunc: func(cmd *dcmd.Data) (interface{}, error) {
 			var responses []*textapi.SentimentResponse
 			if cmd.Args[0].Value != nil {
