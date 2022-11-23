@@ -276,7 +276,8 @@ var cmdWhois = &commands.YAGCommand{
 			},
 		}
 
-		if config.UsernameLoggingEnabled.Bool {
+		var trackingUNDisabled, trackingNNDisabled bool
+		if config.UsernameLoggingEnabled.Bool && confEnableUsernameTracking.GetBool() {
 			usernames, err := GetUsernames(parsed.Context(), member.User.ID, 5, 0)
 			if err != nil {
 				return err, err
@@ -293,13 +294,10 @@ var cmdWhois = &commands.YAGCommand{
 				Value: usernamesStr,
 			})
 		} else {
-			embed.Fields = append(embed.Fields, &discordgo.MessageEmbedField{
-				Name:  "Usernames",
-				Value: "Username tracking disabled",
-			})
+			trackingUNDisabled = true
 		}
 
-		if config.NicknameLoggingEnabled.Bool {
+		if config.NicknameLoggingEnabled.Bool && confEnableUsernameTracking.GetBool() {
 
 			nicknames, err := GetNicknames(parsed.Context(), member.User.ID, parsed.GuildData.GS.ID, 5, 0)
 			if err != nil {
@@ -321,6 +319,20 @@ var cmdWhois = &commands.YAGCommand{
 				Value: nicknameStr,
 			})
 		} else {
+			trackingNNDisabled = true
+		}
+
+		if trackingUNDisabled && trackingNNDisabled {
+			embed.Fields = append(embed.Fields, &discordgo.MessageEmbedField{
+				Name:  "Usernames and Nicknames",
+				Value: "Tracking disabled",
+			})
+		} else if trackingUNDisabled && !trackingNNDisabled {
+			embed.Fields = append(embed.Fields, &discordgo.MessageEmbedField{
+				Name:  "Usernames",
+				Value: "Username tracking disabled",
+			})
+		} else if trackingNNDisabled && !trackingUNDisabled {
 			embed.Fields = append(embed.Fields, &discordgo.MessageEmbedField{
 				Name:  "Nicknames",
 				Value: "Nickname tracking disabled",
