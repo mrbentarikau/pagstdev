@@ -264,10 +264,8 @@ func (c *Context) sendNestedTemplate(channel interface{}, dm bool, name string, 
 		}
 	} else {
 		if c.CurrentFrame.SendResponseInDM {
-			fmt.Println("SIIA")
 			cs = c.CurrentFrame.CS
 		} else {
-			fmt.Println("SINNA")
 			ch, err := common.BotSession.UserChannelCreate(c.MS.User.ID)
 			if err != nil {
 				return "", err

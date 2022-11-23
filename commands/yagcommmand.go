@@ -160,6 +160,7 @@ type YAGCommand struct {
 
 	IsResponseEphemeral bool
 	IsResponseModal     bool
+	NSFW                bool
 
 	CmdNoRun bool
 }
