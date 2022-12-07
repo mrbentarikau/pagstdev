@@ -43,12 +43,6 @@ func (p *Plugin) StopFeed(wg *sync.WaitGroup) {
 }
 
 func (p *Plugin) SetupClient() error {
-	/*httpClient, err := google.DefaultClient(context.Background(), youtube.YoutubeScope)
-	if err != nil {
-		return common.ErrWithCaller(err)
-	}*/
-
-	//yt, err := youtube.New(httpClient)
 	yt, err := youtube.NewService(context.Background(), option.WithScopes(youtube.YoutubeScope))
 	if err != nil {
 		return common.ErrWithCaller(err)
@@ -61,7 +55,7 @@ func (p *Plugin) SetupClient() error {
 
 // keeps the subscriptions up to date by updating the ones soon to be expiring
 func (p *Plugin) runWebsubChecker() {
-	p.syncWebSubs()
+	go p.syncWebSubs()
 
 	websubTicker := time.NewTicker(WebSubCheckInterval)
 	for {
@@ -97,7 +91,7 @@ func (p *Plugin) checkExpiringWebsubs() {
 		if err != nil {
 			logger.WithError(err).WithField("yt_channel", v).Error("Failed subscribing to channel")
 		}
-		time.Sleep(time.Second)
+		//time.Sleep(time.Second)
 	}
 }
 
@@ -135,7 +129,7 @@ func (p *Plugin) syncWebSubs() {
 				common.UnlockRedisKey(RedisChannelsLockKey)
 				locked = false
 
-				time.Sleep(time.Second)
+				//time.Sleep(time.Second)
 			}
 		}
 
@@ -262,7 +256,13 @@ func (p *Plugin) parseYtUrl(url string) (t ytUrlType, id string, err error) {
 		if len(capturingGroups) > 0 && len(capturingGroups[0]) > 0 && len(capturingGroups[0][5]) > 0 {
 			return ytUrlTypeUser, capturingGroups[0][5], nil
 		}
+	} else if ytHandleUrlRegex.MatchString(url) {
+		capturingGroups := ytHandleUrlRegex.FindAllStringSubmatch(url, -1)
+		if len(capturingGroups) > 0 && len(capturingGroups[0]) > 0 && len(capturingGroups[0][5]) > 0 {
+			return ytUrlTypeHandle, capturingGroups[0][5], nil
+		}
 	}
+
 	return ytUrlTypeInvalid, "", errors.New("invalid or incomplete url")
 }
 
@@ -281,6 +281,7 @@ func (p *Plugin) getYTChannel(url string) (channel *youtube.Channel, err error) 
 	case ytUrlTypeUser:
 		channelListCall = channelListCall.ForUsername(id)
 	case ytUrlTypeCustom:
+	case ytUrlTypeHandle:
 		searchListCall := p.YTService.Search.List([]string{"snippet"})
 		searchListCall = searchListCall.Q(id).Type("channel")
 		sResp, err := searchListCall.Do()
