@@ -137,6 +137,7 @@ var (
 		"loadLocation":    time.LoadLocation,
 		"newDate":         tmplNewDate,
 		"parseTime":       tmplParseTime,
+		"parseDate":       tmplParseTime,
 		"snowflakeToTime": tmplSnowflakeToTime,
 		"timestampToTime": tmplTimestampToTime,
 		"weekNumber":      tmplWeekNumber,

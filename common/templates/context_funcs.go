@@ -1264,16 +1264,6 @@ func (c *Context) tmplAddMessageReactions(values ...reflect.Value) (reflect.Valu
 			if err := common.BotSession.MessageReactionAdd(cID, mID, reaction.String()); err != nil {
 				return reflect.Value{}, err
 			}
-			/*if reaction.Kind() == reflect.String {
-				if err := common.BotSession.MessageReactionAdd(cID, mID, reaction.String()); err != nil {
-					return reflect.Value{}, err
-				}
-			} else {
-				if err := common.BotSession.MessageReactionAdd(cID, mID, fmt.Sprint(reaction.Interface())); err != nil {
-					return reflect.Value{}, err
-				}
-			}*/
-
 		}
 		return reflect.ValueOf(""), nil
 	}
@@ -2333,7 +2323,7 @@ func (c *Context) tmplRemoveRoleName(roleName string, optionalArgs ...interface{
 
 func (c *Context) validateDurationDelay(in interface{}) time.Duration {
 	switch t := in.(type) {
-	case int, int64:
+	case int, int8, int16, int32, int64, float32, float64, uint, uint8, uint16, uint32, uint64:
 		return time.Second * ToDuration(t)
 	case string:
 		conv := ToInt64(t)
