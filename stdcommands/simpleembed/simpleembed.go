@@ -59,7 +59,7 @@ var Command = &commands.YAGCommand{
 			}
 		}
 
-		mID := data.Switch("message").Int64()
+		mID := data.Switch("messageID").Int64()
 		var msg *discordgo.Message
 		if mID != 0 {
 			hasPerms, err := bot.AdminOrPermMS(data.GuildData.GS.ID, cID, data.GuildData.MS, discordgo.PermissionManageMessages)
