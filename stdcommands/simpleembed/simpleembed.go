@@ -33,7 +33,7 @@ var Command = &commands.YAGCommand{
 		{Name: "footericon", Help: "URL to a icon for the 'footer' field", Type: dcmd.String},
 
 		{Name: "channel", Help: "Optional channel to send in", Type: dcmd.Channel},
-		{Name: "messageID", Help: "Message ID for editing previous messages", Type: dcmd.BigInt},
+		{Name: "messageID", Help: "Message ID for editing", Type: dcmd.BigInt},
 	},
 	ApplicationCommandEnabled: true,
 	RunFunc: func(data *dcmd.Data) (interface{}, error) {
