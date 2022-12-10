@@ -198,9 +198,17 @@ func (p *PostHandlerImpl) handlePost(post *reddit.Link, filterGuild int64) error
 		"subreddit":    post.Subreddit,
 	}).Debug("Found matched Reddit post")
 
-	message, embed := p.createPostMessage(post)
+	messageShowSpoilers, embedShowSpoilers := p.createPostMessage(post, true)
+	messageWithSpoilers, embedWithSpoilers := p.createPostMessage(post, false)
 
 	for _, item := range filteredItems {
+		message := messageWithSpoilers
+		embed := embedWithSpoilers
+		if item.ShowSpoilers {
+			message = messageShowSpoilers
+			embed = embedShowSpoilers
+		}
+
 		idStr := strconv.FormatInt(item.ID, 10)
 
 		webhookUsername := "Reddit • " + common.ConfBotName.GetString()
@@ -267,7 +275,7 @@ OUTER:
 			limit = confMaxPostsHourSlow.GetInt()
 		}
 
-		// apply ratelimiting
+		// apply rate-limiting
 		if !p.ratelimiter.CheckIncrement(time.Now(), c.GuildID, limit) {
 			continue
 		}
@@ -293,7 +301,7 @@ OUTER:
 	return filteredItems
 }
 
-func (p *PostHandlerImpl) createPostMessage(post *reddit.Link) (string, *discordgo.MessageEmbed) {
+func (p *PostHandlerImpl) createPostMessage(post *reddit.Link, showSpoilers bool) (string, *discordgo.MessageEmbed) {
 	plainMessage := fmt.Sprintf("**%s**\n*by %s (<%s>)*\n",
 		html.UnescapeString(post.Title), post.Author, "https://redd.it/"+post.ID)
 
@@ -324,7 +332,7 @@ func (p *PostHandlerImpl) createPostMessage(post *reddit.Link) (string, *discord
 		plainBody = post.URL
 	}
 
-	if post.Spoiler || parentSpoiler {
+	if (post.Spoiler || parentSpoiler) && !showSpoilers {
 		plainMessage += "|| " + plainBody + " ||"
 	} else {
 		plainMessage += plainBody
@@ -370,7 +378,7 @@ func (p *PostHandlerImpl) createPostMessage(post *reddit.Link) (string, *discord
 		//  Handle Self posts
 		embed.Footer.Text += "new self post"
 		postSelftext := re.ReplaceAllString(post.Selftext, " ")
-		if post.Spoiler {
+		if post.Spoiler && !showSpoilers {
 			embed.Description += "|| " + common.CutStringShort(html.UnescapeString(postSelftext), 512) + " ||"
 		} else {
 			embed.Description += common.CutStringShort(html.UnescapeString(postSelftext), 512)
@@ -387,7 +395,7 @@ func (p *PostHandlerImpl) createPostMessage(post *reddit.Link) (string, *discord
 			// Cropsspost was a self post
 			embed.Color = 0xc3fc7e
 			parentSelftext := re.ReplaceAllString(post.CrosspostParentList[0].Selftext, " ")
-			if parent.Spoiler {
+			if parent.Spoiler && !showSpoilers {
 				embed.Description += "|| " + common.CutStringShort(html.UnescapeString(parentSelftext), 512) + " ||"
 			} else {
 				embed.Description += common.CutStringShort(html.UnescapeString(parentSelftext), 512)
@@ -396,7 +404,7 @@ func (p *PostHandlerImpl) createPostMessage(post *reddit.Link) (string, *discord
 			// cross post was a link most likely
 			embed.Color = 0x88c0d0
 			embed.Description += parent.URL
-			if parent.Media.Type == "" && !parent.Spoiler && parent.PostHint == "image" {
+			if parent.Media.Type == "" && (!parent.Spoiler && showSpoilers) && parent.PostHint == "image" {
 				embed.Image = &discordgo.MessageEmbedImage{
 					URL: parent.URL,
 				}
@@ -408,7 +416,7 @@ func (p *PostHandlerImpl) createPostMessage(post *reddit.Link) (string, *discord
 		embed.Footer.Text += "new link post"
 		embed.Description += post.URL
 
-		if post.Media.Type == "" && !post.Spoiler && post.PostHint == "image" {
+		if post.Media.Type == "" && (!post.Spoiler && showSpoilers) && post.PostHint == "image" {
 			embed.Image = &discordgo.MessageEmbedImage{
 				URL: post.URL,
 			}

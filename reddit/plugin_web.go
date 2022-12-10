@@ -41,16 +41,18 @@ type CreateForm struct {
 	MinUpvotes             int     `schema:"min_upvotes" valid:"0,"`
 	MentionRole            []int64 `schema:"mention_role" valid:"role,true"`
 	DisableSubredditSearch bool    `schema:"disable_subreddit_search"`
+	ShowSpoilers           bool    `schema:"show_spoilers"`
 }
 
 type UpdateForm struct {
-	Channel     int64   `schema:"channel" valid:"channel,true"`
-	ID          int64   `schema:"id"`
-	UseEmbeds   bool    `schema:"use_embeds"`
-	NSFWMode    int     `schema:"nsfw_filter"`
-	MinUpvotes  int     `schema:"min_upvotes" valid:"0,"`
-	MentionRole []int64 `schema:"mention_role" valid:"role,true"`
-	FeedEnabled bool    `schema:"feed_enabled"`
+	Channel      int64   `schema:"channel" valid:"channel,true"`
+	ID           int64   `schema:"id"`
+	UseEmbeds    bool    `schema:"use_embeds"`
+	NSFWMode     int     `schema:"nsfw_filter"`
+	MinUpvotes   int     `schema:"min_upvotes" valid:"0,"`
+	MentionRole  []int64 `schema:"mention_role" valid:"role,true"`
+	FeedEnabled  bool    `schema:"feed_enabled"`
+	ShowSpoilers bool    `schema:"show_spoilers"`
 }
 
 var (
@@ -152,13 +154,14 @@ func (p *Plugin) HandleNew(w http.ResponseWriter, r *http.Request) (web.Template
 	}
 
 	watchItem := &models.RedditFeed{
-		GuildID:     activeGuild.ID,
-		ChannelID:   newElem.Channel,
-		Subreddit:   strings.ToLower(strings.TrimSpace(newElem.Subreddit)),
-		UseEmbeds:   newElem.UseEmbeds,
-		FilterNSFW:  newElem.NSFWMode,
-		MentionRole: newElem.MentionRole,
-		Disabled:    false,
+		GuildID:      activeGuild.ID,
+		ChannelID:    newElem.Channel,
+		Subreddit:    strings.ToLower(strings.TrimSpace(newElem.Subreddit)),
+		UseEmbeds:    newElem.UseEmbeds,
+		FilterNSFW:   newElem.NSFWMode,
+		MentionRole:  newElem.MentionRole,
+		Disabled:     false,
+		ShowSpoilers: newElem.ShowSpoilers,
 	}
 
 	if newElem.Slow {
@@ -214,6 +217,7 @@ func HandleModify(w http.ResponseWriter, r *http.Request) interface{} {
 	item.UseEmbeds = updated.UseEmbeds
 	item.FilterNSFW = updated.NSFWMode
 	item.MentionRole = updated.MentionRole
+	item.ShowSpoilers = updated.ShowSpoilers
 	item.Disabled = !updated.FeedEnabled
 	if item.Slow {
 		item.MinUpvotes = updated.MinUpvotes
@@ -223,7 +227,7 @@ func HandleModify(w http.ResponseWriter, r *http.Request) interface{} {
 	if item.ChannelID == 0 {
 		item.Disabled = true
 	}
-	_, err := item.UpdateG(ctx, boil.Whitelist("channel_id", "use_embeds", "filter_nsfw", "min_upvotes", "disabled", "mention_role"))
+	_, err := item.UpdateG(ctx, boil.Whitelist("channel_id", "use_embeds", "filter_nsfw", "min_upvotes", "disabled", "mention_role", "show_spoilers"))
 
 	if web.CheckErr(templateData, err, "Failed saving item :'(", web.CtxLogger(ctx).Error) {
 		return templateData
