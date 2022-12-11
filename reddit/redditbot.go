@@ -404,7 +404,7 @@ func (p *PostHandlerImpl) createPostMessage(post *reddit.Link, showSpoilers bool
 			// cross post was a link most likely
 			embed.Color = 0x88c0d0
 			embed.Description += parent.URL
-			if parent.Media.Type == "" && (!parent.Spoiler && showSpoilers) && parent.PostHint == "image" {
+			if parent.Media.Type == "" && (!parent.Spoiler || (parent.Spoiler && showSpoilers)) && parent.PostHint == "image" {
 				embed.Image = &discordgo.MessageEmbedImage{
 					URL: parent.URL,
 				}
@@ -416,7 +416,7 @@ func (p *PostHandlerImpl) createPostMessage(post *reddit.Link, showSpoilers bool
 		embed.Footer.Text += "new link post"
 		embed.Description += post.URL
 
-		if post.Media.Type == "" && (!post.Spoiler && showSpoilers) && post.PostHint == "image" {
+		if post.Media.Type == "" && (!post.Spoiler || (post.Spoiler && showSpoilers)) && post.PostHint == "image" {
 			embed.Image = &discordgo.MessageEmbedImage{
 				URL: post.URL,
 			}
