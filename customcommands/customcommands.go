@@ -339,7 +339,7 @@ func CmdRunsInChannel(cc *models.CustomCommand, channel int64) bool {
 		}
 	}
 
-	if cs.Type.IsThread() {
+	if cs != nil && cs.Type.IsThread() {
 		isContained := common.ContainsInt64Slice(cc.Channels, common.ChannelOrThreadParentID(cs))
 		if cc.ChannelsWhitelistMode && !isContained {
 			return false
