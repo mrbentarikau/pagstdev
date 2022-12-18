@@ -48,7 +48,7 @@ func cmdFuncTopCommands(data *dcmd.Data) (interface{}, error) {
 
 	maxLength := 25
 	pm, err := paginatedmessages.CreatePaginatedMessage(
-		data.GuildData.GS.ID, data.ChannelID, 1, int(math.Ceil(float64(len(results))/float64(maxLength))), func(p *paginatedmessages.PaginatedMessage, page int) (*discordgo.MessageEmbed, error) {
+		data.GuildData.GS.ID, data.ChannelID, 1, int(math.Ceil(float64(len(results))/float64(maxLength))), func(p *paginatedmessages.PaginatedMessage, page int) (interface{}, error) {
 			i := page - 1
 			description := rangeResults(results, i, maxLength, hours, raw)
 			paginatedEmbed := embedCreator(description)

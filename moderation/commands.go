@@ -1170,7 +1170,7 @@ var ModerationCommands = []*commands.YAGCommand{
 		RequiredDiscordPermsHelp:  "(ManageMessages)",
 		ApplicationCommandEnabled: true,
 		DefaultEnabled:            false,
-		RunFunc: paginatedmessages.PaginatedCommand(0, func(parsed *dcmd.Data, p *paginatedmessages.PaginatedMessage, page int) (*discordgo.MessageEmbed, error) {
+		RunFunc: paginatedmessages.PaginatedCommand(0, func(parsed *dcmd.Data, p *paginatedmessages.PaginatedMessage, page int) (interface{}, error) {
 			showUserIDs := false
 			config, _, err := MBaseCmd(parsed, 0)
 			if err != nil {
@@ -1509,9 +1509,9 @@ func FindRole(gs *dstate.GuildSet, roleS string) *discordgo.Role {
 	return nil
 }
 
-func PaginateWarnings(parsed *dcmd.Data, count int) func(p *paginatedmessages.PaginatedMessage, page int) (*discordgo.MessageEmbed, error) {
+func PaginateWarnings(parsed *dcmd.Data, count int) func(p *paginatedmessages.PaginatedMessage, page int) (interface{}, error) {
 
-	return func(p *paginatedmessages.PaginatedMessage, page int) (*discordgo.MessageEmbed, error) {
+	return func(p *paginatedmessages.PaginatedMessage, page int) (interface{}, error) {
 
 		var err error
 		skip := (page - 1) * 6

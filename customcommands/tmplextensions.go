@@ -201,6 +201,10 @@ func tmplRunCC(ctx *templates.Context) interface{} {
 			return "", err
 		}
 
+		if opts.Cmd.Disabled {
+			return "", errors.New("custom command is disabled")
+		}
+
 		actualDelay := templates.ToInt64(delaySeconds)
 		if actualDelay <= 0 {
 			currentStackDepthI := ctx.Data["StackDepth"]

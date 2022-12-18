@@ -305,7 +305,7 @@ var cmds = []*commands.YAGCommand{
 			var pm *paginatedmessages.PaginatedMessage
 			if paginatedView {
 				pm, err = paginatedmessages.CreatePaginatedMessage(
-					parsed.GuildData.GS.ID, parsed.ChannelID, 1, int(math.Ceil(float64(len(logEntries))/float64(limiter))), func(p *paginatedmessages.PaginatedMessage, page int) (*discordgo.MessageEmbed, error) {
+					parsed.GuildData.GS.ID, parsed.ChannelID, 1, int(math.Ceil(float64(len(logEntries))/float64(limiter))), func(p *paginatedmessages.PaginatedMessage, page int) (interface{}, error) {
 						i := page - 1
 
 						out := fmt.Sprint("Starting from page ", pageNum)
@@ -424,7 +424,7 @@ var cmds = []*commands.YAGCommand{
 				return topRepPager(parsed.GuildData.GS.ID, nil, page)
 			}
 
-			pm, err := paginatedmessages.CreatePaginatedMessage(parsed.GuildData.GS.ID, parsed.ChannelID, page, int(math.Ceil(float64(maxCount)/15)), func(p *paginatedmessages.PaginatedMessage, page int) (*discordgo.MessageEmbed, error) {
+			pm, err := paginatedmessages.CreatePaginatedMessage(parsed.GuildData.GS.ID, parsed.ChannelID, page, int(math.Ceil(float64(maxCount)/15)), func(p *paginatedmessages.PaginatedMessage, page int) (interface{}, error) {
 				return topRepPager(parsed.GuildData.GS.ID, p, page)
 			})
 

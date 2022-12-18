@@ -238,8 +238,8 @@ func StrZone(zone string) string {
 	return fmt.Sprintf("`%s`: %s", zone, name)
 }
 
-func paginatedTimezones(timezones []string) func(p *paginatedmessages.PaginatedMessage, page int) (*discordgo.MessageEmbed, error) {
-	return func(p *paginatedmessages.PaginatedMessage, page int) (*discordgo.MessageEmbed, error) {
+func paginatedTimezones(timezones []string) func(p *paginatedmessages.PaginatedMessage, page int) (interface{}, error) {
+	return func(p *paginatedmessages.PaginatedMessage, page int) (interface{}, error) {
 		numSkip := (page - 1) * 10
 
 		out := ""

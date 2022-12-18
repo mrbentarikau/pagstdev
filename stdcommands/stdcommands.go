@@ -46,6 +46,8 @@ import (
 	"github.com/botlabs-gg/yagpdb/stdcommands/myanimelist"
 	"github.com/botlabs-gg/yagpdb/stdcommands/openweathermap"
 	"github.com/botlabs-gg/yagpdb/stdcommands/owldictionary"
+
+	//"github.com/botlabs-gg/yagpdb/stdcommands/paginationtest"
 	"github.com/botlabs-gg/yagpdb/stdcommands/pagstatus"
 	"github.com/botlabs-gg/yagpdb/stdcommands/ping"
 	"github.com/botlabs-gg/yagpdb/stdcommands/poll"
@@ -66,6 +68,7 @@ import (
 	"github.com/botlabs-gg/yagpdb/stdcommands/topic"
 	"github.com/botlabs-gg/yagpdb/stdcommands/topservers"
 	"github.com/botlabs-gg/yagpdb/stdcommands/unbanserver"
+	"github.com/botlabs-gg/yagpdb/stdcommands/unbanserverowner"
 	"github.com/botlabs-gg/yagpdb/stdcommands/undelete"
 	"github.com/botlabs-gg/yagpdb/stdcommands/viewperms"
 	"github.com/botlabs-gg/yagpdb/stdcommands/voidservers"
@@ -150,6 +153,7 @@ func (p *Plugin) AddCommands() {
 		listflags.Command,
 		memstats.Command,
 		pagstatus.Command,
+		// paginationtest.Command,
 		setstatus.Command,
 		sleep.Command,
 		stateinfo.Command,
@@ -158,6 +162,7 @@ func (p *Plugin) AddCommands() {
 		topevents.Command,
 		topservers.Command,
 		unbanserver.Command,
+		unbanserverowner.Command,
 		voidservers.Command,
 	)
 

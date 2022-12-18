@@ -137,6 +137,7 @@ type CustomCommand struct {
 	RegexCaseSensitive bool     `json:"regex_case_sensitive" schema:"regex_case_sensitive"`
 	ID                 int64    `json:"id"`
 	Note               string   `json:"note" schema:"note" valid:",0,256"`
+	Disabled           bool     `json:"disabled" schema:"disabled"`
 
 	ContextChannel int64 `schema:"context_channel" valid:"channel,true"`
 
@@ -259,6 +260,7 @@ func (cc *CustomCommand) ToDBModel() *models.CustomCommand {
 		Responses: cc.Responses,
 
 		ShowErrors: cc.ShowErrors,
+		Disabled:   !cc.Disabled,
 
 		ThreadsEnabled:   cc.ThreadsEnabled,
 		NormalizeUnicode: cc.NormalizeUnicode,

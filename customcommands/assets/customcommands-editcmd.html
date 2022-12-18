@@ -400,6 +400,11 @@
                                     </select>
                                 </div>
 
+                                <div class="form-group">
+                                    <label> Custom Command Enabled?</label>
+                                    {{checkbox "disabled" "disabled" "CC Enabled" (not .CC.Disabled)}}
+                                </div>
+
                                 <h4>Last error</h4>
                                 <p>{{if .CC.LastError}}
                                     <b><span id="PAGST-CC-Last-Error" title="{{formatTime .CC.LastErrorTime.Time.UTC}}">
