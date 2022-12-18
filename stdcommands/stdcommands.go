@@ -46,7 +46,8 @@ import (
 	"github.com/botlabs-gg/yagpdb/stdcommands/myanimelist"
 	"github.com/botlabs-gg/yagpdb/stdcommands/openweathermap"
 	"github.com/botlabs-gg/yagpdb/stdcommands/owldictionary"
-	"github.com/botlabs-gg/yagpdb/stdcommands/paginationtest"
+
+	//"github.com/botlabs-gg/yagpdb/stdcommands/paginationtest"
 	"github.com/botlabs-gg/yagpdb/stdcommands/pagstatus"
 	"github.com/botlabs-gg/yagpdb/stdcommands/ping"
 	"github.com/botlabs-gg/yagpdb/stdcommands/poll"
@@ -152,7 +153,7 @@ func (p *Plugin) AddCommands() {
 		listflags.Command,
 		memstats.Command,
 		pagstatus.Command,
-		paginationtest.Command,
+		// paginationtest.Command,
 		setstatus.Command,
 		sleep.Command,
 		stateinfo.Command,
