@@ -92,7 +92,7 @@ var Command = &commands.YAGCommand{
 		//outSlice := strings.Split((strings.Replace(out, "`", "", -1)), "\n")
 		outSlice := strings.Split(out, "\n")
 		pm, err := paginatedmessages.CreatePaginatedMessage(
-			data.GuildData.GS.ID, data.ChannelID, 1, int(math.Ceil(float64(len(outSlice))/float64(maxLength))), func(p *paginatedmessages.PaginatedMessage, page int) (*discordgo.MessageEmbed, error) {
+			data.GuildData.GS.ID, data.ChannelID, 1, int(math.Ceil(float64(len(outSlice))/float64(maxLength))), func(p *paginatedmessages.PaginatedMessage, page int) (interface{}, error) {
 				i := page - 1
 				paginatedEmbed := embedCreator(outSlice, i, maxLength, counter)
 				return paginatedEmbed, nil

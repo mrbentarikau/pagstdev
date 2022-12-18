@@ -172,7 +172,7 @@ var cmds = []*commands.YAGCommand{
 			var pm *paginatedmessages.PaginatedMessage
 			if len(currentReminders) > 0 {
 				pm, err = paginatedmessages.CreatePaginatedMessage(
-					parsed.GuildData.GS.ID, parsed.ChannelID, 1, int(math.Ceil(float64(len(currentReminders))/float64(maxLength))), func(p *paginatedmessages.PaginatedMessage, page int) (*discordgo.MessageEmbed, error) {
+					parsed.GuildData.GS.ID, parsed.ChannelID, 1, int(math.Ceil(float64(len(currentReminders))/float64(maxLength))), func(p *paginatedmessages.PaginatedMessage, page int) (interface{}, error) {
 						i := page - 1
 						paginatedEmbed := embedCreator(currentReminders, i, maxLength, 0, parsed)
 						return paginatedEmbed, nil
@@ -227,7 +227,7 @@ var cmds = []*commands.YAGCommand{
 			}
 
 			pm, err := paginatedmessages.CreatePaginatedMessage(
-				parsed.GuildData.GS.ID, parsed.ChannelID, 1, int(math.Ceil(float64(len(currentReminders))/float64(maxLength))), func(p *paginatedmessages.PaginatedMessage, page int) (*discordgo.MessageEmbed, error) {
+				parsed.GuildData.GS.ID, parsed.ChannelID, 1, int(math.Ceil(float64(len(currentReminders))/float64(maxLength))), func(p *paginatedmessages.PaginatedMessage, page int) (interface{}, error) {
 					i := page - 1
 					paginatedEmbed := embedCreator(currentReminders, i, maxLength, 1, parsed)
 					return paginatedEmbed, nil

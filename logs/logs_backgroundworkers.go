@@ -21,14 +21,14 @@ func (p *Plugin) RunBackgroundWorker() {
 		case <-ticker.C:
 			if confRestrictLogsThirtyDays.GetBool() {
 				go p.DeleteOldMessages()
-				//go p.DeleteOldMessageLogs()
+				go p.DeleteOldMessageLogs()
 			}
 		case wg := <-p.stopWorkers:
 			wg.Done()
 			return
 		}
 
-		//		p.RunBackgroundWorker()
+		p.RunBackgroundWorker()
 	}
 }
 

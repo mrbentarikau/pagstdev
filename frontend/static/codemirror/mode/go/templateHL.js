@@ -161,6 +161,8 @@
     "getUserCount":true,
     "onlineCount":true,
     "onlineCountBots":true,
+    "pastNicknames":true,
+    "pastUsernames":true,
     "reFind":true,
     "reFindAll":true,
     "reFindAllSubmatches":true,

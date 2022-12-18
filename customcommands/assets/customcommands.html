@@ -154,7 +154,7 @@
         <div class="card-header clearfix">
             <form class="form-horizontal" method="post" method="post" action="/manage/{{$guild}}/customcommands/commands/{{.LocalID}}/update" data-async-form>
                 <div class="pull-right">
-                    {{if eq .TriggerType 5}}
+                    {{if and (eq .TriggerType 5) (not .Disabled)}}
                     <button type="submit" class="btn btn-secondary" title="This will trigger this custom command immediately"
                         formaction="/manage/{{$guild}}/customcommands/commands/{{.LocalID}}/run_now" style="margin: 5px 5px 5px 0px!important">Run now</button>
                     {{end}}
@@ -280,7 +280,7 @@
     {{else if eq .insideDot.TriggerType 6}}
         {{$triggerStyleClasses = "cc-trigger-reaction"}}
     {{end}}
-    <a style="padding:15px 20px 10px 20px" data-toggle="collapse" data-parent="#accordion" href="#collapse_cmd{{.insideDot.LocalID}}" aria-expanded="false" aria-controls="collapse_cmd{{.insideDot.LocalID}}" class="{{$triggerStyleClasses}} cc-collapsibleDown"><span title="Run count: {{humanizeThousands .insideDot.RunCount}}">#{{.insideDot.LocalID}} - {{index .dot.CCTriggerTypes .insideDot.TriggerType -}}</span>
+    <a {{if .insideDot.Disabled}}style="background-color:#5a2c26!important;padding:15px 20px 10px 20px" title="{{printf `Custom Command #%d disabled...` .insideDot.LocalID}}"{{else}} style="padding:15px 20px 10px 20px"{{end}} data-toggle="collapse" data-parent="#accordion" href="#collapse_cmd{{.insideDot.LocalID}}" aria-expanded="false" aria-controls="collapse_cmd{{.insideDot.LocalID}}" class="{{$triggerStyleClasses}} cc-collapsibleDown"><span title="Run count: {{humanizeThousands .insideDot.RunCount}}">#{{.insideDot.LocalID}} - {{index .dot.CCTriggerTypes .insideDot.TriggerType -}}</span>
 {{end}}
 
 {{define "cc_restrictions"}}

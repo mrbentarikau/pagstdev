@@ -88,7 +88,7 @@ var Command = &commands.YAGCommand{
 		var pm *paginatedmessages.PaginatedMessage
 		if paginatedView {
 			pm, err = paginatedmessages.CreatePaginatedMessage(
-				data.GuildData.GS.ID, data.ChannelID, 1, len(hltbQuery.Data), func(p *paginatedmessages.PaginatedMessage, page int) (*discordgo.MessageEmbed, error) {
+				data.GuildData.GS.ID, data.ChannelID, 1, len(hltbQuery.Data), func(p *paginatedmessages.PaginatedMessage, page int) (interface{}, error) {
 					i := page - 1
 					sort.SliceStable(parsedData, func(i, j int) bool {
 						return parsedData[i].JaroWinklerSimilarity > parsedData[j].JaroWinklerSimilarity
