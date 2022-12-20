@@ -460,7 +460,16 @@ func (yc *YAGCommand) checkCanExecuteCommand(data *dcmd.Data, channelID int64) (
 			parentID := data.GuildData.GS.GetChannelOrThread(channelID).ParentID
 			settings, err = yc.GetSettings(data.ContainerChain, channelID, parentID, guild.ID)
 		} else {
-			settings, err = yc.GetSettings(data.ContainerChain, data.GuildData.CS.ID, data.GuildData.CS.ParentID, guild.ID)
+			channel_id := data.GuildData.CS.ID
+			parent_id := data.GuildData.CS.ParentID
+
+			if data.GuildData.CS.Type.IsThread() {
+				channel := data.GuildData.GS.GetChannel(parent_id)
+				channel_id = channel.ID
+				parent_id = channel.ParentID
+			}
+
+			settings, err = yc.GetSettings(data.ContainerChain, channel_id, parent_id, guild.ID)
 		}
 
 		if err != nil {
