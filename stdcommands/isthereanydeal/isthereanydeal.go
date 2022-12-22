@@ -66,9 +66,11 @@ var Command = &commands.YAGCommand{
 
 		if data.Switches["c"].Value != nil && data.Switches["c"].Value.(bool) {
 			compactView = true
+			paginatedView = false
 		}
 
 		if data.Switches["p"].Value != nil && data.Switches["p"].Value.(bool) {
+			compactView = false
 			paginatedView = true
 		}
 
@@ -77,7 +79,7 @@ var Command = &commands.YAGCommand{
 		querySearch := fmt.Sprintf("%s/v02/search/search/?key=%s&q=%s&limit=%d", itadAPIHost, itadAPIKey, url.QueryEscape(queryTitle), queryLimit)
 		body, err := util.RequestFromAPI(querySearch)
 		if err != nil {
-			return fmt.Sprintf("Oh noes, request from API returned: `%s`", err), err
+			return nil, err
 		}
 
 		err = json.Unmarshal([]byte(body), &itadSearch)
