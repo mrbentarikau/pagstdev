@@ -450,6 +450,7 @@
 
                                 <h4>Output errors as command response</h4>
                                 {{checkbox "show_errors" "show_errors" "" .CC.ShowErrors}}
+                                Errors will be sent to {{with .CCErrorChannel}}{{print "channel: " . "."}}{{else}}triggering channel.{{end}}
                             </div>
                             <div id="cc-extra-settings" class="col-sm-6">
                                 <h3>User Role/Category/Channel restrictions</h3>

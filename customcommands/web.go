@@ -21,6 +21,7 @@ import (
 	yagtemplate "github.com/botlabs-gg/yagpdb/common/templates"
 	"github.com/botlabs-gg/yagpdb/customcommands/models"
 	"github.com/botlabs-gg/yagpdb/lib/discordgo"
+	"github.com/botlabs-gg/yagpdb/moderation"
 	"github.com/botlabs-gg/yagpdb/premium"
 	"github.com/botlabs-gg/yagpdb/web"
 	"github.com/mediocregopher/radix/v3"
@@ -158,6 +159,11 @@ func handleGetCommand(w http.ResponseWriter, r *http.Request) (web.TemplateData,
 		models.CustomCommandWhere.LocalID.EQ(ccID)).OneG(r.Context())
 	if err != nil {
 		return templateData, errors.WithStackIf(err)
+	}
+
+	modConfig, _ := moderation.GetConfig(activeGuild.ID)
+	if modConfig.IntCCErrorChannel() > 0 {
+		templateData["CCErrorChannel"] = activeGuild.GetChannelOrThread(modConfig.IntCCErrorChannel()).Name
 	}
 
 	templateData["CC"] = cc
