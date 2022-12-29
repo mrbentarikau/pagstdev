@@ -232,6 +232,9 @@ func tmplRunCC(ctx *templates.Context) interface{} {
 
 		expectedCallTime := time.Now().Add(opts.Delay)
 		newCallChain, err := updateCallChain(ctx.ExecCallChain, expectedCallTime)
+		if err != nil {
+			return "", err
+		}
 
 		m := &DelayedRunCCData{
 			ChannelID: opts.CS.ID,
