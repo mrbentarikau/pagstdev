@@ -163,7 +163,8 @@ func handleGetCommand(w http.ResponseWriter, r *http.Request) (web.TemplateData,
 
 	modConfig, _ := moderation.GetConfig(activeGuild.ID)
 	if modConfig.IntCCErrorChannel() > 0 {
-		templateData["CCErrorChannel"] = activeGuild.GetChannelOrThread(modConfig.IntCCErrorChannel()).Name
+		templateData["CCErrorChannelName"] = activeGuild.GetChannelOrThread(modConfig.IntCCErrorChannel()).Name
+		templateData["CCErrorChannelID"] = modConfig.IntCCErrorChannel()
 	}
 
 	templateData["CC"] = cc
