@@ -67,7 +67,7 @@ type TopCommandsResult struct {
 }
 
 func rangeResults(cmdResults []*TopCommandsResult, i, ml, hours int, raw bool) string {
-	description := fmt.Sprintf("```\nCommand stats from now to %d hour(s) ago\n#    Total -  Command\n", hours)
+	description := fmt.Sprintf("```\nCommand stats from now to %d hour(s) ago\n#    Total - Command\n", hours)
 	total := 0
 	for k, result := range cmdResults[i*ml:] {
 		if k <= ml-1 || raw {
