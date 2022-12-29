@@ -451,6 +451,7 @@
                                 <h4>Output errors as command response</h4>
                                 {{checkbox "show_errors" "show_errors" "" .CC.ShowErrors}}
                                 Errors will be sent to {{with .CCErrorChannelName}}channel: <a href="{{printf `https://discord.com/channels/%d/%d` $.ActiveGuild.ID $.CCErrorChannelID}}" target="_blank">#{{print .}}</a>.{{else}}triggering channel.{{end}}
+                                <br/><sub>Change error channel in <a href ="/manage/{{.ActiveGuild.ID}}/moderation">Moderation</a>.</sub>
                             </div>
                             <div id="cc-extra-settings" class="col-sm-6">
                                 <h3>User Role/Category/Channel restrictions</h3>
