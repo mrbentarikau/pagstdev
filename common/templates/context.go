@@ -300,7 +300,7 @@ func (c *Context) setupBaseData() {
 		"EmbedLinks":         discordgo.PermissionEmbedLinks,
 		"ManageMessages":     discordgo.PermissionManageMessages,
 		"MentionEveryone":    discordgo.PermissionMentionEveryone,
-		"ReadMessages":       discordgo.PermissionReadMessages,
+		"ReadMessages":       discordgo.PermissionViewChannel,
 		"ReadMessageHistory": discordgo.PermissionReadMessageHistory,
 		"SendMessages":       discordgo.PermissionSendMessages,
 		"SendTTSMessages":    discordgo.PermissionSendTTSMessages,
@@ -926,33 +926,6 @@ func (d SDict) HasKey(k string) (ok bool) {
 }
 
 type Slice []interface{}
-
-/*
-func (s Slice) String() string {
-	fromStringSlice := make([]string, 0, len(s))
-
-	for _, Sliceval := range s {
-		switch t := Sliceval.(type) {
-		case string:
-			fromStringSlice = append(fromStringSlice, t)
-		case fmt.Stringer:
-			fromStringSlice = append(fromStringSlice, t.String())
-		case int, int16, int32, int64, uint8, uint16, uint32, uint64, float32, float64:
-			fromStringSlice = append(fromStringSlice, ToString(t))
-		default:
-			fromStringSlice = append(fromStringSlice, fmt.Sprintf("%+v", t))
-		}
-	}
-
-	// stringSlice := make([]string, 0, len(s))
-	// for _, v := range s {
-	// 	stringSlice = append(stringSlice, fmt.Sprintf("%v", v))
-	// }
-	// stringSlice = append(stringSlice, fromStringSlice...)
-
-	return strings.Join(fromStringSlice, " ")
-}
-*/
 
 func (s Slice) Append(item interface{}) (interface{}, error) {
 	if len(s)+1 > 10000 {
