@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/botlabs-gg/yagpdb/bot/paginatedmessages"
@@ -26,16 +27,36 @@ var Command = &commands.YAGCommand{
 	Cooldown:                  3,
 	ArgSwitches: []*dcmd.ArgDef{
 		{Name: "mindfulness", Help: "Generates Mindful Quotes!"},
+		{Name: "season", Help: "Request for specific season (xmas)", Type: dcmd.String},
 	},
 
 	RunFunc: func(data *dcmd.Data) (interface{}, error) {
 		var pm *paginatedmessages.PaginatedMessage
 		var paginatedView bool
 
+		availableSeasons := map[string]bool{"xmas": true}
+
 		query := "https://inspirobot.me/api?generate=true"
 
 		if data.Switches["mindfulness"].Value != nil && data.Switches["mindfulness"].Value.(bool) {
 			paginatedView = true
+		}
+
+		switchSeason := data.Switch("season")
+		if switchSeason.Value != nil {
+			if !availableSeasons[switchSeason.Str()] {
+				aSeasons := make([]string, len(availableSeasons))
+
+				i := 0
+				for s := range availableSeasons {
+					aSeasons[i] = s
+					i++
+				}
+				seasons := strings.Join(strings.Split(strings.Trim(fmt.Sprintf("%v", aSeasons), "[]"), " "), ", ")
+
+				return fmt.Sprintf("Available seasons for Inspirobot: `%s`", seasons), nil
+			}
+			query = query + "&season=" + switchSeason.Str()
 		}
 
 		if paginatedView {
