@@ -120,7 +120,7 @@ func SnowflakeToTime(i int64) time.Time {
 
 func SetStatus(streaming, status, idle string, activity string) {
 	if status == "" {
-		r, _ := regexp.Compile(`\d+\.\d+\.\d+`)
+		r, _ := regexp.Compile(`\d+\.\d+(\.\d+)?`)
 		status = "v" + r.FindString(common.VERSION) + " :)"
 	}
 
