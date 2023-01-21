@@ -5,19 +5,17 @@ package exchange
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"math"
 	"math/rand"
-	"net/http"
 	"sort"
 	"strings"
 	"time"
 
 	"github.com/botlabs-gg/yagpdb/bot/paginatedmessages"
 	"github.com/botlabs-gg/yagpdb/commands"
-	"github.com/botlabs-gg/yagpdb/common"
 	"github.com/botlabs-gg/yagpdb/lib/dcmd"
 	"github.com/botlabs-gg/yagpdb/lib/discordgo"
+	"github.com/botlabs-gg/yagpdb/stdcommands/util"
 
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
@@ -53,7 +51,15 @@ var Command = &commands.YAGCommand{
 			}
 			return pm, nil
 		}
-		output, err := requestAPI("https://api.exchangerate.host/convert?from=" + from["Code"] + "&to=" + to["Code"] + "&amount=" + fmt.Sprintf("%.3f", amount))
+
+		query := "https://api.exchangerate.host/convert?from=" + from["Code"] + "&to=" + to["Code"] + "&amount=" + fmt.Sprintf("%.3f", amount)
+		body, err := util.RequestFromAPI(query)
+		if err != nil {
+			return nil, err
+		}
+
+		output := &Result{}
+		err = json.Unmarshal([]byte(body), &output)
 		if err != nil {
 			return nil, err
 		}
@@ -72,32 +78,6 @@ var Command = &commands.YAGCommand{
 
 		return embed, nil
 	},
-}
-
-func requestAPI(query string) (*Result, error) {
-	req, err := http.NewRequest("GET", query, nil)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("User-Agent", common.ConfBotUserAgent.GetString())
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	if resp.StatusCode != 200 {
-		return nil, commands.NewPublicError("HTTP err: ", resp.StatusCode)
-	}
-	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	result := &Result{}
-	err = json.Unmarshal([]byte(body), &result)
-	if err != nil {
-		return nil, err
-	}
-	return result, nil
 }
 
 type SymbolInfo struct {
