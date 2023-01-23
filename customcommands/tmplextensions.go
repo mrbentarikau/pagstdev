@@ -963,8 +963,10 @@ type LightDBEntry struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 
-	Key   string
-	Value interface{}
+	Key      string
+	Value    interface{}
+	ValueNum float64
+	ValueRaw interface{}
 
 	User discordgo.User
 
@@ -1002,8 +1004,10 @@ func ToLightDBEntry(m *models.TemplatesUserDatabase) (*LightDBEntry, error) {
 		CreatedAt: m.CreatedAt,
 		UpdatedAt: m.UpdatedAt,
 
-		Key:   m.Key,
-		Value: decodedValue,
+		Key:      m.Key,
+		Value:    decodedValue,
+		ValueNum: m.ValueNum,
+		ValueRaw: dst,
 
 		ExpiresAt: m.ExpiresAt.Time,
 
