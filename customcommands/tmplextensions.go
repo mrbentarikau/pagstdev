@@ -367,8 +367,8 @@ func encodeRunCCUserData(data interface{}) ([]byte, error) {
 
 // Limit execCC chains to 20/5m.
 const (
-	chainWindowDur = 5 * time.Minute
-	maxChainDepth  = 20
+	chainWindowDur = 1 * time.Hour
+	maxChainDepth  = 200
 )
 
 func updateCallChain(chain []time.Time, expectedCallTime time.Time) ([]time.Time, error) {
