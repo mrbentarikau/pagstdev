@@ -372,16 +372,16 @@ type Channel struct {
 
 	// Channel flags.
 	// KRAAKA: Below stuff commented out due forums
-	// Flags ChannelFlags `json:"flags"`
+	 Flags ChannelFlags `json:"flags"`
 
 	// The set of tags that can be used in a forum channel.
-	// AvailableTags []ForumTag `json:"available_tags"`
+	 AvailableTags []ForumTag `json:"available_tags"`
 
 	// The IDs of the set of tags that have been applied to a thread in a forum channel.
-	// AppliedTags []string `json:"applied_tags"`
+	 AppliedTags []string `json:"applied_tags"`
 
 	// Emoji to use as the default reaction to a forum post.
-	// DefaultReactionEmoji ForumDefaultReaction `json:"default_reaction_emoji"`
+	 DefaultReactionEmoji ForumDefaultReaction `json:"default_reaction_emoji"`
 
 	// maybe future problems here KRAAKA
 	// The initial RateLimitPerUser to set on newly created threads in a channel.
@@ -438,8 +438,8 @@ type ChannelEdit struct {
 	// NOTE: forum channels only
 	// KRAAKA below stuff commented out due forums
 
-	// AvailableTags        *[]ForumTag      `json:"available_tags,omitempty"`
-	// DefaultReactionEmoji *ForumDefaultReaction `json:"default_reaction_emoji,omitempty"`
+	 AvailableTags        *[]ForumTag      `json:"available_tags,omitempty"`
+	 DefaultReactionEmoji *ForumDefaultReaction `json:"default_reaction_emoji,omitempty"`
 	DefaultSortOrder   *ForumSortOrderType `json:"default_sort_order,omitempty"` // TODO: null
 	DefaultForumLayout *ForumLayout        `json:"default_forum_layout,omitempty"`
 
@@ -543,7 +543,7 @@ type ForumTag struct {
 	ID        int64  `json:"id,string,omitempty"`
 	Name      string `json:"name"`
 	Moderated bool   `json:"moderated"`
-	EmojiID   int64  `json:"emoji_id,omitempty"`
+	EmojiID   int64  `json:"emoji_id,string,omitempty"`
 	EmojiName string `json:"emoji_name,omitempty"`
 }
 
