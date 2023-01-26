@@ -565,6 +565,7 @@ func (p *Plugin) postVideo(subs []*ChannelSubscription, publishedAt time.Time, v
 	for _, sub := range subs {
 		if sub.Enabled {
 			if isLivestream && !sub.PublishLivestream {
+				fmt.Println("SKIPPING_LIVE_STREAM")
 				continue
 			}
 
