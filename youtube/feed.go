@@ -582,6 +582,10 @@ func (p *Plugin) postVideo(subs []*ChannelSubscription, publishedAt time.Time, v
 				}
 			}
 
+			if channelID == "UCPqTHgX7a8OaVuo5Ayd59xA" {
+				fmt.Println("KRAAKA_PUHATA_JA_MANGIDA_TO_sendNewVidMessage")
+			}
+
 			p.sendNewVidMessage(sub.GuildID, sub.ChannelID, video.Snippet.ChannelTitle, sub.YoutubeChannelID, video.Id, sub.MentionRole, sub.MentionEveryone, video.Snippet, video.ContentDetails)
 		}
 	}
