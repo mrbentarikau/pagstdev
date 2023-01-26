@@ -558,7 +558,7 @@ func (p *Plugin) postVideo(subs []*ChannelSubscription, publishedAt time.Time, v
 		return nil
 	}
 
-	isLivestream := contentType == "live"
+	isLivestream := contentType == "live" || contentType == "upcoming"
 	isShortsCheckDone := false
 	isShorts := false
 
