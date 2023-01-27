@@ -183,6 +183,7 @@
     // templexec
     "exec":true,
     "execAdmin":true,
+    "execBot":true,
     "userArg":true,
 
     // Role functions
