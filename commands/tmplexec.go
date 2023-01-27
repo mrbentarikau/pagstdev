@@ -20,6 +20,7 @@ func init() {
 		execUser, execBot := TmplExecCmdFuncs(ctx, 5, false)
 		ctx.ContextFuncs["exec"] = execUser
 		ctx.ContextFuncs["execAdmin"] = execBot
+		ctx.ContextFuncs["execBot"] = execBot
 		ctx.ContextFuncs["userArg"] = tmplUserArg(ctx)
 	})
 }
