@@ -17,7 +17,7 @@ import (
 
 	// Plugin imports
 	"github.com/botlabs-gg/yagpdb/automod"
-	"github.com/botlabs-gg/yagpdb/automod_legacy"
+	"github.com/botlabs-gg/yagpdb/automod_basic"
 	"github.com/botlabs-gg/yagpdb/autorole"
 	"github.com/botlabs-gg/yagpdb/aylien"
 	"github.com/botlabs-gg/yagpdb/cah"
@@ -61,7 +61,7 @@ func main() {
 	analytics.RegisterPlugin()
 	antiphishing.RegisterPlugin()
 	automod.RegisterPlugin()
-	automod_legacy.RegisterPlugin()
+	automod_basic.RegisterPlugin()
 	autorole.RegisterPlugin()
 	aylien.RegisterPlugin()
 	cah.RegisterPlugin()

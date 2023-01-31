@@ -10,7 +10,7 @@ import (
 
 	"github.com/botlabs-gg/yagpdb/antiphishing"
 	"github.com/botlabs-gg/yagpdb/automod/models"
-	"github.com/botlabs-gg/yagpdb/automod_legacy"
+	"github.com/botlabs-gg/yagpdb/automod_basic"
 	"github.com/botlabs-gg/yagpdb/bot"
 	"github.com/botlabs-gg/yagpdb/common"
 	"github.com/botlabs-gg/yagpdb/lib/discordgo"
@@ -539,7 +539,7 @@ func (inv *ServerInviteTrigger) UserSettings() []*SettingDef {
 }
 
 func (inv *ServerInviteTrigger) CheckMessage(triggerCtx *TriggerContext, cs *dstate.ChannelState, m *discordgo.Message, mdStripped string) (bool, error) {
-	containsBadInvited := automod_legacy.CheckMessageForBadInvites(m.Content, m.GuildID)
+	containsBadInvited := automod_basic.CheckMessageForBadInvites(m.Content, m.GuildID)
 	return containsBadInvited, nil
 }
 

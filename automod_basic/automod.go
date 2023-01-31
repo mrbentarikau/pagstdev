@@ -1,11 +1,11 @@
-package automod_legacy
+package automod_basic
 
 import (
 	"emperror.dev/errors"
 	"github.com/botlabs-gg/yagpdb/common"
 	"github.com/botlabs-gg/yagpdb/common/featureflags"
-	"github.com/botlabs-gg/yagpdb/web"
 	"github.com/botlabs-gg/yagpdb/lib/discordgo"
+	"github.com/botlabs-gg/yagpdb/web"
 )
 
 var logger = common.GetPluginLogger(&Plugin{})
@@ -81,7 +81,7 @@ func (c Config) Save(guildID int64) error {
 var _ featureflags.PluginWithFeatureFlags = (*Plugin)(nil)
 
 const (
-	featureFlagEnabled = "automod_legacy_enabled"
+	featureFlagEnabled = "automod_basic_enabled"
 )
 
 func (p *Plugin) UpdateFeatureFlags(guildID int64) ([]string, error) {

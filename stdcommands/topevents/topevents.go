@@ -119,14 +119,11 @@ func rangeResults(cmdResults []*DiscordEvtEntry, i, ml, hours int, raw bool) str
 	sumPerSecond := float64(0)
 	for k, entry := range cmdResults[i*ml:] {
 		if k <= ml-1 || raw {
-			//description += fmt.Sprintf("#%02d: %5d - %s\n", i*ml+k+1, result.Count, result.Command)
 			description += fmt.Sprintf("#%-2d: %7d - %5.1f - %s\n", k+1, entry.Total, entry.PerSecond, entry.Name)
 			total += entry.Total
 			sumPerSecond += entry.PerSecond
 		}
 	}
-
-	//cpm := float64(total) / float64(hours) / 60
 
 	description += fmt.Sprintf("\nTotal: %d, Events per second: %.1f", total, sumPerSecond)
 	description += "\n```"
