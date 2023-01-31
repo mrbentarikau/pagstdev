@@ -77,6 +77,7 @@ const (
 
 var (
 	ytUrlRegex        = regexp.MustCompile(`^(https?:\/\/)?((www|m)\.)?youtube\.com?`)
+	ytUrlShortRegex   = regexp.MustCompile(`^(https?:\/\/)?youtu\.be\/([a-zA-Z0-9_-]+).*`)
 	ytVideoUrlRegex   = regexp.MustCompile(`^(https?:\/\/)?((www|m)\.)?youtube\.com\/watch\?.*v=([a-zA-Z0-9_-]+).*`)
 	ytChannelUrlRegex = regexp.MustCompile(`^(https?:\/\/)?((www|m)\.)?youtube\.com\/(channel)\/(UC[\w-]{21}[AQgw])$`)
 	ytCustomUrlRegex  = regexp.MustCompile(`^(https?:\/\/)?((www|m)\.)?youtube\.com\/(c\/)?([\w-]+)$`)
@@ -174,7 +175,7 @@ func (p *Plugin) HandleNew(w http.ResponseWriter, r *http.Request) (web.Template
 	vURL := trimYouTubeURLParts(data.YoutubeVideoURL)
 
 	urlYT := data.YoutubeURL
-	if !ytUrlRegex.MatchString(urlYT) && cID == "" && username == "" && cURL == "" && vURL == "" {
+	if !(ytUrlRegex.MatchString(urlYT) || ytUrlShortRegex.MatchString(urlYT)) && cID == "" && username == "" && cURL == "" && vURL == "" {
 		return templateData.AddAlerts(web.ErrorAlert("This is not a YouTube link...")), nil
 	}
 
