@@ -1136,12 +1136,13 @@ func (c *Context) tmplGetGuildThreadsActive() (*discordgo.ThreadsList, error) {
 }
 
 func (c *Context) tmplGetThreadsArchived(channel interface{}, args ...interface{}) (*discordgo.ThreadsList, error) {
-	var limit int
 	var private bool
 	var response *discordgo.ThreadsList
 	var err error
+	var argsSDict SDict
 
 	before := time.Now().UTC()
+	limit := int(2)
 
 	if c.IncreaseCheckGenericAPICall() {
 		return nil, ErrTooManyAPICalls
@@ -1151,13 +1152,11 @@ func (c *Context) tmplGetThreadsArchived(channel interface{}, args ...interface{
 		return nil, ErrTooManyCalls
 	}
 
-	if len(args) < 1 {
-		return nil, errors.New("no arguments given")
-	}
-
-	argsSdict, err := StringKeyDictionary(args...)
-	if err != nil {
-		return nil, err
+	if len(args) > 0 {
+		argsSDict, err = StringKeyDictionary(args...)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	channelID := c.ChannelArg(channel)
@@ -1165,7 +1164,7 @@ func (c *Context) tmplGetThreadsArchived(channel interface{}, args ...interface{
 		return nil, nil //dont send an error , a nil output would indicate invalid/unknown channel
 	}
 
-	for key, val := range argsSdict {
+	for key, val := range argsSDict {
 		switch strings.ToLower(key) {
 		case "before":
 			if realTime, ok := val.(time.Time); ok {
