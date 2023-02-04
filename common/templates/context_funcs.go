@@ -1069,7 +1069,6 @@ func (c *Context) tmplGetChannel(channel interface{}) (*CtxChannel, error) {
 }
 
 func (c *Context) tmplGetThread(channel interface{}) (*CtxChannel, error) {
-
 	if c.IncreaseCheckGenericAPICall() {
 		return nil, ErrTooManyAPICalls
 	}
@@ -1088,10 +1087,61 @@ func (c *Context) tmplGetThread(channel interface{}) (*CtxChannel, error) {
 	return CtxChannelFromCS(cstate), nil
 }
 
-func (c *Context) tmplGetThreadsArchived(args ...interface{}) (*discordgo.ThreadsList, error) {
-	var before time.Time
-	var channelID int64
+/*
+func (c *Context) tmplGetThreadsActive(channel interface{}) (*discordgo.ThreadsList, error) {
+	if c.IncreaseCheckGenericAPICall() {
+		return nil, ErrTooManyAPICalls
+	}
+
+	if c.IncreaseCheckCallCounter("guild_archived_threads", 3) {
+		return nil, ErrTooManyCalls
+	}
+
+	cID := c.ChannelArg(channel)
+	if cID == 0 {
+		return nil, nil //dont send an error , a nil output would indicate invalid/unknown channel
+	}
+
+	response, err := common.BotSession.ThreadsActive(cID)
+	if err != nil {
+		return nil, err
+	}
+
+	return response, nil
+}
+*/
+
+func (c *Context) tmplGetGuildThreadsActive() (*discordgo.ThreadsList, error) {
+	if c.IncreaseCheckGenericAPICall() {
+		return nil, ErrTooManyAPICalls
+	}
+
+	if c.IncreaseCheckCallCounter("guild_all_active_threads", 3) {
+		return nil, ErrTooManyCalls
+	}
+
+	gID := c.GS.ID
+	if gID == 0 {
+		return nil, nil //dont send an error , a nil output would indicate invalid/unknown channel
+	}
+
+	fmt.Println("gID", gID)
+
+	response, err := common.BotSession.GuildThreadsActive(gID)
+	if err != nil {
+		return nil, err
+	}
+
+	return response, nil
+}
+
+func (c *Context) tmplGetThreadsArchived(channel interface{}, args ...interface{}) (*discordgo.ThreadsList, error) {
 	var limit int
+	var private bool
+	var response *discordgo.ThreadsList
+	var err error
+
+	before := time.Now().UTC()
 
 	if c.IncreaseCheckGenericAPICall() {
 		return nil, ErrTooManyAPICalls
@@ -1110,30 +1160,38 @@ func (c *Context) tmplGetThreadsArchived(args ...interface{}) (*discordgo.Thread
 		return nil, err
 	}
 
+	channelID := c.ChannelArg(channel)
+	if channelID == 0 {
+		return nil, nil //dont send an error , a nil output would indicate invalid/unknown channel
+	}
+
 	for key, val := range argsSdict {
 		switch strings.ToLower(key) {
-		case "channel":
-			channelID = c.ChannelArg(val)
-			if channelID == 0 {
-				return nil, nil //dont send an error , a nil output would indicate invalid/unknown channel
-			}
 		case "before":
 			if realTime, ok := val.(time.Time); ok {
 				before = realTime
 			}
 		case "limit":
 			limit = tmplToInt(val)
-			if limit < 1 {
-				limit = 1
+			if limit < 2 {
+				limit = 2
 			} else if limit > 100 {
 				limit = 100
+			}
+		case "private":
+			if val.(bool) {
+				private = true
 			}
 		default:
 			return nil, errors.New(`invalid key "` + key + ` "passed to getArchivedThreads builder`)
 		}
 	}
 
-	response, err := common.BotSession.ThreadsArchived(channelID, &before, limit)
+	if private {
+		response, err = common.BotSession.ThreadsPrivateArchived(channelID, &before, limit)
+	} else {
+		response, err = common.BotSession.ThreadsArchived(channelID, &before, limit)
+	}
 	if err != nil {
 		return nil, err
 	}
