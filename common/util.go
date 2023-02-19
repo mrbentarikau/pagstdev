@@ -811,3 +811,7 @@ func NormalizeConfusables(msg string) string {
 	msg = confusables.SkeletonTweaked(msg)
 	return msg
 }
+
+func BoolToPointer(b bool) *bool {
+	return &b
+}

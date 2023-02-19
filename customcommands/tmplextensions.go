@@ -205,6 +205,10 @@ func tmplRunCC(ctx *templates.Context) interface{} {
 			return "", errors.New("custom command is disabled")
 		}
 
+		if opts.Cmd.TriggerType == int(CommandTriggerInterval) {
+			return "", errors.New("interval custom command cannot be used with execCC")
+		}
+
 		actualDelay := templates.ToInt64(delaySeconds)
 		if actualDelay <= 0 {
 			currentStackDepthI := ctx.Data["StackDepth"]
@@ -282,6 +286,14 @@ func tmplScheduleUniqueCC(ctx *templates.Context) interface{} {
 
 		if opts.Delay <= 0 {
 			return "", nil
+		}
+
+		if opts.Cmd.Disabled {
+			return "", errors.New("custom command is disabled")
+		}
+
+		if opts.Cmd.TriggerType == int(CommandTriggerInterval) {
+			return "", errors.New("interval custom command cannot be used with scheduleUniqueCC")
 		}
 
 		expectedCallTime := time.Now().Add(opts.Delay)
