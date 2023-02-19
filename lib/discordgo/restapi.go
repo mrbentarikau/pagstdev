@@ -51,6 +51,118 @@ var (
 	Unmarshal func(src []byte, v interface{}) error = json.Unmarshal
 )
 
+// RESTError stores error information about a request with a bad response code.
+// Message is not always present, there are cases where api calls can fail
+// without returning a json message.
+type RESTError struct {
+	Request      *http.Request
+	Response     *http.Response
+	ResponseBody []byte
+	Message      *APIErrorMessage // Message may be nil.
+}
+
+// newRestError returns a new REST API error.
+func newRestError(req *http.Request, resp *http.Response, body []byte) *RESTError {
+	restErr := &RESTError{
+		Request:      req,
+		Response:     resp,
+		ResponseBody: body,
+	}
+	// Attempt to decode the error and assume no message was provided if it fails
+	var msg *APIErrorMessage
+	err := Unmarshal(body, &msg)
+	if err == nil {
+		restErr.Message = msg
+	}
+	return restErr
+}
+
+// Error returns a Rest API Error with its status code and body.
+func (r RESTError) Error() string {
+	return "HTTP " + r.Response.Status + ", " + string(r.ResponseBody)
+}
+
+// RateLimitError is returned when a request exceeds a rate limit
+// and ShouldRetryOnRateLimit is false. The request may be manually
+// retried after waiting the duration specified by RetryAfter.
+type RateLimitError struct {
+	*RateLimit
+}
+
+// Error returns a rate limit error with rate limited endpoint and retry time.
+func (e RateLimitError) Error() string {
+	return "Rate limit exceeded on " + e.URL + ", retry after " + e.RetryAfter.String()
+}
+
+// RequestConfig is an HTTP request configuration.
+type RequestConfig struct {
+	Request                *http.Request
+	ShouldRetryOnRateLimit bool
+	MaxRestRetries         int
+	Client                 *http.Client
+}
+
+// newRequestConfig returns a new HTTP request configuration based on parameters in Session.
+func newRequestConfig(s *Session, req *http.Request) *RequestConfig {
+	return &RequestConfig{
+		ShouldRetryOnRateLimit: s.ShouldRetryOnRateLimit,
+		MaxRestRetries:         s.MaxRestRetries,
+		Client:                 s.Client,
+		Request:                req,
+	}
+}
+
+// RequestOption is a function which mutates request configuration.
+// It can be supplied as an argument to any REST method.
+type RequestOption func(cfg *RequestConfig)
+
+// WithClient changes the HTTP client used for the request.
+func WithClient(client *http.Client) RequestOption {
+	return func(cfg *RequestConfig) {
+		if client != nil {
+			cfg.Client = client
+		}
+	}
+}
+
+// WithRetryOnRatelimit controls whether session will retry the request on rate limit.
+func WithRetryOnRatelimit(retry bool) RequestOption {
+	return func(cfg *RequestConfig) {
+		cfg.ShouldRetryOnRateLimit = retry
+	}
+}
+
+// WithRestRetries changes maximum amount of retries if request fails.
+func WithRestRetries(max int) RequestOption {
+	return func(cfg *RequestConfig) {
+		cfg.MaxRestRetries = max
+	}
+}
+
+// WithHeader sets a header in the request.
+func WithHeader(key, value string) RequestOption {
+	return func(cfg *RequestConfig) {
+		cfg.Request.Header.Set(key, value)
+	}
+}
+
+// WithAuditLogReason changes audit log reason associated with the request.
+func WithAuditLogReason(reason string) RequestOption {
+	return WithHeader("X-Audit-Log-Reason", reason)
+}
+
+// WithLocale changes accepted locale of the request.
+func WithLocale(locale Locale) RequestOption {
+	return WithHeader("X-Discord-Locale", string(locale))
+}
+
+// WithContext changes context of the request.
+func WithContext(ctx context.Context) RequestOption {
+	return func(cfg *RequestConfig) {
+		cfg.Request = cfg.Request.WithContext(ctx)
+	}
+}
+
 // Request is the same as RequestWithBucketID but the bucket id is the same as the urlStr
 func (s *Session) Request(method, urlStr string, data interface{}, extraHeaders map[string]string) (response []byte, err error) {
 	return s.RequestWithBucketID(method, urlStr, data, extraHeaders, strings.SplitN(urlStr, "?", 2)[0])
@@ -1496,7 +1608,7 @@ func (s *Session) GuildAuditLog(guildID, userID, beforeID int64, actionType, lim
 		v.Set("before", StrID(beforeID))
 	}
 	if actionType > 0 {
-		v.Set("action_type", strconv.Itoa(actionType))
+		v.Set("action_type", strconv.Itoa(int(actionType)))
 	}
 	if limit > 0 {
 		v.Set("limit", strconv.Itoa(limit))
@@ -2898,10 +3010,21 @@ func (s *Session) ThreadMemberRemove(threadID int64, memberID string) error {
 }
 
 // ThreadMember returns thread member object for the specified member of a thread
-func (s *Session) ThreadMember(threadID int64, memberID string) (member *ThreadMember, err error) {
-	endpoint := EndpointThreadMember(threadID, memberID)
+// withMember : Whether to include a guild member object for each thread member
+func (s *Session) ThreadMember(threadID int64, memberID string, withMember bool, options ...RequestOption) (member *ThreadMember, err error) {
+	uri := EndpointThreadMember(threadID, memberID)
+
+	queryParams := url.Values{}
+	if withMember {
+		queryParams.Set("with_member", "true")
+	}
+
+	if len(queryParams) > 0 {
+		uri += "?" + queryParams.Encode()
+	}
+
 	var body []byte
-	body, err = s.RequestWithBucketID("GET", endpoint, nil, nil, endpoint)
+	body, err = s.RequestWithBucketID("GET", uri, nil, nil, uri)
 
 	if err != nil {
 		return
@@ -2912,9 +3035,29 @@ func (s *Session) ThreadMember(threadID int64, memberID string) (member *ThreadM
 }
 
 // ThreadMembers returns all members of specified thread.
-func (s *Session) ThreadMembers(threadID int64) (members []*ThreadMember, err error) {
+// limit      : Max number of thread members to return (1-100). Defaults to 100.
+// afterID    : Get thread members after this user ID
+// withMember : Whether to include a guild member object for each thread member
+func (s *Session) ThreadMembers(threadID int64, limit int, withMember bool, afterID string, options ...RequestOption) (members []*ThreadMember, err error) {
+	uri := EndpointThreadMembers(threadID)
+
+	queryParams := url.Values{}
+	if withMember {
+		queryParams.Set("with_member", "true")
+	}
+	if limit > 0 {
+		queryParams.Set("limit", strconv.Itoa(limit))
+	}
+	if afterID != "" {
+		queryParams.Set("after", afterID)
+	}
+
+	if len(queryParams) > 0 {
+		uri += "?" + queryParams.Encode()
+	}
+
 	var body []byte
-	body, err = s.RequestWithBucketID("GET", EndpointThreadMembers(threadID), nil, nil, EndpointThreadMembers(threadID))
+	body, err = s.RequestWithBucketID("GET", uri, nil, nil, uri)
 
 	if err != nil {
 		return

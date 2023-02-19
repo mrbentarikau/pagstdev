@@ -750,7 +750,6 @@ func baseContextFuncs(c *Context) {
 	// testing grounds
 	c.addContextFunc("getAuditLogEntries", c.tmplGetAuditLog)
 	c.addContextFunc("getGuildIntegrations", c.tmplGetGuildIntegrations)
-	//c.addContextFunc("getThreadsActive", c.tmplGetThreadsActive)
 	c.addContextFunc("guildMemberMove", c.tmplGuildMemberMove)
 }
 

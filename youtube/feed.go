@@ -181,6 +181,19 @@ func (p *Plugin) sendNewVidMessage(guild, discordChannel, channelTitle, channelI
 		return
 	}
 
+	if guildState == nil {
+		logger.Errorf("guild_id %d not found in state for youtube feed", parsedGuild)
+		p.DisableGuildFeeds(parsedGuild)
+		return
+	}
+
+	channelState := guildState.GetChannel(parsedChannel)
+	if channelState == nil {
+		logger.Errorf("channel_id %d for guild_id %d not found in state for youtube feed", parsedChannel, parsedGuild)
+		p.DisableChannelFeeds(parsedChannel)
+		return
+	}
+
 	videoYT := "https://www.youtube.com/watch?v=" + videoID
 	ctx := templates.NewContext(guildState, guildState.GetChannel(parsedChannel), nil) //needs GuildSet, ChannelState, MemberState
 	ctx.Data["ChannelName"] = channelTitle
@@ -407,7 +420,7 @@ func (p *Plugin) AddFeed(guildID, discordChannelID int64, legacyYTChannel, ytCha
 		MentionRole:       discordgo.StrID(mentionRole),
 		PublishShorts:     sql.NullBool{Valid: true, Bool: publishShorts},
 		PublishLivestream: publishLivestream,
-		Enabled:           true,
+		Enabled:           common.BoolToPointer(true),
 	}
 
 	if ytChannel != nil {
@@ -565,7 +578,7 @@ func (p *Plugin) postVideo(subs []*ChannelSubscription, publishedAt time.Time, v
 	isShorts := false
 
 	for _, sub := range subs {
-		if sub.Enabled {
+		if *sub.Enabled {
 			if isLivestream && !sub.PublishLivestream {
 				continue
 			}

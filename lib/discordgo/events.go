@@ -509,6 +509,9 @@ type GuildAuditLogEntryCreate struct {
 	*AuditLogEntry
 }
 
+type GuildJoinRequestUpdate struct{}
+type GuildJoinRequestDelete struct{}
+
 // UnmarshalJSON is a helper function to unmarshal Interaction object.
 func (i *InteractionCreate) UnmarshalJSON(b []byte) error {
 	return json.Unmarshal(b, &i.Interaction)

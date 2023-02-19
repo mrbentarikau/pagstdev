@@ -31,11 +31,13 @@ import (
 	"google.golang.org/api/youtube/v3"
 )
 
+/*
 type CtxKey int
 
 const (
 	CurrentConfig CtxKey = iota
 )
+*/
 
 //go:embed assets/youtube.html
 var PageHTML string
@@ -294,9 +296,22 @@ func (p *Plugin) HandleEdit(w http.ResponseWriter, r *http.Request) (templateDat
 	sub.ChannelID = discordgo.StrID(data.DiscordChannel)
 	sub.MentionRole = discordgo.StrID(data.MentionRole)
 	if data.DiscordChannel == 0 {
-		sub.Enabled = false
+		sub.Enabled = common.BoolToPointer(false)
 	} else {
-		sub.Enabled = data.Enabled
+		sub.Enabled = &data.Enabled
+	}
+
+	count := 0
+	common.GORM.Model(&ChannelSubscription{}).Where("guild_id = ? and enabled = ?", sub.GuildID, common.BoolToPointer(true)).Count(&count)
+	if count >= MaxFeedsForContext(ctx) {
+		var currFeed ChannelSubscription
+		err := common.GORM.Model(&ChannelSubscription{}).Where("id = ?", sub.ID).First(&currFeed)
+		if err != nil {
+			logger.WithError(err.Error).Errorf("Failed getting feed %d", sub.ID)
+		}
+		if !*currFeed.Enabled && *sub.Enabled {
+			return templateData.AddAlerts(web.ErrorAlert(fmt.Sprintf("Max %d enabled YouTube feeds allowed (%d for premium servers)", GuildMaxFeeds, GuildMaxFeedsPremium))), nil
+		}
 	}
 
 	err = common.GORM.Save(sub).Error

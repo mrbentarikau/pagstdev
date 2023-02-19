@@ -14,6 +14,7 @@ package discordgo
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -22,12 +23,15 @@ import (
 	"time"
 
 	"github.com/botlabs-gg/yagpdb/lib/gojay"
+	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
 	"github.com/volatiletech/null/v8"
 )
 
 // A Session represents a connection to the Discord API.
 type Session struct {
+	sync.RWMutex
+
 	// General configurable settings.
 
 	// Authentication token for this session
@@ -41,6 +45,13 @@ type Session struct {
 
 	// Should the session reconnect the websocket on errors.
 	ShouldReconnectOnError bool
+
+	// Should the session retry requests when rate limited.
+	ShouldRetryOnRateLimit bool
+
+	// Identify is sent during initial handshake with the discord gateway.
+	// https://discord.com/developers/docs/topics/gateway#identify
+	Identify Identify
 
 	// Should the session request compressed websocket data.
 	Compress bool
@@ -58,8 +69,14 @@ type Session struct {
 	// e.g false = launch event handlers in their own goroutines.
 	SyncEvents bool
 
+	// Whether the Data Websocket is ready
+	DataReady bool // NOTE: Maye be deprecated soon
+
 	// Max number of REST API retries
 	MaxRestRetries int
+
+	// Stores a mapping of guild id's to VoiceConnections
+	VoiceConnections map[string]*VoiceConnection
 
 	// Managed state object, updated internally with events when
 	// StateEnabled is true.
@@ -68,8 +85,17 @@ type Session struct {
 	// The http client used for REST requests
 	Client *http.Client
 
+	// The dialer used for WebSocket connection
+	Dialer *websocket.Dialer
+
+	// The user agent used for REST APIs
+	UserAgent string
+
 	// Stores the last HeartbeatAck that was recieved (in UTC)
 	LastHeartbeatAck time.Time
+
+	// Stores the last Heartbeat sent (in UTC)
+	LastHeartbeatSent time.Time
 
 	// used to deal with rate limits
 	Ratelimiter *RateLimiter
@@ -83,6 +109,24 @@ type Session struct {
 	handlersMu   sync.RWMutex
 	handlers     map[string][]*eventHandlerInstance
 	onceHandlers map[string][]*eventHandlerInstance
+
+	// The websocket connection.
+	wsConn *websocket.Conn
+
+	// When nil, the session is not listening.
+	listening chan interface{}
+
+	// sequence tracks the current gateway api websocket sequence number
+	sequence *int64
+
+	// stores sessions current Discord Gateway
+	gateway string
+
+	// stores session ID of current Gateway connection
+	sessionID string
+
+	// used to make sure gateway websocket writes do not happen concurrently
+	wsMutex sync.Mutex
 }
 
 /*
@@ -509,6 +553,8 @@ type ThreadMember struct {
 	JoinTimestamp Timestamp `json:"join_timestamp"`
 	// Any user-thread settings, currently only used for notifications
 	Flags int `json:"flags"`
+	// Additional information about the user
+	Member *Member
 }
 
 // ThreadsList represents a list of threads alongisde with thread member objects for the current user.
@@ -1436,10 +1482,30 @@ const (
 // A TooManyRequests struct holds information received from Discord
 // when receiving a HTTP 429 response.
 type TooManyRequests struct {
-	Bucket     string  `json:"bucket"`
-	Message    string  `json:"message"`
-	RetryAfter float64 `json:"retry_after"`
-	Global     bool    `json:"global"`
+	Bucket     string        `json:"bucket"`
+	Message    string        `json:"message"`
+	RetryAfter time.Duration `json:"retry_after"`
+	Global     bool          `json:"global"`
+}
+
+// UnmarshalJSON helps support translation of a milliseconds-based float
+// into a time.Duration on TooManyRequests.
+func (t *TooManyRequests) UnmarshalJSON(b []byte) error {
+	u := struct {
+		Bucket     string  `json:"bucket"`
+		Message    string  `json:"message"`
+		RetryAfter float64 `json:"retry_after"`
+	}{}
+	err := Unmarshal(b, &u)
+	if err != nil {
+		return err
+	}
+
+	t.Bucket = u.Bucket
+	t.Message = u.Message
+	whole, frac := math.Modf(u.RetryAfter)
+	t.RetryAfter = time.Duration(whole)*time.Second + time.Duration(frac*1000)*time.Millisecond
+	return nil
 }
 
 func (t *TooManyRequests) RetryAfterDur() time.Duration {
@@ -1582,18 +1648,13 @@ type GuildAuditLog struct {
 // AuditLogEntry for a GuildAuditLog
 // https://discord.com/developers/docs/resources/audit-log#audit-log-entry-object-audit-log-entry-structure
 type AuditLogEntry struct {
-	TargetID int64             `json:"target_id,string"`
-	Changes  []*AuditLogChange `json:"changes"`
-	/*Changes []struct {
-		NewValue interface{} `json:"new_value"`
-		OldValue interface{} `json:"old_value"`
-		Key      string      `json:"key"`
-	} `json:"changes,omitempty"`*/
-	UserID     int64            `json:"user_id,string"`
-	ID         int64            `json:"id,string"`
-	ActionType *AuditLogAction  `json:"action_type"`
-	Options    *AuditLogOptions `json:"options"`
-	Reason     string           `json:"reason"`
+	TargetID   int64             `json:"target_id,string"`
+	Changes    []*AuditLogChange `json:"changes"`
+	UserID     int64             `json:"user_id,string"`
+	ID         int64             `json:"id,string"`
+	ActionType *AuditLogAction   `json:"action_type"`
+	Options    *AuditLogOptions  `json:"options"`
+	Reason     string            `json:"reason"`
 }
 
 // AuditLogChange for an AuditLogEntry
@@ -1841,7 +1902,13 @@ const (
 	AuditLogActionThreadUpdate AuditLogAction = 111
 	AuditLogActionThreadDelete AuditLogAction = 112
 
-	AuditLogActionApplicationCommandPermissionUpdate AuditLogAction = 121
+	AuditLogActionApplicationCommandPermissionUpdate      AuditLogAction = 121
+	AuditLogActionAutoModerationRuleCreate                AuditLogAction = 140
+	AuditLogActionAutoModerationRuleUpdate                AuditLogAction = 141
+	AuditLogActionAutoModerationRuleDelete                AuditLogAction = 142
+	AuditLogActionAutoModerationBlockMessage              AuditLogAction = 143
+	AuditLogActionAutoModerationFlagToChannel             AuditLogAction = 144
+	AuditLogActionAutoModerationUserCommunicationDisabled AuditLogAction = 145
 )
 
 // GuildMemberParams stores data needed to update a member

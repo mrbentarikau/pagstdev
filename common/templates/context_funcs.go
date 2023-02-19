@@ -1087,30 +1087,6 @@ func (c *Context) tmplGetThread(channel interface{}) (*CtxChannel, error) {
 	return CtxChannelFromCS(cstate), nil
 }
 
-/*
-func (c *Context) tmplGetThreadsActive(channel interface{}) (*discordgo.ThreadsList, error) {
-	if c.IncreaseCheckGenericAPICall() {
-		return nil, ErrTooManyAPICalls
-	}
-
-	if c.IncreaseCheckCallCounter("guild_archived_threads", 3) {
-		return nil, ErrTooManyCalls
-	}
-
-	cID := c.ChannelArg(channel)
-	if cID == 0 {
-		return nil, nil //dont send an error , a nil output would indicate invalid/unknown channel
-	}
-
-	response, err := common.BotSession.ThreadsActive(cID)
-	if err != nil {
-		return nil, err
-	}
-
-	return response, nil
-}
-*/
-
 func (c *Context) tmplGetGuildThreadsActive() (*discordgo.ThreadsList, error) {
 	if c.IncreaseCheckGenericAPICall() {
 		return nil, ErrTooManyAPICalls
