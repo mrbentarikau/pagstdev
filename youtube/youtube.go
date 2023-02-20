@@ -75,7 +75,7 @@ type ChannelSubscription struct {
 	MentionRole        string
 	PublishShorts      sql.NullBool `gorm:"default:true"`
 	PublishLivestream  bool
-	Enabled            *bool `sql:"DEFAULT:true"`
+	Enabled            sql.NullBool `sql:"DEFAULT:true"`
 }
 
 func (c *ChannelSubscription) TableName() string {
@@ -96,7 +96,7 @@ func (p *Plugin) DisableFeed(elem *mqueue.QueuedElement, err error) {
 }
 
 func (p *Plugin) DisableChannelFeeds(channelID int64) error {
-	err := common.GORM.Model(&ChannelSubscription{}).Where("channel_id = ?", channelID).Updates(ChannelSubscription{Enabled: common.BoolToPointer(false)}).Error
+	err := common.GORM.Model(&ChannelSubscription{}).Where("channel_id = ?", channelID).Updates(ChannelSubscription{Enabled: sql.NullBool{false, false}}).Error
 	if err != nil {
 		logger.WithError(err).Errorf("failed removing non-existant channel for channel_id %d", channelID)
 		return err
@@ -107,7 +107,7 @@ func (p *Plugin) DisableChannelFeeds(channelID int64) error {
 }
 
 func (p *Plugin) DisableGuildFeeds(guildID int64) error {
-	err := common.GORM.Model(&ChannelSubscription{}).Where("guild_id = ?", guildID).Updates(ChannelSubscription{Enabled: common.BoolToPointer(false)}).Error
+	err := common.GORM.Model(&ChannelSubscription{}).Where("guild_id = ?", guildID).Updates(ChannelSubscription{Enabled: sql.NullBool{false, false}}).Error
 	if err != nil {
 		logger.WithError(err).Errorf("failed removing non-existant guild for guild_id %d", guildID)
 		return err

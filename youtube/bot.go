@@ -1,6 +1,7 @@
 package youtube
 
 import (
+	"database/sql"
 	"fmt"
 
 	"github.com/botlabs-gg/yagpdb/common"
@@ -20,7 +21,7 @@ func (p *Plugin) Status() (string, string) {
 func (p *Plugin) OnRemovedPremiumGuild(guildID int64) error {
 	logger.WithField("guild_id", guildID).Infof("Removed Excess Youtube Feeds")
 	feeds := make([]ChannelSubscription, 0)
-	err := common.GORM.Model(&ChannelSubscription{}).Where(`guild_id = ? and enabled = ?`, guildID, common.BoolToPointer(true)).Offset(GuildMaxFeeds).Order(
+	err := common.GORM.Model(&ChannelSubscription{}).Where(`guild_id = ? and enabled = ?`, guildID, sql.NullBool{true, true}).Offset(GuildMaxFeeds).Order(
 		"id desc",
 	).Find(&feeds).Error
 	if err != nil {
@@ -29,7 +30,7 @@ func (p *Plugin) OnRemovedPremiumGuild(guildID int64) error {
 	}
 
 	if len(feeds) > 0 {
-		err = common.GORM.Model(&feeds).Update(ChannelSubscription{Enabled: common.BoolToPointer(false)}).Error
+		err = common.GORM.Model(&feeds).Update(ChannelSubscription{Enabled: sql.NullBool{false, false}}).Error
 		if err != nil {
 			logger.WithError(err).Errorf("failed getting feed ids for guild_id %d", guildID)
 			return err
