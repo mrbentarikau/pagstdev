@@ -296,20 +296,20 @@ func (p *Plugin) HandleEdit(w http.ResponseWriter, r *http.Request) (templateDat
 	sub.ChannelID = discordgo.StrID(data.DiscordChannel)
 	sub.MentionRole = discordgo.StrID(data.MentionRole)
 	if data.DiscordChannel == 0 {
-		sub.Enabled = common.BoolToPointer(false)
+		sub.Enabled = sql.NullBool{false, false}
 	} else {
-		sub.Enabled = &data.Enabled
+		sub.Enabled = sql.NullBool{Valid: true, Bool: data.Enabled}
 	}
 
 	count := 0
-	common.GORM.Model(&ChannelSubscription{}).Where("guild_id = ? and enabled = ?", sub.GuildID, common.BoolToPointer(true)).Count(&count)
+	common.GORM.Model(&ChannelSubscription{}).Where("guild_id = ? and enabled = ?", sub.GuildID, sql.NullBool{true, true}).Count(&count)
 	if count >= MaxFeedsForContext(ctx) {
 		var currFeed ChannelSubscription
 		err := common.GORM.Model(&ChannelSubscription{}).Where("id = ?", sub.ID).First(&currFeed)
 		if err != nil {
 			logger.WithError(err.Error).Errorf("Failed getting feed %d", sub.ID)
 		}
-		if !*currFeed.Enabled && *sub.Enabled {
+		if !currFeed.Enabled.Bool && sub.Enabled.Bool {
 			return templateData.AddAlerts(web.ErrorAlert(fmt.Sprintf("Max %d enabled YouTube feeds allowed (%d for premium servers)", GuildMaxFeeds, GuildMaxFeedsPremium))), nil
 		}
 	}

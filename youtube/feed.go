@@ -413,6 +413,11 @@ func (p *Plugin) legacyGetYTChannel(url LegacyYTStruct) (channel *youtube.Channe
 
 func (p *Plugin) AddFeed(guildID, discordChannelID int64, legacyYTChannel, ytChannel *youtube.Channel, mentionEveryone bool, mentionRole int64, publishShorts bool, publishLivestream bool) (*ChannelSubscription, error) {
 
+	feedEnabled := true
+	if discordChannelID == 0 {
+		feedEnabled = false
+	}
+
 	sub := &ChannelSubscription{
 		GuildID:           discordgo.StrID(guildID),
 		ChannelID:         discordgo.StrID(discordChannelID),
@@ -420,7 +425,7 @@ func (p *Plugin) AddFeed(guildID, discordChannelID int64, legacyYTChannel, ytCha
 		MentionRole:       discordgo.StrID(mentionRole),
 		PublishShorts:     sql.NullBool{Valid: true, Bool: publishShorts},
 		PublishLivestream: publishLivestream,
-		Enabled:           common.BoolToPointer(true),
+		Enabled:           sql.NullBool{Valid: true, Bool: feedEnabled},
 	}
 
 	if ytChannel != nil {
@@ -578,7 +583,7 @@ func (p *Plugin) postVideo(subs []*ChannelSubscription, publishedAt time.Time, v
 	isShorts := false
 
 	for _, sub := range subs {
-		if *sub.Enabled {
+		if sub.Enabled.Bool {
 			if isLivestream && !sub.PublishLivestream {
 				continue
 			}
