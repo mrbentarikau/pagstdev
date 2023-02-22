@@ -174,7 +174,7 @@ func (p *Plugin) postRSSFeed(subs models.RSSFeedSlice, lastRSSTime, publishedAt 
 			break
 		}
 
-		if lastRSSTime.After(*v.PublishedParsed) || lastRSSLink == v.Link {
+		if lastRSSTime.After(*v.PublishedParsed) || time.Since(*v.PublishedParsed) > time.Hour*48 || lastRSSLink == v.Link {
 			continue
 		}
 
