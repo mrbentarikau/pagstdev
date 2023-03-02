@@ -18,8 +18,11 @@ import (
 	"github.com/botlabs-gg/yagpdb/feeds"
 	"github.com/botlabs-gg/yagpdb/lib/discordgo"
 	"github.com/botlabs-gg/yagpdb/web/discorddata"
+
 	"github.com/mediocregopher/radix/v3"
 	"github.com/prometheus/client_golang/prometheus"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 	"google.golang.org/api/option"
 	"google.golang.org/api/youtube/v3"
 )
@@ -228,19 +231,19 @@ func (p *Plugin) sendNewVidMessage(guild, discordChannel, channelTitle, channelI
 	} else {
 		if mentionEveryone {
 			if liveBroadcastContent != "none" {
-				content += fmt.Sprintf("Hey @everyone, incoming %s YouTube video by **%s**!\n%s\n", liveBroadcastContent, channelTitle, videoYT)
+				content += fmt.Sprintf("Hey @everyone, %s YouTube video by **%s**!\n%s\n", liveBroadcastContent, channelTitle, videoYT)
 			} else {
 				content += fmt.Sprintf("Hey @everyone, incoming YouTube video by **%s**!\n%s\n", channelTitle, videoYT)
 			}
 		} else if parseMentionRole > 0 {
 			if liveBroadcastContent != "none" {
-				content += fmt.Sprintf("Hey <@&%s>, incoming %s YouTube video by **%s**!\n%s\n", mentionRole, liveBroadcastContent, channelTitle, videoYT)
+				content += fmt.Sprintf("Hey <@&%s>, %s YouTube video by **%s**!\n%s\n", mentionRole, liveBroadcastContent, channelTitle, videoYT)
 			} else {
 				content += fmt.Sprintf("Hey <@&%s>, incoming YouTube video by **%s!**\n%s\n", mentionRole, channelTitle, videoYT)
 			}
 		} else {
 			if liveBroadcastContent != "none" {
-				content += fmt.Sprintf("Incoming %s YouTube video by **%s**!\n%s\n", liveBroadcastContent, channelTitle, videoYT)
+				content += fmt.Sprintf("%s YouTube video by **%s**!\n%s\n", cases.Title(language.Und).String(liveBroadcastContent), channelTitle, videoYT)
 			} else {
 				content += fmt.Sprintf("**%s** uploaded a new YouTube video!\n%s", channelTitle, videoYT)
 			}
