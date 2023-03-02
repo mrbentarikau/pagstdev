@@ -239,7 +239,11 @@ func (p *Plugin) sendNewVidMessage(guild, discordChannel, channelTitle, channelI
 				content += fmt.Sprintf("Hey <@&%s>, incoming YouTube video by **%s!**\n%s\n", mentionRole, channelTitle, videoYT)
 			}
 		} else {
-			content += fmt.Sprintf("**%s** uploaded a new YouTube video!\n%s", channelTitle, videoYT)
+			if liveBroadcastContent != "none" {
+				content += fmt.Sprintf("Incoming %s YouTube video by **%s**!\n%s\n", liveBroadcastContent, channelTitle, videoYT)
+			} else {
+				content += fmt.Sprintf("**%s** uploaded a new YouTube video!\n%s", channelTitle, videoYT)
+			}
 		}
 	}
 
