@@ -271,10 +271,6 @@ func (p *Plugin) sendNewRSSFeedMessage(guildID, channelID, mentionRole int64, fe
 	if err == nil {
 		announceMsg.Enabled = dbAnnounceMsg.Enabled
 		announceMsg.Announcement = dbAnnounceMsg.Announcement
-
-		if announceMsg.Announcement == "" {
-			announceMsg.Announcement = DefaultAnnounceMessage
-		}
 	}
 
 	rssEmbed = createRSSEmbed(feed, filteredItems, feedName)

@@ -123,9 +123,14 @@ func (p *Plugin) HandleAnnouncement(w http.ResponseWriter, r *http.Request) (tem
 	guild, templateData := web.GetBaseCPContextData(ctx)
 	data := ctx.Value(common.ContextKeyParsedForm).(*Form)
 
+	announcement := data.RSSFeedAnnounceMsg
+	if announcement == "" {
+		announcement = DefaultAnnounceMessage
+	}
+
 	dbAnnounceMsg := &models.RSSAnnouncement{
 		GuildID:      guild.ID,
-		Announcement: data.RSSFeedAnnounceMsg,
+		Announcement: announcement,
 		Enabled:      data.AnnounceEnabled,
 	}
 
