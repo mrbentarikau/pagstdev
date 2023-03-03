@@ -174,7 +174,7 @@ func (p *Plugin) postRSSFeed(subs models.RSSFeedSlice, lastRSSTime, publishedAt 
 			break
 		}
 
-		if lastRSSTime.After(*v.PublishedParsed) || time.Since(*v.PublishedParsed) > time.Hour*48 || lastRSSLink == v.Link {
+		if lastRSSTime.After(*v.PublishedParsed) || time.Since(*v.PublishedParsed) > time.Hour*12 || lastRSSLink == v.Link {
 			continue
 		}
 
@@ -271,6 +271,10 @@ func (p *Plugin) sendNewRSSFeedMessage(guildID, channelID, mentionRole int64, fe
 	if err == nil {
 		announceMsg.Enabled = dbAnnounceMsg.Enabled
 		announceMsg.Announcement = dbAnnounceMsg.Announcement
+
+		if announceMsg.Announcement == "" {
+			announceMsg.Announcement = DefaultAnnounceMessage
+		}
 	}
 
 	rssEmbed = createRSSEmbed(feed, filteredItems, feedName)
