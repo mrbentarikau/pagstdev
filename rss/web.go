@@ -30,7 +30,7 @@ type ContextKey int
 const (
 	ContextKeySub          ContextKey = iota
 	DefaultAnnounceMessage            = `Hey, {{with .SelectedRoleID}}{{(getRole .).Mention}}{{else}}everyone{{end}}...
-Incoming RSS feed, **{{.RSSFeed.Title}}** just posted {{.RSSFeedItem.Link}} !`
+Incoming RSS feed, **{{or .RSSName .RSSFeed.Title "Untitled"}}** just posted {{.RSSFeedItem.Link}} !`
 )
 
 var (
