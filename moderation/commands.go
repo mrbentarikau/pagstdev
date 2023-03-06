@@ -753,16 +753,6 @@ var ModerationCommands = []*commands.YAGCommand{
 		IsResponseEphemeral:       true,
 		DefaultEnabled:            false,
 		RunFunc: func(parsed *dcmd.Data) (interface{}, error) {
-			botMember, err := bot.GetMember(parsed.GuildData.GS.ID, common.BotUser.ID)
-			if err != nil {
-				return "Failed fetching bot member to check permissions", nil
-			}
-
-			canClear, err := bot.AdminOrPermMS(parsed.GuildData.GS.ID, parsed.ChannelID, botMember, discordgo.PermissionManageMessages)
-			if err != nil || !canClear {
-				return "I need the `Manage Messages` permission to be able to clear messages", nil
-			}
-
 			config, _, err := MBaseCmd(parsed, 0)
 			if err != nil {
 				return nil, err
@@ -891,10 +881,14 @@ var ModerationCommands = []*commands.YAGCommand{
 				limitFetch = 1000
 			}
 
-			// Wait a second so the client dosen't gltich out
+			// Wait a second so the client doesn't glitch out
 			time.Sleep(time.Second)
 
 			numDeleted, err := AdvancedDeleteMessages(parsed.GuildData.GS.ID, parsed.ChannelID, triggerID, userFilter, re, invertRegexMatch, toID, ma, minAge, pe, onlyBots, onlyNotBots, ignoreUser, attachments, messagesOnly, num, limitFetch)
+
+			if err != nil {
+				return "I need the `Manage Messages` permission to be able to clear messages", err
+			}
 
 			return dcmd.NewTemporaryResponse(time.Second*5, fmt.Sprintf("Deleted %d message(s)! :')", numDeleted), true), err
 		},
