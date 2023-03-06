@@ -747,7 +747,7 @@ var ModerationCommands = []*commands.YAGCommand{
 			{Name: "ignoreuser", Help: "Ignore flagged user"},
 		},
 		RequiredDiscordPermsHelp:  "(ManageMessages)",
-		RequireBotPerms:           [][]int64{{discordgo.PermissionAdministrator}, {discordgo.PermissionManageServer}, {discordgo.PermissionManageMessages}},
+		RequireBotPerms:           [][]int64{{discordgo.PermissionAdministrator}, {discordgo.PermissionManageMessages}},
 		ArgumentCombos:            [][]int{{0}, {0, 1}, {1, 0}},
 		ApplicationCommandEnabled: true,
 		IsResponseEphemeral:       true,
@@ -885,10 +885,6 @@ var ModerationCommands = []*commands.YAGCommand{
 			time.Sleep(time.Second)
 
 			numDeleted, err := AdvancedDeleteMessages(parsed.GuildData.GS.ID, parsed.ChannelID, triggerID, userFilter, re, invertRegexMatch, toID, ma, minAge, pe, onlyBots, onlyNotBots, ignoreUser, attachments, messagesOnly, num, limitFetch)
-
-			if err != nil {
-				return "I need the `Manage Messages` permission to be able to clear messages", err
-			}
 
 			return dcmd.NewTemporaryResponse(time.Second*5, fmt.Sprintf("Deleted %d message(s)! :')", numDeleted), true), err
 		},
