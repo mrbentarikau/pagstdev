@@ -285,6 +285,34 @@ func createTweetEmbed(tweet *twitter.Tweet) *discordgo.MessageEmbed {
 				URL: m.MediaURLHttps,
 			}
 		}
+	} else if tweet.QuotedStatus != nil && tweet.QuotedStatus.Entities != nil && len(tweet.QuotedStatus.Entities.Media) > 0 {
+		m := tweet.QuotedStatus.Entities.Media[0]
+		if m.Type == "photo" || m.Type == "animated_gif" {
+			embed.Image = &discordgo.MessageEmbedImage{
+				URL: m.MediaURLHttps,
+			}
+		}
+	} else if tweet.QuotedStatus != nil && tweet.QuotedStatus.ExtendedTweet != nil && tweet.QuotedStatus.ExtendedTweet.Entities != nil && len(tweet.QuotedStatus.ExtendedTweet.Entities.Media) > 0 {
+		m := tweet.QuotedStatus.ExtendedTweet.Entities.Media[0]
+		if m.Type == "photo" || m.Type == "animated_gif" {
+			embed.Image = &discordgo.MessageEmbedImage{
+				URL: m.MediaURLHttps,
+			}
+		}
+	} else if tweet.RetweetedStatus != nil && tweet.RetweetedStatus.Entities != nil && len(tweet.RetweetedStatus.Entities.Media) > 0 {
+		m := tweet.RetweetedStatus.Entities.Media[0]
+		if m.Type == "photo" || m.Type == "animated_gif" {
+			embed.Image = &discordgo.MessageEmbedImage{
+				URL: m.MediaURLHttps,
+			}
+		}
+	} else if tweet.RetweetedStatus != nil && tweet.RetweetedStatus.ExtendedTweet != nil && tweet.RetweetedStatus.ExtendedTweet.Entities != nil && len(tweet.RetweetedStatus.ExtendedTweet.Entities.Media) > 0 {
+		m := tweet.RetweetedStatus.ExtendedTweet.Entities.Media[0]
+		if m.Type == "photo" || m.Type == "animated_gif" {
+			embed.Image = &discordgo.MessageEmbedImage{
+				URL: m.MediaURLHttps,
+			}
+		}
 	}
 
 	return embed
