@@ -231,19 +231,19 @@ func (p *Plugin) sendNewVidMessage(guild, discordChannel, channelTitle, channelI
 	} else {
 		if mentionEveryone {
 			if liveBroadcastContent != "none" {
-				content += fmt.Sprintf("Hey @everyone, %s YouTube video by **%s**!\n%s\n", liveBroadcastContent, channelTitle, videoYT)
+				content += fmt.Sprintf("Hey @everyone, %s YouTube broadcast by **%s**!\n%s\n", liveBroadcastContent, channelTitle, videoYT)
 			} else {
 				content += fmt.Sprintf("Hey @everyone, incoming YouTube video by **%s**!\n%s\n", channelTitle, videoYT)
 			}
 		} else if parseMentionRole > 0 {
 			if liveBroadcastContent != "none" {
-				content += fmt.Sprintf("Hey <@&%s>, %s YouTube video by **%s**!\n%s\n", mentionRole, liveBroadcastContent, channelTitle, videoYT)
+				content += fmt.Sprintf("Hey <@&%s>, %s YouTube broadcast by **%s**!\n%s\n", mentionRole, liveBroadcastContent, channelTitle, videoYT)
 			} else {
 				content += fmt.Sprintf("Hey <@&%s>, incoming YouTube video by **%s!**\n%s\n", mentionRole, channelTitle, videoYT)
 			}
 		} else {
 			if liveBroadcastContent != "none" {
-				content += fmt.Sprintf("%s YouTube video by **%s**!\n%s\n", cases.Title(language.Und).String(liveBroadcastContent), channelTitle, videoYT)
+				content += fmt.Sprintf("%s YouTube broadcast by **%s**!\n%s\n", cases.Title(language.Und).String(liveBroadcastContent), channelTitle, videoYT)
 			} else {
 				content += fmt.Sprintf("**%s** uploaded a new YouTube video!\n%s", channelTitle, videoYT)
 			}
