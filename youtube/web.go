@@ -13,6 +13,7 @@ import (
 	"net/url"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 	"unicode"
 
@@ -85,6 +86,10 @@ var (
 	ytCustomUrlRegex  = regexp.MustCompile(`^(https?:\/\/)?((www|m)\.)?youtube\.com\/(c\/)?([\w-]+)$`)
 	ytUserUrlRegex    = regexp.MustCompile(`^(https?:\/\/)?((www|m)\.)?youtube\.com\/(user\/)([\w-]+)$`)
 	ytHandleUrlRegex  = regexp.MustCompile(`^(https?:\/\/)?((www|m)\.)?youtube\.com\/(@)([\w-]+)$`)
+
+	ytVideoIDRegex   = regexp.MustCompile(`\A[\w-]+\z`)
+	ytChannelIDRegex = regexp.MustCompile(`\AUC[\w-]{21}[AQgw]\z`)
+	ytHandleRegex    = regexp.MustCompile(`\A@([\w\-.]{3,30})\z`)
 )
 
 func (p *Plugin) InitWeb() {
@@ -177,18 +182,19 @@ func (p *Plugin) HandleNew(w http.ResponseWriter, r *http.Request) (web.Template
 	vURL := trimYouTubeURLParts(data.YoutubeVideoURL)
 
 	urlYT := data.YoutubeURL
-	if !(ytUrlRegex.MatchString(urlYT) || ytUrlShortRegex.MatchString(urlYT)) && cID == "" && username == "" && cURL == "" && vURL == "" {
+	parsedURL, err := url.Parse(urlYT)
+	if (err != nil || !(strings.HasSuffix(parsedURL.Host, "youtube.com") || strings.HasSuffix(parsedURL.Host, "youtu.be"))) && cID == "" && username == "" && cURL == "" && vURL == "" {
 		return templateData.AddAlerts(web.ErrorAlert("This is not a YouTube link...")), nil
 	}
 
 	var ytChannel, legacyYTChannel *youtube.Channel
-	var err error
 	tChain := transform.Chain(norm.NFD, runes.Remove(runes.In(unicode.Mn)), norm.NFC)
 
 	if urlYT != "" {
 		urlYT, _ = url.QueryUnescape(urlYT)
 		urlYT, _, _ = transform.String(tChain, urlYT)
-		ytChannel, err = p.getYTChannel(urlYT)
+		parsedURL, _ = url.Parse(urlYT)
+		ytChannel, err = p.getYTChannel(parsedURL)
 	} else {
 		customURL, _ := url.QueryUnescape(data.YoutubeCustomURL)
 		customURL, _, _ = transform.String(tChain, customURL)
