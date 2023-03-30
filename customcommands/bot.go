@@ -208,7 +208,7 @@ var cmdEvalCommand = &commands.YAGCommand{
 
 		out, err := tmplCtx.Execute(code)
 		if err != nil {
-			return "An error caused the custom command to stop:\n`" + err.Error() + "`", nil
+			return formatCustomCommandRunErr(code, err), err
 		}
 
 		return out, nil
