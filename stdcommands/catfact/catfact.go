@@ -6,7 +6,6 @@ import (
 
 	"github.com/botlabs-gg/yagpdb/commands"
 	"github.com/botlabs-gg/yagpdb/lib/dcmd"
-	"github.com/botlabs-gg/yagpdb/lib/discordgo"
 	"github.com/botlabs-gg/yagpdb/stdcommands/util"
 )
 
@@ -28,10 +27,11 @@ var Command = &commands.YAGCommand{
 
 	RunFunc: func(data *dcmd.Data) (interface{}, error) {
 		var catStuff *CatStuff
-		var cf, cPicLink string
+		var cf string
+		//var cf, cPicLink string
 
 		queryFact := "https://catfact.ninja/fact"
-		queryPic := "https://aws.random.cat/meow"
+		// queryPic := "https://aws.random.cat/meow"
 
 		cf = Catfacts[rand.Intn(len(Catfacts))]
 
@@ -47,31 +47,33 @@ var Command = &commands.YAGCommand{
 				cf = catStuff.Fact
 			}
 		}
+		return cf, nil
+		/*
+			if data.Switches["raw"].Value != nil && data.Switches["raw"].Value.(bool) {
+				return cf, nil
+			}
 
-		if data.Switches["raw"].Value != nil && data.Switches["raw"].Value.(bool) {
-			return cf, nil
-		}
+			catStuffBody, err := util.RequestFromAPI(queryPic)
+			if err != nil {
+				return cf, nil
+			}
 
-		catStuffBody, err := util.RequestFromAPI(queryPic)
-		if err != nil {
-			return cf, nil
-		}
+			queryErr := json.Unmarshal([]byte(catStuffBody), &catStuff)
+			if queryErr == nil {
+				cPicLink = catStuff.File
+			} else {
+				return cf, nil
+			}
 
-		queryErr := json.Unmarshal([]byte(catStuffBody), &catStuff)
-		if queryErr == nil {
-			cPicLink = catStuff.File
-		} else {
-			return cf, nil
-		}
+			embed := &discordgo.MessageEmbed{
+				Description: cf,
+				Color:       int(rand.Int63n(0xffffff)),
+				Image: &discordgo.MessageEmbedImage{
+					URL: cPicLink,
+				},
+			}
 
-		embed := &discordgo.MessageEmbed{
-			Description: cf,
-			Color:       int(rand.Int63n(0xffffff)),
-			Image: &discordgo.MessageEmbedImage{
-				URL: cPicLink,
-			},
-		}
-
-		return embed, nil
+			return embed, nil
+		*/
 	},
 }
