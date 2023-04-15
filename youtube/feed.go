@@ -611,7 +611,7 @@ func (p *Plugin) postVideo(subs []*ChannelSubscription, publishedAt time.Time, v
 	}
 
 	contentType := video.Snippet.LiveBroadcastContent
-	logger.Infof("Got a new video for channel %s with videoid %s, of type %s and publishing to %d subscriptions", channelID, video.Id, contentType, len(subs))
+	logger.Infof("Got a new video for channel %s, channelID %s with videoID %s, of type %s and publishing to %d subscriptions", video.Snippet.ChannelTitle, channelID, video.Id, contentType, len(subs))
 
 	isLivestream := contentType == "live" || contentType == "upcoming"
 	isShortsCheckDone := false
