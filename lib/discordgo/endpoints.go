@@ -42,6 +42,7 @@ var (
 	EndpointCDNChannelIcons string
 	EndpointCDNBanners      string
 	EndpointCDNGuilds       string
+	EndpointCDNRoleIcons    string
 
 	EndpointAuth           string
 	EndpointLogin          string
@@ -232,6 +233,8 @@ var (
 	EndpointInteractionOriginalMessage = func(applicationID int64, token string) string {
 		return ""
 	}
+
+	EndpointRoleIcon = func(rID int64, cID string) string { return "" }
 )
 
 func CreateEndpoints(base string) {
@@ -259,6 +262,10 @@ func CreateEndpoints(base string) {
 	EndpointCDNChannelIcons = EndpointCDN + "channel-icons/"
 	EndpointCDNBanners = EndpointCDN + "banners/"
 	EndpointCDNGuilds = EndpointCDN + "guilds/"
+	EndpointCDNRoleIcons = EndpointCDN + "role-icons/"
+	EndpointRoleIcon = func(rID int64, cID string) string {
+		return EndpointCDNRoleIcons + StrID(rID) + "/" + cID + ".png"
+	}
 
 	EndpointAuth = EndpointAPI + "auth/"
 	EndpointLogin = EndpointAuth + "login"

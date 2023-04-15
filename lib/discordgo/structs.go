@@ -129,6 +129,32 @@ type Session struct {
 	wsMutex sync.Mutex
 }
 
+// An Application struct stores values for a Discord OAuth2 Application
+type Application struct {
+	ID                  int64     `json:"id,string,omitempty"`
+	Name                string    `json:"name"`
+	Icon                string    `json:"icon,omitempty"`
+	Description         string    `json:"description,omitempty"`
+	RPCOrigins          []string  `json:"rpc_origins,omitempty"`
+	BotPublic           bool      `json:"bot_public,omitempty"`
+	BotRequireCodeGrant bool      `json:"bot_require_code_grant,omitempty"`
+	TermsOfServiceURL   string    `json:"terms_of_service_url"`
+	PrivacyProxyURL     string    `json:"privacy_policy_url"`
+	Owner               *User     `json:"owner"`
+	Secret              string    `json:"secret,omitempty"`
+	RedirectURIs        *[]string `json:"redirect_uris,omitempty"`
+	RPCApplicationState int       `json:"rpc_application_state,omitempty"`
+	Flags               int       `json:"flags,omitempty"`
+	Bot                 *User     `json:"bot"`
+	Summary             string    `json:"summary"`
+	VerifyKey           string    `json:"verify_key"`
+	Team                *Team     `json:"team"`
+	GuildID             int64     `json:"guild_id,string"`
+	PrimarySKUID        string    `json:"primary_sku_id"`
+	Slug                string    `json:"slug"`
+	CoverImage          string    `json:"cover_image"`
+}
+
 /*
 // Application stores values for a Discord Application
 type Application struct {
@@ -554,7 +580,7 @@ type ThreadMember struct {
 	// Any user-thread settings, currently only used for notifications
 	Flags int `json:"flags"`
 	// Additional information about the user
-	Member *Member
+	Member *Member `json:"member,omitempty"`
 }
 
 // ThreadsList represents a list of threads alongisde with thread member objects for the current user.
@@ -647,6 +673,7 @@ const (
 	StickerFormatTypePNG    StickerFormat = 1
 	StickerFormatTypeAPNG   StickerFormat = 2
 	StickerFormatTypeLottie StickerFormat = 3
+	StickerFormatTypeGIF    StickerFormat = 4
 )
 
 // StickerType is the type of sticker.
@@ -1235,6 +1262,12 @@ type Role struct {
 	// This is a combination of bit masks; the presence of a certain permission can
 	// be checked by performing a bitwise AND between this int and the permission.
 	Permissions int64 `json:"permissions,string"`
+
+	// The hash of the role icon. Use Role.IconURL to retrieve the icon's URL.
+	Icon string `json:"icon"`
+
+	// The emoji assigned to this role.
+	UnicodeEmoji string `json:"unicode_emoji"`
 }
 
 // Mention returns a string which mentions the role
@@ -1243,6 +1276,23 @@ func (r *Role) Mention() string {
 		return "No such role"
 	}
 	return fmt.Sprintf("<@&%d>", r.ID)
+}
+
+// IconURL returns the URL of the users's banner image.
+//
+//	size:    The size of the desired role icon as a power of two
+//	         Image size can be any power of two between 16 and 4096.
+func (r *Role) IconURL(size string) string {
+	if r.Icon == "" {
+		return ""
+	}
+
+	URL := EndpointRoleIcon(r.ID, r.Icon)
+
+	if size != "" {
+		return URL + "?size=" + size
+	}
+	return URL
 }
 
 // RoleParams represents the parameters needed to create or update a Role
@@ -2400,12 +2450,15 @@ type InviteUser struct {
 }
 
 type CreateApplicationCommandRequest struct {
-	Name              string                      `json:"name"`        // 1-32 character name matching ^[\w-]{1,32}$
-	Description       string                      `json:"description"` // 1-100 character description
-	Type              ApplicationCommandType      `json:"type,omitempty"`
-	Options           []*ApplicationCommandOption `json:"options"`                      // the parameters for the command
-	DefaultPermission *bool                       `json:"default_permission,omitempty"` // (default true)	whether the command is enabled by default when the app is added to a guild
-	NSFW              bool                        `json:"nsfw,omitempty"`               // marks a command as age-restricted
+	Name                     string                      `json:"name"`        // 1-32 character name matching ^[\w-]{1,32}$
+	Description              string                      `json:"description"` // 1-100 character description
+	Type                     ApplicationCommandType      `json:"type,omitempty"`
+	Options                  []*ApplicationCommandOption `json:"options"`                      // the parameters for the command
+	DefaultPermission        *bool                       `json:"default_permission,omitempty"` // (default true)	whether the command is enabled by default when the app is added to a guild
+	DefaultMemberPermissions int64                       `json:"default_member_permissions,string,omitempty"`
+	DMPermission             bool                        `json:"dm_permission,omitempty"`
+	NSFW                     bool                        `json:"nsfw,omitempty"` // marks a command as age-restricted
+	NameLocalizations        *map[Locale]string          `json:"name_localizations,omitempty"`
 }
 
 func (a *ApplicationCommandInteractionDataResolved) UnmarshalJSON(b []byte) error {

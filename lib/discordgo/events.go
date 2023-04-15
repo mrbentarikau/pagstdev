@@ -488,6 +488,11 @@ type AutoModerationActionExecution struct {
 	MatchedContent       string                        `json:"matched_content"`
 }
 
+// AuditLogEntryCreate is the data for an AuditLogEntryCreate event.
+type AuditLogEntryCreate struct {
+	*AuditLogEntry
+}
+
 type IntegrationCreate struct {
 	*Integration
 }

@@ -159,7 +159,7 @@ func WithLocale(locale Locale) RequestOption {
 // WithContext changes context of the request.
 func WithContext(ctx context.Context) RequestOption {
 	return func(cfg *RequestConfig) {
-		cfg.Request = cfg.Request.WithContext(ctx)
+		*cfg.Request = *cfg.Request.WithContext(ctx)
 	}
 }
 
@@ -635,22 +635,6 @@ func (s *Session) UserGuilds(limit int, beforeID, afterID int64) (st []*UserGuil
 	return
 }
 
-/*
-// UserGuildSettingsEdit Edits the users notification settings for a guild
-// guildID   : The ID of the guild to edit the settings on
-// settings  : The settings to update
-func (s *Session) UserGuildSettingsEdit(guildID int64, settings *UserGuildSettingsEdit) (st *UserGuildSettings, err error) {
-
-	body, err := s.RequestWithBucketID("PATCH", EndpointUserGuildSettings("@me", guildID), settings, nil, EndpointUserGuildSettings("", guildID))
-	if err != nil {
-		return
-	}
-
-	err = unmarshal(body, &st)
-	return
-}
-*/
-
 // UserChannelPermissions returns the permission of a user in a channel.
 // userID    : The ID of the user to calculate permissions for.
 // channelID : The ID of the channel to calculate permission for.
@@ -857,14 +841,8 @@ func (s *Session) GuildEdit(guildID int64, g *GuildParams) (st *Guild, err error
 
 // GuildDelete deletes a Guild.
 // guildID   : The ID of a Guild
-func (s *Session) GuildDelete(guildID int64) (st *Guild, err error) {
-
-	body, err := s.RequestWithBucketID("DELETE", EndpointGuild(guildID), nil, nil, EndpointGuild(guildID))
-	if err != nil {
-		return
-	}
-
-	err = unmarshal(body, &st)
+func (s *Session) GuildDelete(guildID int64) (err error) {
+	_, err = s.RequestWithBucketID("DELETE", EndpointGuild(guildID), nil, nil, EndpointGuild(guildID))
 	return
 }
 
@@ -1012,32 +990,6 @@ func (s *Session) GuildMember(guildID, userID int64) (st *Member, err error) {
 	return
 }
 
-// GuildMemberAdd force joins a user to the guild.
-//
-//	accessToken   : Valid access_token for the user.
-//	guildID       : The ID of a Guild.
-//	userID        : The ID of a User.
-//	nick          : Value to set users nickname to
-//	roles         : A list of role ID's to set on the member.
-//	mute          : If the user is muted.
-//	deaf          : If the user is deafened.
-/*func (s *Session) GuildMemberAdd(accessToken string, guildID, userID int64, nick string, roles []int64, mute, deaf bool) (err error) {
-
-	data := struct {
-		AccessToken string  `json:"access_token"`
-		Nick        string  `json:"nick,omitempty"`
-		Roles       IDSlice `json:"roles,omitempty"`
-		Mute        bool    `json:"mute,omitempty"`
-		Deaf        bool    `json:"deaf,omitempty"`
-	}{accessToken, nick, roles, mute, deaf}
-
-	_, err = s.RequestWithBucketID("PUT", EndpointGuildMember(guildID, userID), data, nil, EndpointGuildMember(guildID, 0))
-	if err != nil {
-		return err
-	}
-
-	return err
-}*/
 func (s *Session) GuildMemberAdd(guildID, userID int64, data *GuildMemberAddParams) (err error) {
 
 	_, err = s.RequestWithBucketID("PUT", EndpointGuildMember(guildID, userID), data, nil, EndpointGuildMember(guildID, 0))
@@ -1174,21 +1126,6 @@ func (s *Session) GuildMemberTimeoutWithReason(guildID int64, userID int64, unti
 func (s *Session) GuildMemberTimeout(guildID int64, userID int64, until *time.Time, reason string) (err error) {
 	return s.GuildMemberTimeoutWithReason(guildID, userID, until, reason)
 }
-
-/*
-// GuildMemberTimeout times out a guild member
-//  guildID   : The ID of a Guild.
-//  userID    : The ID of a User.
-//  until     : The timestamp for how long a member should be timed out.
-//              Set to nil to remove timeout.
-func (s *Session) GuildMemberTimeout(guildID int64, userID int64, until *time.Time) (err error) {
-	data := struct {
-		CommunicationDisabledUntil *time.Time `json:"communication_disabled_until"`
-	}{until}
-
-	_, err = s.RequestWithBucketID("PATCH", EndpointGuildMember(guildID, userID), data, EndpointGuildMember(guildID, 0), nil)
-	return
-}*/
 
 // GuildMemberRoleAdd adds the specified role to a given member
 //
@@ -1708,28 +1645,6 @@ func (s *Session) GuildTemplates(guildID int64) (st []*GuildTemplate, err error)
 	return
 }
 
-/*
-// GuildTemplateCreate creates a template for the guild
-// guildID: The ID of the guild
-// name: The name of the template (1-100 characters)
-// description: The description for the template (0-120 characters)
-func (s *Session) GuildTemplateCreate(guildID int64, name, description string) (st *GuildTemplate) {
-
-	data := struct {
-		Name        string `json:"name"`
-		Description string `json:"description"`
-	}{name, description}
-
-	body, err := s.RequestWithBucketID("POST", EndpointGuildTemplates(guildID), data, nil, EndpointGuildTemplates(guildID))
-	if err != nil {
-		return
-	}
-
-	err = unmarshal(body, &st)
-	return
-}
-*/
-
 // GuildTemplateCreate creates a template for the guild
 // guildID : The ID of the guild
 // data    : Template metadata
@@ -1751,29 +1666,6 @@ func (s *Session) GuildTemplateSync(guildID, templateCode int64) (err error) {
 	_, err = s.RequestWithBucketID("PUT", EndpointGuildTemplateSync(guildID, templateCode), nil, nil, EndpointGuildTemplateSync(guildID, 0))
 	return
 }
-
-/*
-// GuildTemplateEdit modifies the template's metadata
-// guildID: The ID of the guild
-// templateCode: The code of the template
-// name: The name of the template (1-100 characters)
-// description: The description for the template (0-120 characters)
-func (s *Session) GuildTemplateEdit(guildID, templateCode int64, name, description string) (st *GuildTemplate, err error) {
-
-	data := struct {
-		Name        string `json:"name,omitempty"`
-		Description string `json:"description,omitempty"`
-	}{name, description}
-
-	body, err := s.RequestWithBucketID("PATCH", EndpointGuildTemplateSync(guildID, templateCode), data, nil, EndpointGuildTemplateSync(guildID, 0))
-	if err != nil {
-		return
-	}
-
-	err = unmarshal(body, &st)
-	return
-}
-*/
 
 // GuildTemplateEdit modifies the template's metadata
 // guildID      : The ID of the guild
@@ -1941,6 +1833,13 @@ func (s *Session) ChannelMessageSendComplex(channelID int64, msg *MessageSend) (
 		}
 	}
 
+	if msg.StickerIds != nil {
+		if len(msg.StickerIds) > 3 {
+			err = fmt.Errorf("cannot send more than 3 stickers")
+			return
+		}
+	}
+
 	var response []byte
 	if len(files) > 0 {
 		body := &bytes.Buffer{}
@@ -2088,28 +1987,6 @@ func (s *Session) ChannelMessageEdit(channelID, messageID int64, content string)
 // ChannelMessageEditComplex edits an existing message, replacing it entirely with
 // the given MessageEdit struct
 func (s *Session) ChannelMessageEditComplex(msg *MessageEdit) (st *Message, err error) {
-	/*totalNils := 0
-	totalEmbeds := len(msg.Embeds)
-	embeds := make([]*MessageEmbed, 0, len(msg.Embeds))
-	if totalEmbeds == 0 {
-		embeds = nil
-	} else {
-		for _, e := range msg.Embeds {
-			if e == nil {
-				totalNils++
-			} else {
-				if e.Type != "" {
-					e.Type = "rich"
-				}
-				embeds = append(embeds, e)
-			}
-		}
-		if totalNils == totalEmbeds {
-			msg.Embeds = nil
-		} else {
-			msg.Embeds = embeds
-		}
-	}*/
 	msg.Embeds = ValidateComplexMessageEmbeds(msg.Embeds)
 
 	//response, err := s.RequestWithBucketID("PATCH", EndpointChannelMessage(msg.Channel, msg.ID), msg, nil, EndpointChannelMessage(msg.Channel, 0))
@@ -2317,7 +2194,7 @@ func (s *Session) ChannelNewsFollow(channelID, targetID int64) (st *ChannelFollo
 	endpoint := EndpointChannelFollow(channelID)
 
 	data := struct {
-		WebhookChannelID int64 `json:"webhook_channel_id"`
+		WebhookChannelID int64 `json:"webhook_channel_id,string"`
 	}{targetID}
 
 	body, err := s.RequestWithBucketID("POST", endpoint, data, nil, endpoint)
@@ -3038,7 +2915,7 @@ func (s *Session) ThreadMember(threadID int64, memberID string, withMember bool,
 // limit      : Max number of thread members to return (1-100). Defaults to 100.
 // afterID    : Get thread members after this user ID
 // withMember : Whether to include a guild member object for each thread member
-func (s *Session) ThreadMembers(threadID int64, limit int, withMember bool, afterID string, options ...RequestOption) (members []*ThreadMember, err error) {
+func (s *Session) ThreadMembers(threadID int64, limit int, withMember bool, afterID int64, options ...RequestOption) (members []*ThreadMember, err error) {
 	uri := EndpointThreadMembers(threadID)
 
 	queryParams := url.Values{}
@@ -3048,8 +2925,8 @@ func (s *Session) ThreadMembers(threadID int64, limit int, withMember bool, afte
 	if limit > 0 {
 		queryParams.Set("limit", strconv.Itoa(limit))
 	}
-	if afterID != "" {
-		queryParams.Set("after", afterID)
+	if afterID != 0 {
+		queryParams.Set("after", StrID(afterID))
 	}
 
 	if len(queryParams) > 0 {
@@ -3418,10 +3295,13 @@ func (s *Session) GetGlobalApplicationCommand(applicationID int64, cmdID int64) 
 }
 
 type EditApplicationCommandRequest struct {
-	Name              *string                      `json:"name,omitempty"`               //	1-32 character name matching ^[\w-]{1,32}$
-	Description       *string                      `json:"description,omitempty"`        //	1-100 character description
-	Options           *[]*ApplicationCommandOption `json:"options,omitempty"`            // the parameters for the command
-	DefaultPermission *bool                        `json:"default_permission,omitempty"` // (default true)	whether the command is enabled by default when the app is added to a guild
+	Name                     *string                      `json:"name,omitempty"`               //	1-32 character name matching ^[\w-]{1,32}$
+	Description              *string                      `json:"description,omitempty"`        //	1-100 character description
+	Options                  *[]*ApplicationCommandOption `json:"options,omitempty"`            // the parameters for the command
+	DefaultPermission        *bool                        `json:"default_permission,omitempty"` // (default true)	whether the command is enabled by default when the app is added to a guild
+	DefaultMemberPermissions *int64                       `json:"default_member_permissions,string,omitempty"`
+	DMPermission             *bool                        `json:"dm_permission,omitempty"`
+	NameLocalizations        *map[Locale]string           `json:"name_localizations,omitempty"`
 }
 
 // EditGlobalApplicationCommand edits a global command. Updates will be available in all guilds after 1 hour.
@@ -3569,33 +3449,6 @@ func (s *Session) BatchEditGuildApplicationCommandsPermissions(applicationID int
 
 	return
 }
-
-/* KRAAKA START CHANGING MAYBE
-// InteractionRespond creates the response to an interaction.
-// interaction : Interaction instance.
-// resp        : Response message data.
-func (s *Session) InteractionRespond(interaction *Interaction, resp *InteractionResponse) error {
-	s.httpInteractionsMu.Lock()
-	if respondFunc, ok := s.httpInteractions[interaction.ID]; ok {
-		s.httpInteractionsMu.Unlock()
-		return respondFunc(resp)
-	}
-	s.httpInteractionsMu.Unlock()
-
-	endpoint := EndpointInteractionResponse(interaction.ID, interaction.Token)
-
-	if resp.Data != nil && len(resp.Data.Files) > 0 {
-		contentType, body, err := MultipartBodyWithJSON(resp, resp.Data.Files)
-		if err != nil {
-			return err
-		}
-		_, err = s.request("POST", endpoint, contentType, body, endpoint, 0)
-		return err
-	}
-	_, err := s.RequestWithBucketID("POST", endpoint, *resp, endpoint)
-	return err
-}
-*/
 
 // CreateInteractionResponse Create a response to an Interaction from the gateway. Takes an Interaction response.
 // POST /interactions/{interaction.id}/{interaction.token}/callback
@@ -3801,7 +3654,7 @@ func (s *Session) GuildScheduledEventDelete(guildID, eventID int64) (err error) 
 // withMember : Whether to include the member object in the response
 // beforeID   : If is not empty all returned users entries will be before the given ID
 // afterID    : If is not empty all returned users entries will be after the given ID
-func (s *Session) GuildScheduledEventUsers(guildID, eventID int64, limit int, withMember bool, beforeID, afterID string) (st []*GuildScheduledEventUser, err error) {
+func (s *Session) GuildScheduledEventUsers(guildID, eventID int64, limit int, withMember bool, beforeID, afterID int64) (st []*GuildScheduledEventUser, err error) {
 	uri := EndpointGuildScheduledEventUsers(guildID, eventID)
 
 	queryParams := url.Values{}
@@ -3811,11 +3664,11 @@ func (s *Session) GuildScheduledEventUsers(guildID, eventID int64, limit int, wi
 	if limit > 0 {
 		queryParams.Set("limit", strconv.Itoa(limit))
 	}
-	if beforeID != "" {
-		queryParams.Set("before", beforeID)
+	if beforeID != 0 {
+		queryParams.Set("before", StrID(beforeID))
 	}
-	if afterID != "" {
-		queryParams.Set("after", afterID)
+	if afterID != 0 {
+		queryParams.Set("after", StrID(afterID))
 	}
 
 	if len(queryParams) > 0 {
