@@ -1482,6 +1482,10 @@ func (m *Member) GetGuildID() int64 {
 	return m.GuildID
 }
 
+func (m *Member) CommunicationDisabledUntil() *time.Time {
+	return m.TimeoutExpiresAt
+}
+
 // AvatarURL returns the URL of the member's avatar
 //
 //	size:    The size of the user's avatar as a power of two
