@@ -259,6 +259,11 @@ func CheckMessageForBadInvites(msg string, guildID int64) (containsBadInvites bo
 			inviteMap[invite.Code] = true
 		}
 
+		guild := bot.State.GetGuild(guildID)
+		if guild != nil && len(guild.VanityURLCode) > 0 {
+			inviteMap[guild.VanityURLCode] = true
+		}
+
 		invitesCache.set(guildID, inviteMap)
 
 		// overwrite the empty invite map

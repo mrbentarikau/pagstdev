@@ -377,6 +377,10 @@ func (ms *MemberState) DgoMember() *discordgo.Member {
 	return m
 }
 
+func (ms *MemberState) CommunicationDisabledUntil() *time.Time {
+	return ms.Member.TimeoutExpiresAt
+}
+
 type MessageState struct {
 	ID        int64
 	GuildID   int64
