@@ -72,6 +72,7 @@ var cmds = []*commands.YAGCommand{
 			{Name: "channel", Type: dcmd.Channel},
 			{Name: "repeat", Help: "Repeat the reminder at set duration"},
 			{Name: "time", Help: "Exact time for the reminder", Type: dcmd.String},
+			{Name: "noping", Help: "Don't ping the user in reminder response"},
 		},
 		ApplicationCommandEnabled: true,
 		DefaultEnabled:            true,
@@ -92,6 +93,11 @@ var cmds = []*commands.YAGCommand{
 			repeatDuration := time.Duration(0)
 			if parsed.Switch("repeat").Value != nil && parsed.Switch("repeat").Value.(bool) && fromNow.Hours() >= 1 {
 				repeatDuration = fromNow
+			}
+
+			disableMention := false
+			if parsed.Switch("noping").Value != nil && parsed.Switch("noping").Value.(bool) {
+				disableMention = true
 			}
 
 			switchTime := parsed.Switch("time")
@@ -135,7 +141,7 @@ var cmds = []*commands.YAGCommand{
 				}
 			}
 
-			_, err := NewReminder(parsed.Author.ID, parsed.GuildData.GS.ID, id, parsed.Args[1].Str(), when, repeatDuration)
+			_, err := NewReminder(parsed.Author.ID, parsed.GuildData.GS.ID, id, parsed.Args[1].Str(), when, repeatDuration, disableMention)
 			if err != nil {
 				return nil, err
 			}
