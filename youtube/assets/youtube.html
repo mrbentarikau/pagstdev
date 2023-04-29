@@ -26,7 +26,7 @@
 </style>
 
 <header class="page-header">
-    <h2>YouTube upload feeds</h2>
+    <h2><i class="fab fa-youtube"></i>&nbsp;YouTube Feeds</h2>
 </header>
 {{template "cp_alerts" .}}
 
@@ -102,47 +102,7 @@
                             <input type="text" class="form-control" placeholder="Enter link of youtube channel or video or user" id="yt-channel-url" name="YoutubeUrl">
                         </div>
                     </div>
-                    <section style="margin-bottom: 25px;padding-bottom: -25px;">
-                        <a style="text-decoration: none;color:#a1a1a1!important;display:block;font-size:14px!important" data-toggle="collapse" href="#collapse_YT_adv_search" aria-expanded="false" aria-controls="collapse_YT_adv_search" class="cc-collapsibleDown"><span>More precise YT-channel search:</span></a>
-                        <div class="card-body collapse" id="collapse_YT_adv_search">
-                            <div class="form-row mb-3">
-                                <div class="form-group col mb-0">
-                                    <label for="yt-channel-id">YouTube Channel ID</label>
-                                    <div class="input-group input-group-sm">
-                                        <span class="input-group-prepend"><span
-                                            class="input-group-text">youtube.com/channel/</span></span>
-                                        <input type="text" class="form-control" id="yt-channel-id" name="YoutubeChannelID">
-                                    </div>
-                                </div>
-                                <div class="form-group col mb-0">
-                                    <label for="yt-channel-user">YouTube Username</label>
-                                    <div class="input-group input-group-sm">
-                                        <span class="input-group-prepend"><span
-                                            class="input-group-text">youtube.com/user/</span></span>
-                                        <input type="text" class="form-control" id="yt-channel-user" name="YoutubeChannelUser">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="form-row mb-3">
-                                <div class="form-group col mb-0">
-                                    <label for="yt-channel-user">YouTube Custom URL<sup>*</sup></label>
-                                    <div class="input-group input-group-sm">
-                                        <span class="input-group-prepend"><span
-                                            class="input-group-text">youtube.com/c/</span></span>
-                                        <input type="text" class="form-control" id="yt-custom-url" name="YoutubeCustomURL">
-                                    </div>
-                                </div>
-                                <div class="form-group col mb-0">
-                                    <label for="yt-video-url">YouTube Video URL<sup>*</sup></label>
-                                    <div class="input-group input-group-sm">
-                                        <span class="input-group-prepend"><span
-                                            class="input-group-text">youtube.com/watch?v=</span></span>
-                                        <input type="text" class="form-control" id="yt-video-url" name="YoutubeVideoURL">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
+                    
                     <div class="form-row mb-0">
                         <div class="form-group col mb-0">
                             <label for="channel">Discord Channel</label>
