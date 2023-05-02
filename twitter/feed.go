@@ -269,6 +269,13 @@ func (p *Plugin) createTweetEmbed(tweet *twitterscraper.Tweet, user *twitterscra
 
 	text += tweet.Text
 
+	for _, ht := range tweet.Hashtags {
+		text = strings.Replace(text, (`#` + ht), fmt.Sprintf("[#%[1]s](https://twitter.com/hashtag/%[1]s?src=hashtag_click)", ht), -1)
+		// just in case
+		//re := regexp.MustCompile(`#` + ht)
+		//text = re.ReplaceAllString(text, fmt.Sprintf("[#%[1]s](https://twitter.com/hashtag/%[1]s?src=hashtag_click)", ht))
+	}
+
 	author := &discordgo.MessageEmbedAuthor{
 		Name: "@" + tweet.Username,
 		URL:  tweet.PermanentURL,
