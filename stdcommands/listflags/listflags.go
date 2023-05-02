@@ -5,8 +5,8 @@ import (
 
 	"github.com/botlabs-gg/yagpdb/commands"
 	"github.com/botlabs-gg/yagpdb/common/featureflags"
-	"github.com/botlabs-gg/yagpdb/stdcommands/util"
 	"github.com/botlabs-gg/yagpdb/lib/dcmd"
+	"github.com/botlabs-gg/yagpdb/stdcommands/util"
 )
 
 var Command = &commands.YAGCommand{
@@ -14,7 +14,7 @@ var Command = &commands.YAGCommand{
 	CmdCategory:          commands.CategoryDebug,
 	HideFromCommandsPage: true,
 	Name:                 "listflags",
-	Description:          ";))",
+	Description:          ";))\n\nLists feature flags for the current, or optional provided guild. Bot Owner Only.",
 	HideFromHelp:         true,
 	RequiredArgs:         0,
 	Arguments: []*dcmd.ArgDef{

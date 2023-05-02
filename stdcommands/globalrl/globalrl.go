@@ -3,16 +3,16 @@ package globalrl
 import (
 	"github.com/botlabs-gg/yagpdb/commands"
 	"github.com/botlabs-gg/yagpdb/common"
-	"github.com/botlabs-gg/yagpdb/stdcommands/util"
 	"github.com/botlabs-gg/yagpdb/lib/dcmd"
 	"github.com/botlabs-gg/yagpdb/lib/discordgo"
+	"github.com/botlabs-gg/yagpdb/stdcommands/util"
 )
 
 var Command = &commands.YAGCommand{
 	Cooldown:             2,
 	CmdCategory:          commands.CategoryDebug,
 	Name:                 "globalrl",
-	Description:          "Tests the global ratelimit functionality",
+	Description:          "Tests the global ratelimit functionality. Bot Owner Only.",
 	RequiredArgs:         1,
 	HideFromHelp:         true,
 	HideFromCommandsPage: true,

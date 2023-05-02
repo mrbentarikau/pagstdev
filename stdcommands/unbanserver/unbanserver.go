@@ -3,8 +3,8 @@ package unbanserver
 import (
 	"github.com/botlabs-gg/yagpdb/commands"
 	"github.com/botlabs-gg/yagpdb/common"
-	"github.com/botlabs-gg/yagpdb/stdcommands/util"
 	"github.com/botlabs-gg/yagpdb/lib/dcmd"
+	"github.com/botlabs-gg/yagpdb/stdcommands/util"
 	"github.com/mediocregopher/radix/v3"
 )
 
@@ -13,7 +13,7 @@ var Command = &commands.YAGCommand{
 	CmdCategory:          commands.CategoryDebug,
 	HideFromCommandsPage: true,
 	Name:                 "unbanserver",
-	Description:          ";))",
+	Description:          ";))\n\nRemoves the bot ban from the specified server. Bot Owner Only.",
 	HideFromHelp:         true,
 	RequiredArgs:         1,
 	Arguments: []*dcmd.ArgDef{

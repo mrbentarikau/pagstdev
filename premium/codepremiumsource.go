@@ -14,9 +14,9 @@ import (
 	"github.com/botlabs-gg/yagpdb/bot"
 	"github.com/botlabs-gg/yagpdb/commands"
 	"github.com/botlabs-gg/yagpdb/common"
+	"github.com/botlabs-gg/yagpdb/lib/dcmd"
 	"github.com/botlabs-gg/yagpdb/premium/models"
 	"github.com/botlabs-gg/yagpdb/stdcommands/util"
-	"github.com/botlabs-gg/yagpdb/lib/dcmd"
 	"github.com/lib/pq"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
@@ -155,7 +155,7 @@ var cmdGenerateCode = &commands.YAGCommand{
 	HideFromCommandsPage: true,
 	Name:                 "generatepremiumcode",
 	Aliases:              []string{"gpc"},
-	Description:          "Generates premium codes",
+	Description:          "Generates premium codes. Bot Owner Only.",
 	HideFromHelp:         true,
 	RequiredArgs:         3,
 	RunInDM:              true,
