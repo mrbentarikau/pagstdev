@@ -1745,6 +1745,7 @@ type AuditLogEntry struct {
 	ActionType *AuditLogAction   `json:"action_type"`
 	Options    *AuditLogOptions  `json:"options"`
 	Reason     string            `json:"reason"`
+	GuildID    int64             `json:"guild_id,string"`
 }
 
 // AuditLogChange for an AuditLogEntry
@@ -1907,14 +1908,17 @@ const (
 // AuditLogOptions optional data for the AuditLog
 // https://discord.com/developers/docs/resources/audit-log#audit-log-entry-object-optional-audit-entry-info
 type AuditLogOptions struct {
-	DeleteMemberDays string               `json:"delete_member_days"`
-	MembersRemoved   string               `json:"members_removed"`
-	ChannelID        int64                `json:"channel_id,string"`
-	MessageID        int64                `json:"message_id,string"`
-	Count            string               `json:"count"`
-	ID               int64                `json:"id,string"`
-	Type             *AuditLogOptionsType `json:"type"`
-	RoleName         string               `json:"role_name"`
+	DeleteMemberDays              string               `json:"delete_member_days"`
+	MembersRemoved                string               `json:"members_removed"`
+	ChannelID                     int64                `json:"channel_id,string"`
+	MessageID                     int64                `json:"message_id,string"`
+	Count                         int64                `json:"count,string"`
+	ID                            int64                `json:"id,string"`
+	Type                          *AuditLogOptionsType `json:"type"`
+	RoleName                      string               `json:"role_name"`
+	ApplicationID                 int64                `json:"application_id,string"`
+	AutoModerationRuleName        string               `json:"auto_moderation_rule_name"`
+	AutoModerationRuleTriggerType int                  `json:"auto_moderation_rule_trigger_type,string"`
 }
 
 // AuditLogOptionsType of the AuditLogOption

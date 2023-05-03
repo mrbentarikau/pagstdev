@@ -2478,7 +2478,8 @@ func (s *Session) WebhookEditWithToken(webhookID int64, token, name, avatar stri
 		Avatar string `json:"avatar,omitempty"`
 	}{name, avatar}
 
-	body, err := s.RequestWithBucketID("PATCH", EndpointWebhookToken(webhookID, token), data, nil, EndpointWebhookToken(0, ""))
+	var body []byte
+	body, err = s.RequestWithBucketID("PATCH", EndpointWebhookToken(webhookID, token), data, nil, EndpointWebhookToken(0, ""))
 	if err != nil {
 		return
 	}
