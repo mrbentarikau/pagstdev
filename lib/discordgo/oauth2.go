@@ -36,7 +36,7 @@ type Team struct {
 	Name        string        `json:"name"`
 	Description string        `json:"description"`
 	Icon        string        `json:"icon"`
-	OwnerID     int64         `json:"owner_user_id,int64"`
+	OwnerID     int64         `json:"owner_user_id,string"`
 	Members     []*TeamMember `json:"members"`
 }
 
