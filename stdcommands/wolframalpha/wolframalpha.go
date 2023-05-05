@@ -3,8 +3,6 @@ package wolframalpha
 import (
 	"encoding/xml"
 	"fmt"
-	"io"
-	"net/http"
 	"net/url"
 	"regexp"
 	"strconv"
@@ -14,6 +12,7 @@ import (
 	"github.com/botlabs-gg/yagpdb/common"
 	"github.com/botlabs-gg/yagpdb/lib/dcmd"
 	"github.com/botlabs-gg/yagpdb/lib/discordgo"
+	"github.com/botlabs-gg/yagpdb/stdcommands/util"
 	"github.com/mediocregopher/radix/v3"
 )
 
@@ -78,61 +77,40 @@ var Command = &commands.YAGCommand{
 		responseTooLong := "\n\n(response too long)"
 		responseEnd := "\n```<" + directURL + input + ">"
 
-		query, err := requestWolframAPI(input, appID, location)
+		var baseURL = "http://api.wolframalpha.com/v2/query"
+		waQueryURL := baseURL + "?appid=" + appID + "&input=" + input + "&format=plaintext&unit=metric"
+		if location != "" {
+			waQueryURL += "&location=" + url.QueryEscape(location)
+		}
+
+		body, err := util.RequestFromAPI(waQueryURL)
 		if err != nil {
 			return "", err
 		}
 
-		if len(query) > 2000 {
-			query = common.CutStringShort(query, 1980-len(responseTooLong+responseEnd)) + responseTooLong
+		handledResp := handleWolframAPIResponse(body)
+		if len(handledResp) > 2000 {
+			handledResp = common.CutStringShort(handledResp, 1980-len(responseTooLong+responseEnd)) + responseTooLong
 		}
 
-		response += query + responseEnd
+		response += handledResp + responseEnd
 		return response, nil
 	},
 }
 
-func requestWolframAPI(input, wolframID, location string) (string, error) {
-	var baseURL = "http://api.wolframalpha.com/v2/query"
+func handleWolframAPIResponse(body []byte) string {
 	var waQuery WolframAlpha
 	var result, subpodResult string
-	appID := wolframID
-
-	queryURL := baseURL + "?appid=" + appID + "&input=" + input + "&format=plaintext&unit=metric"
-	if location != "" {
-		queryURL += "&location=" + url.QueryEscape(location)
-	}
-	req, err := http.NewRequest("GET", queryURL, nil)
-	if err != nil {
-		return "", err
-	}
-
-	req.Header.Set("User-Agent", common.ConfBotUserAgent.GetString())
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return "", err
-	}
-
-	if resp.StatusCode != 200 {
-		return fmt.Sprintf("Wolfram is wonky: status code is not 200! But: %d", resp.StatusCode), nil
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
 
 	xml.Unmarshal(body, &waQuery.Queryresult)
 
 	if waQuery.Queryresult.AttrError == "true" {
 		result = fmt.Sprintln("Wolfram is wonky: ", waQuery.Queryresult.Error.Msg)
-		return result, nil
+		return result
 	}
 
 	if len(waQuery.Queryresult.Pod) == 0 {
-		return "Wolfram has no good answer for this query...", nil
+		return "Wolfram has no good answer for this query..."
 	}
 	//Convert response to somewhat general Discord format (maybe separete func.)
 	var re = regexp.MustCompile(`\x0a\x20\x7C`)
@@ -151,5 +129,5 @@ func requestWolframAPI(input, wolframID, location string) (string, error) {
 		}
 	}
 
-	return result, nil
+	return result
 }
