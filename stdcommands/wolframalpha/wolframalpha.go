@@ -34,6 +34,7 @@ var Command = &commands.YAGCommand{
 		{Name: "Expression", Type: dcmd.String},
 	},
 	ArgSwitches: []*dcmd.ArgDef{
+		{Name: "location", Help: "Semantic location overriding default results, e.g. units", Type: dcmd.String},
 		{Name: "appid", Help: "Add your Wolfram|Alpha appID case sensitive"},
 	},
 
@@ -66,12 +67,18 @@ var Command = &commands.YAGCommand{
 			return "No Wolfram|Alpha appID", nil
 		}
 
+		var location string
+		switchCountry := data.Switch("location")
+		if switchCountry.Value != nil {
+			location = switchCountry.Str()
+		}
+
 		input := url.QueryEscape(data.Args[0].Str())
 		response := "```\n"
 		responseTooLong := "\n\n(response too long)"
 		responseEnd := "\n```<" + directURL + input + ">"
 
-		query, err := requestWolframAPI(input, appID)
+		query, err := requestWolframAPI(input, appID, location)
 		if err != nil {
 			return "", err
 		}
@@ -85,13 +92,16 @@ var Command = &commands.YAGCommand{
 	},
 }
 
-func requestWolframAPI(input, wolframID string) (string, error) {
+func requestWolframAPI(input, wolframID, location string) (string, error) {
 	var baseURL = "http://api.wolframalpha.com/v2/query"
 	var waQuery WolframAlpha
 	var result, subpodResult string
 	appID := wolframID
 
 	queryURL := baseURL + "?appid=" + appID + "&input=" + input + "&format=plaintext&unit=metric"
+	if location != "" {
+		queryURL += "&location=" + location
+	}
 	req, err := http.NewRequest("GET", queryURL, nil)
 	if err != nil {
 		return "", err
