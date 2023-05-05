@@ -100,7 +100,7 @@ func requestWolframAPI(input, wolframID, location string) (string, error) {
 
 	queryURL := baseURL + "?appid=" + appID + "&input=" + input + "&format=plaintext&unit=metric"
 	if location != "" {
-		queryURL += "&location=" + location
+		queryURL += "&location=" + url.QueryEscape(location)
 	}
 	req, err := http.NewRequest("GET", queryURL, nil)
 	if err != nil {
