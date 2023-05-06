@@ -234,6 +234,10 @@ func (s *Session) RequestWithBucket(method, urlStr, contentType string, b []byte
 	// TODO: Make a configurable static variable.
 	req.Header.Set("User-Agent", s.UserAgent)
 
+	for header, value := range extraHeaders {
+		req.Header.Set(header, value)
+	}
+
 	cfg := newRequestConfig(s, req)
 	for _, opt := range options {
 		opt(cfg)
