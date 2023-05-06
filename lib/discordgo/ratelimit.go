@@ -156,6 +156,18 @@ func (r *RateLimiter) LockBucketObject(b *Bucket) (lockID int64) {
 	return counter
 }
 
+// LockBucketObject Locks an already resolved bucket until a request can be made
+func (r *RateLimiter) LockBucketObjectNewer(b *Bucket) *Bucket {
+	b.Lock()
+
+	if wait := r.GetWaitTime(b, 1); wait > 0 {
+		time.Sleep(wait)
+	}
+
+	b.Remaining--
+	return b
+}
+
 func (r *RateLimiter) SetGlobalTriggered(to time.Time) {
 	atomic.StoreInt64(r.global, to.UnixNano())
 }

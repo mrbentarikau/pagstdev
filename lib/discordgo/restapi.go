@@ -286,7 +286,7 @@ func (s *Session) RequestWithBucket(method, urlStr, contentType string, b []byte
 		if sequence < cfg.MaxRestRetries {
 
 			s.log(LogInformational, "%s Failed (%s), Retrying...", urlStr, resp.Status)
-			response, err = s.RequestWithBucket(method, urlStr, contentType, b, extraHeaders, bucket, sequence+1, options...)
+			response, err = s.RequestWithBucket(method, urlStr, contentType, b, extraHeaders, s.Ratelimiter.LockBucketObjectNewer(bucket), sequence+1, options...)
 		} else {
 			err = fmt.Errorf("exceeded Max retries HTTP %s, %s", resp.Status, response)
 		}
@@ -306,7 +306,7 @@ func (s *Session) RequestWithBucket(method, urlStr, contentType string, b []byte
 			// we can make the above smarter
 			// this method can cause longer delays than required
 
-			response, err = s.RequestWithBucket(method, urlStr, contentType, b, extraHeaders, bucket, sequence, options...)
+			response, err = s.RequestWithBucket(method, urlStr, contentType, b, extraHeaders, s.Ratelimiter.LockBucketObjectNewer(bucket), sequence, options...)
 		} else {
 			err = &RateLimitError{&RateLimit{TooManyRequests: &rl, URL: urlStr}}
 		}
