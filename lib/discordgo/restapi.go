@@ -19,6 +19,7 @@ import (
 	_ "image/jpeg" // For JPEG decoding
 	_ "image/png"  // For PNG decoding
 	"io"
+	"io/ioutil"
 	"log"
 	"mime/multipart"
 	"net/http"
@@ -26,7 +27,6 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
-	"sync/atomic"
 	"time"
 
 	"github.com/pkg/errors"
@@ -169,7 +169,7 @@ func (s *Session) Request(method, urlStr string, data interface{}, extraHeaders 
 }
 
 // RequestWithBucketID makes a (GET/POST/...) Requests to Discord REST API with JSON data.
-func (s *Session) RequestWithBucketID(method, urlStr string, data interface{}, extraHeaders map[string]string, bucketID string) (response []byte, err error) {
+func (s *Session) RequestWithBucketID(method, urlStr string, data interface{}, extraHeaders map[string]string, bucketID string, options ...RequestOption) (response []byte, err error) {
 	var body []byte
 	if data != nil {
 		body, err = json.Marshal(data)
@@ -178,18 +178,18 @@ func (s *Session) RequestWithBucketID(method, urlStr string, data interface{}, e
 		}
 	}
 
-	return s.request(method, urlStr, "application/json", body, extraHeaders, bucketID)
+	return s.request(method, urlStr, "application/json", body, extraHeaders, bucketID, 0, options...)
 }
 
 // request makes a (GET/POST/...) Requests to Discord REST API.
 // Sequence is the sequence number, if it fails with a 502 it will
 // retry with sequence+1 until it either succeeds or sequence >= session.MaxRestRetries
-func (s *Session) request(method, urlStr, contentType string, b []byte, extraHeaders map[string]string, bucketID string) (response []byte, err error) {
+func (s *Session) request(method, urlStr, contentType string, b []byte, extraHeaders map[string]string, bucketID string, sequence int, options ...RequestOption) (response []byte, err error) {
 	if bucketID == "" {
 		bucketID = strings.SplitN(urlStr, "?", 2)[0]
 	}
 
-	return s.RequestWithBucket(method, urlStr, contentType, b, extraHeaders, s.Ratelimiter.GetBucket(bucketID))
+	return s.RequestWithBucket(method, urlStr, contentType, b, extraHeaders, s.Ratelimiter.GetBucket(bucketID), sequence, options...)
 }
 
 type ReaderWithMockClose struct {
@@ -200,146 +200,23 @@ func (rwmc *ReaderWithMockClose) Close() error {
 	return nil
 }
 
-// RequestWithLockedBucket makes a request using a bucket that's already been locked
-func (s *Session) RequestWithBucket(method, urlStr, contentType string, b []byte, extraHeaders map[string]string, bucket *Bucket) (response []byte, err error) {
-
-	for i := 0; i < s.MaxRestRetries; i++ {
-		var retry bool
-		var ratelimited bool
-		response, retry, ratelimited, err = s.doRequest(method, urlStr, contentType, b, extraHeaders, bucket)
-		if !retry {
-			break
-		}
-
-		if err != nil {
-			s.log(LogError, "Request error, retrying: %v", err)
-		}
-
-		if ratelimited {
-			i = 0
-		} else {
-			time.Sleep(time.Second * time.Duration(i))
-		}
-
-	}
-
-	return
-}
-
 type CtxKey int
 
 const (
 	CtxKeyRatelimitBucket CtxKey = iota
 )
 
-// doRequest makes a request using a bucket
-func (s *Session) doRequest(method, urlStr, contentType string, b []byte, extraHeaders map[string]string, bucket *Bucket) (response []byte, retry bool, ratelimitRetry bool, err error) {
-
-	if atomic.LoadInt32(s.tokenInvalid) != 0 {
-		return nil, false, false, ErrTokenInvalid
-	}
-
-	req, resp, err := s.innerDoRequest(method, urlStr, contentType, b, extraHeaders, bucket)
-	if err != nil {
-		return nil, true, false, err
-	}
-
-	defer func() {
-		err2 := resp.Body.Close()
-		if err2 != nil {
-			log.Println("error closing resp body")
-		}
-	}()
-
-	response, err = io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, true, false, err
-	}
-
-	if s.Debug {
-
-		log.Printf("API RESPONSE  STATUS :: %s\n", resp.Status)
-		for k, v := range resp.Header {
-			log.Printf("API RESPONSE  HEADER :: [%s] = %+v\n", k, v)
-		}
-		log.Printf("API RESPONSE    BODY :: [%s]\n\n\n", response)
-	}
-
-	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-		return
-	}
-
-	switch resp.StatusCode {
-	case http.StatusBadGateway, http.StatusGatewayTimeout:
-		// Retry sending request if possible
-		err = errors.Errorf("%s Failed (%s)", urlStr, resp.Status)
-		s.log(LogWarning, err.Error())
-		return nil, true, false, err
-
-	case 429: // TOO MANY REQUESTS - Rate limiting
-		rl := TooManyRequests{}
-		err = json.Unmarshal(response, &rl)
-		if err != nil {
-			s.log(LogError, "rate limit unmarshal error, %s, %q, url: %s", err, string(response), urlStr)
-			return
-		}
-
-		rl.Bucket = bucket.Key
-
-		s.log(LogInformational, "Rate Limiting %s, retry in %s", urlStr, rl.RetryAfterDur())
-		s.handleEvent(rateLimitEventType, &RateLimit{TooManyRequests: &rl, URL: urlStr})
-
-		time.Sleep(rl.RetryAfterDur())
-		// we can make the above smarter
-		// this method can cause longer delays than required
-		return nil, true, true, nil
-
-	// case http.StatusUnauthorized:
-	// 	if strings.Index(s.Token, "Bot ") != 0 {
-	// 		s.log(LogInformational, ErrUnauthorized.Error())
-	// 		err = ErrUnauthorized
-	// 	} else {
-	// 		atomic.StoreInt32(s.tokenInvalid, 1)
-	// 		err = ErrTokenInvalid
-	// 	}
-	default: // Error condition
-		if resp.StatusCode >= 500 || resp.StatusCode < 400 {
-			// non 400 response code
-			retry = true
-		}
-
-		err = newRestError(req, resp, response)
-	}
-
-	return
-}
-
-func (s *Session) innerDoRequest(method, urlStr, contentType string, b []byte, extraHeaders map[string]string, bucket *Bucket) (*http.Request, *http.Response, error) {
-	bucketLockID := s.Ratelimiter.LockBucketObject(bucket)
-	defer func() {
-		err := bucket.Release(nil, bucketLockID)
-		if err != nil {
-			s.log(LogError, "failed unlocking ratelimit bucket: %v", err)
-		}
-	}()
-
+// RequestWithLockedBucket makes a request using a bucket that's already been locked
+func (s *Session) RequestWithBucket(method, urlStr, contentType string, b []byte, extraHeaders map[string]string, bucket *Bucket, sequence int, options ...RequestOption) (response []byte, err error) {
 	if s.Debug {
 		log.Printf("API REQUEST %8s :: %s\n", method, urlStr)
 		log.Printf("API REQUEST  PAYLOAD :: [%s]\n", string(b))
 	}
 
-	req, err := http.NewRequest(method, urlStr, bytes.NewReader(b))
+	req, err := http.NewRequest(method, urlStr, bytes.NewBuffer(b))
 	if err != nil {
-		return nil, nil, err
-	}
-
-	req.GetBody = func() (io.ReadCloser, error) {
-		return &ReaderWithMockClose{bytes.NewReader(b)}, nil
-	}
-
-	// we may need to send a request with extra headers
-	for k, v := range extraHeaders {
-		req.Header.Set(k, v)
+		bucket.Release(nil, s.Ratelimiter.LockBucketObject(bucket))
+		return
 	}
 
 	// Not used on initial login..
@@ -355,15 +232,13 @@ func (s *Session) innerDoRequest(method, urlStr, contentType string, b []byte, e
 	}
 
 	// TODO: Make a configurable static variable.
-	req.Header.Set("User-Agent", fmt.Sprintf("DiscordBot (https://github.com/mrbentarikau/pagst, v%s)", VERSION))
+	req.Header.Set("User-Agent", s.UserAgent)
 
-	for header, value := range extraHeaders {
-		req.Header.Set(header, value)
+	cfg := newRequestConfig(s, req)
+	for _, opt := range options {
+		opt(cfg)
 	}
-
-	// for things such as stats collecting in the roundtripper for example
-	ctx := context.WithValue(req.Context(), CtxKeyRatelimitBucket, bucket)
-	req = req.WithContext(ctx)
+	req = cfg.Request
 
 	if s.Debug {
 		for k, v := range req.Header {
@@ -371,17 +246,90 @@ func (s *Session) innerDoRequest(method, urlStr, contentType string, b []byte, e
 		}
 	}
 
-	resp, err := s.Client.Do(req)
-	if err == nil {
-		err = bucket.Release(resp.Header, bucketLockID)
+	resp, err := cfg.Client.Do(req)
+	if err != nil {
+		bucket.Release(nil, s.Ratelimiter.LockBucketObject(bucket))
+		return
+	}
+	defer func() {
+		err2 := resp.Body.Close()
+		if s.Debug && err2 != nil {
+			log.Println("error closing resp body")
+		}
+	}()
+
+	err = bucket.Release(resp.Header, s.Ratelimiter.LockBucketObject(bucket))
+	if err != nil {
+		return
 	}
 
-	return req, resp, err
+	response, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return
+	}
+
+	if s.Debug {
+
+		log.Printf("API RESPONSE  STATUS :: %s\n", resp.Status)
+		for k, v := range resp.Header {
+			log.Printf("API RESPONSE  HEADER :: [%s] = %+v\n", k, v)
+		}
+		log.Printf("API RESPONSE    BODY :: [%s]\n\n\n", response)
+	}
+
+	switch resp.StatusCode {
+	case http.StatusOK:
+	case http.StatusCreated:
+	case http.StatusNoContent:
+	case http.StatusBadGateway:
+		// Retry sending request if possible
+		if sequence < cfg.MaxRestRetries {
+
+			s.log(LogInformational, "%s Failed (%s), Retrying...", urlStr, resp.Status)
+			response, err = s.RequestWithBucket(method, urlStr, contentType, b, extraHeaders, bucket, sequence+1, options...)
+		} else {
+			err = fmt.Errorf("exceeded Max retries HTTP %s, %s", resp.Status, response)
+		}
+	case 429: // TOO MANY REQUESTS - Rate limiting
+		rl := TooManyRequests{}
+		err = Unmarshal(response, &rl)
+		if err != nil {
+			s.log(LogError, "rate limit unmarshal error, %s", err)
+			return
+		}
+
+		if cfg.ShouldRetryOnRateLimit {
+			s.log(LogInformational, "Rate Limiting %s, retry in %v", urlStr, rl.RetryAfter)
+			s.handleEvent(rateLimitEventType, &RateLimit{TooManyRequests: &rl, URL: urlStr})
+
+			time.Sleep(rl.RetryAfter)
+			// we can make the above smarter
+			// this method can cause longer delays than required
+
+			response, err = s.RequestWithBucket(method, urlStr, contentType, b, extraHeaders, bucket, sequence, options...)
+		} else {
+			err = &RateLimitError{&RateLimit{TooManyRequests: &rl, URL: urlStr}}
+		}
+	case http.StatusUnauthorized:
+		if strings.Index(s.Token, "Bot ") != 0 {
+			s.log(LogInformational, ErrUnauthorized.Error())
+			err = ErrUnauthorized
+		}
+		fallthrough
+	default: // Error condition
+		err = newRestError(req, resp, response)
+	}
+
+	return
 }
 
 func unmarshal(data []byte, v interface{}) error {
-	err := json.Unmarshal(data, v)
-	return err
+	err := Unmarshal(data, v)
+	if err != nil {
+		return fmt.Errorf("%w: %s", ErrJSONUnmarshal, err)
+	}
+
+	return nil
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -1099,7 +1047,7 @@ func (s *Session) GuildMemberRoleRemove(guildID, userID, roleID int64) (err erro
 // guildID   : The ID of a Guild.
 func (s *Session) GuildChannels(guildID int64) (st []*Channel, err error) {
 
-	body, err := s.request("GET", EndpointGuildChannels(guildID), "", nil, nil, EndpointGuildChannels(guildID))
+	body, err := s.request("GET", EndpointGuildChannels(guildID), "", nil, nil, EndpointGuildChannels(guildID), 0)
 	if err != nil {
 		return
 	}
@@ -1833,7 +1781,7 @@ func (s *Session) ChannelMessageSendComplex(channelID int64, msg *MessageSend) (
 			return
 		}
 
-		response, err = s.request("POST", endpoint, bodywriter.FormDataContentType(), body.Bytes(), nil, endpoint)
+		response, err = s.request("POST", endpoint, bodywriter.FormDataContentType(), body.Bytes(), nil, endpoint, 0)
 	} else {
 		response, err = s.RequestWithBucketID("POST", endpoint, msg, nil, endpoint)
 	}
@@ -1941,7 +1889,7 @@ func (s *Session) ChannelMessageEditComplex(msg *MessageEdit) (st *Message, err 
 		if encodeErr != nil {
 			return st, encodeErr
 		}
-		response, err = s.request("PATCH", endpoint, contentType, body, nil, EndpointChannelMessage(msg.Channel, 0))
+		response, err = s.request("PATCH", endpoint, contentType, body, nil, EndpointChannelMessage(msg.Channel, 0), 0)
 	} else {
 		response, err = s.RequestWithBucketID("PATCH", endpoint, msg, nil, EndpointChannelMessage(msg.Channel, 0))
 	}
@@ -2538,7 +2486,7 @@ func (s *Session) WebhookExecuteComplex(webhookID int64, token string, wait bool
 			return
 		}
 
-		response, err = s.request("POST", endpoint, bodywriter.FormDataContentType(), body.Bytes(), nil, EndpointWebhookToken(webhookID, token))
+		response, err = s.request("POST", endpoint, bodywriter.FormDataContentType(), body.Bytes(), nil, EndpointWebhookToken(webhookID, token), 0)
 	} else {
 		response, err = s.RequestWithBucketID("POST", endpoint, data, nil, EndpointWebhookToken(webhookID, token))
 	}
@@ -2754,7 +2702,7 @@ func (s *Session) ForumThreadStartComplex(channelID int64, threadData *ThreadSta
 			return th, encodeErr
 		}
 
-		response, err = s.request("POST", endpoint, contentType, body, nil, endpoint)
+		response, err = s.request("POST", endpoint, contentType, body, nil, endpoint, 0)
 	} else {
 		response, err = s.RequestWithBucketID("POST", endpoint, data, nil, endpoint)
 	}
