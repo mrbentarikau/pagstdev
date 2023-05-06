@@ -138,19 +138,7 @@ func New(args ...interface{}) (s *Session, err error) {
 	// Otherwise get auth token from Discord, if a token was specified
 	// Discord will verify it for free, or log the user in if it is
 	// invalid.
-	if pass == "" {
-		s.Token = auth
-	} else {
-		err = s.Login(auth, pass)
-		if err != nil || s.Token == "" {
-			if s.MFA {
-				err = ErrMFA
-			} else {
-				err = fmt.Errorf("unable to fetch discord authentication token. %v", err)
-			}
-			return
-		}
-	}
+	s.Token = auth
 
 	// The Session is now able to have RestAPI methods called on it.
 	// It is recommended that you now call Open() so that events will trigger.
