@@ -492,17 +492,19 @@ type AllowedMentions struct {
 
 // MessageReference contains reference data sent with crossposted messages
 type MessageReference struct {
-	MessageID int64 `json:"message_id,string"`
-	ChannelID int64 `json:"channel_id,string,omitempty"`
-	GuildID   int64 `json:"guild_id,string,omitempty"`
+	MessageID       int64 `json:"message_id,string"`
+	ChannelID       int64 `json:"channel_id,string,omitempty"`
+	GuildID         int64 `json:"guild_id,string,omitempty"`
+	FailIfNotExists bool  `json:"fail_if_not_exists,omitempty"`
 }
 
 // Reference returns MessageReference of given message
 func (m *Message) Reference() *MessageReference {
 	return &MessageReference{
-		GuildID:   m.GuildID,
-		ChannelID: m.ChannelID,
-		MessageID: m.ID,
+		GuildID:         m.GuildID,
+		ChannelID:       m.ChannelID,
+		MessageID:       m.ID,
+		FailIfNotExists: true,
 	}
 }
 
