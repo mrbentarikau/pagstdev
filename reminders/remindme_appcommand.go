@@ -226,7 +226,8 @@ func (p *Plugin) handleRemindmeInteractionCreate(ic *discordgo.InteractionCreate
 			Flags:           64,
 		}
 
-		_, err = common.BotSession.CreateFollowupMessage(common.BotApplication.ID, ic.Token, params)
+		// _, err = common.BotSession.CreateFollowupMessage(common.BotApplication.ID, ic.Token, params)
+		_, err = common.BotSession.FollowupMessageCreate(&ic.Interaction, true, params)
 		if err != nil {
 			logger.WithError(err).Error("Failed creating AddRemindme FollowupMessage")
 			return
