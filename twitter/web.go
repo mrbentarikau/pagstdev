@@ -24,8 +24,9 @@ import (
 var PageHTML string
 
 type Form struct {
-	TwitterUser    string `valid:",1,256"`
-	DiscordChannel int64  `valid:"channel,false"`
+	TwitterUser    string  `valid:",1,256"`
+	DiscordChannel int64   `valid:"channel,false"`
+	MentionRole    []int64 `valid:"role,true"`
 	ID             int64
 }
 
@@ -33,6 +34,7 @@ type EditForm struct {
 	DiscordChannel  int64 `valid:"channel,false"`
 	IncludeReplies  bool
 	IncludeRetweets bool
+	MentionRole     []int64 `valid:"role,true"`
 	Enabled         bool
 }
 
@@ -121,7 +123,12 @@ func (p *Plugin) HandleNew(w http.ResponseWriter, r *http.Request) (web.Template
 		TwitterUsername: user.Username,
 		TwitterUserID:   userId,
 		ChannelID:       form.DiscordChannel,
+		MentionRole:     form.MentionRole,
 		Enabled:         true,
+	}
+
+	if form.DiscordChannel == 0 {
+		m.Enabled = false
 	}
 
 	err = m.InsertG(ctx, boil.Infer())
@@ -173,10 +180,14 @@ func (p *Plugin) HandleEdit(w http.ResponseWriter, r *http.Request) (templateDat
 
 	sub.ChannelID = data.DiscordChannel
 	sub.Enabled = data.Enabled
+	if data.DiscordChannel == 0 {
+		sub.Enabled = false
+	}
 	sub.IncludeRT = data.IncludeRetweets
 	sub.IncludeReplies = data.IncludeReplies
+	sub.MentionRole = data.MentionRole
 
-	_, err = sub.UpdateG(ctx, boil.Whitelist("channel_id", "enabled", "include_replies", "include_rt"))
+	_, err = sub.UpdateG(ctx, boil.Whitelist("channel_id", "enabled", "include_replies", "include_rt", "mention_role"))
 	if err == nil {
 		go cplogs.RetryAddEntry(web.NewLogEntryFromContext(r.Context(), panelLogKeyUpdatedFeed, &cplogs.Param{Type: cplogs.ParamTypeString, Value: sub.TwitterUsername}))
 	}
