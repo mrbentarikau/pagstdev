@@ -234,6 +234,13 @@ OUTER:
 	for _, v := range relevantFeeds {
 		go analytics.RecordActiveUnit(v.GuildID, p, "posted_twitter_message")
 
+		parseMentions := []discordgo.AllowedMentionType{}
+		var content string
+		if len(v.MentionRole) > 0 {
+			parseMentions = []discordgo.AllowedMentionType{discordgo.AllowedMentionTypeRoles}
+			content = fmt.Sprintf("Hey <@&%d>, a new tweet!", v.MentionRole[0])
+		}
+
 		mqueue.QueueMessage(&mqueue.QueuedElement{
 			Source:       "twitter",
 			SourceItemID: strconv.FormatInt(v.ID, 10),
@@ -241,9 +248,14 @@ OUTER:
 			GuildID:   v.GuildID,
 			ChannelID: v.ChannelID,
 
+			MessageStr:      content,
 			MessageEmbed:    embed,
 			UseWebhook:      true,
 			WebhookUsername: webhookUsername,
+
+			AllowedMentions: discordgo.AllowedMentions{
+				Parse: parseMentions,
+			},
 
 			Priority: 5, // above youtube and reddit
 		})
