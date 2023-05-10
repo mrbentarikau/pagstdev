@@ -1092,6 +1092,7 @@ var ModerationCommands = []*commands.YAGCommand{
 		RequiredArgs:  1,
 		Arguments: []*dcmd.ArgDef{
 			{Name: "Id", Type: dcmd.Int},
+			{Name: "Reason", Type: dcmd.String},
 		},
 		RequiredDiscordPermsHelp:  "(ManageMessages)",
 		ApplicationCommandEnabled: true,
@@ -1124,13 +1125,14 @@ var ModerationCommands = []*commands.YAGCommand{
 		RequiredArgs:  1,
 		Arguments: []*dcmd.ArgDef{
 			{Name: "User", Type: dcmd.UserID},
+			{Name: "Reason", Type: dcmd.String},
 		},
 		RequiredDiscordPermsHelp:  "(ManageMessages)",
 		ApplicationCommandEnabled: true,
 		DefaultEnabled:            false,
 		RunFunc: func(parsed *dcmd.Data) (interface{}, error) {
 
-			config, _, err := MBaseCmd(parsed, 0)
+			config, target, err := MBaseCmd(parsed, parsed.Args[0].Int64())
 			if err != nil {
 				return nil, err
 			}
@@ -1140,9 +1142,13 @@ var ModerationCommands = []*commands.YAGCommand{
 				return nil, err
 			}
 
-			userID := parsed.Args[0].Int64()
+			rows := common.GORM.Where("guild_id = ? AND user_id = ?", parsed.GuildData.GS.ID, target.ID).Delete(WarningModel{}).RowsAffected
 
-			rows := common.GORM.Where("guild_id = ? AND user_id = ?", parsed.GuildData.GS.ID, userID).Delete(WarningModel{}).RowsAffected
+			reason := parsed.Args[1].Str()
+			err = CreateModlogEmbed(config, parsed.Author, MAClearWarnings, target, reason, "")
+			if err != nil {
+				return "failed sending modlog", err
+			}
 			return fmt.Sprintf("Deleted %d warnings.", rows), nil
 		},
 	},
