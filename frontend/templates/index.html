@@ -162,6 +162,17 @@
 
 
 {{end}} {{define "googleAnalytics"}}{{if and (not .Testing) (or .GAID .GA4)}}
+{{if .GA4}}
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id={{.GA4}}"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', '{{.GA4}}');
+</script>
+{{end}}
 {{if .GAID}}
 <script>
   (function (i, s, o, g, r, a, m) {
@@ -174,15 +185,5 @@
   ga('send', 'pageview');
 </script>
 {{end}}
-{{if .GA4}}
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id={{.GA4}}"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
 
-  gtag('config', '{{.GA4}}');
-</script>
-{{end}}
 {{end}}{{end}}
