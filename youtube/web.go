@@ -61,9 +61,10 @@ type Form struct {
 }
 
 var (
-	ytVideoIDRegex   = regexp.MustCompile(`\A[\w\-]+\z`)
-	ytChannelIDRegex = regexp.MustCompile(`\AUC[\w\-]{21}[AQgw]\z`)
-	ytHandleRegex    = regexp.MustCompile(`\A@[\w\-.]{3,30}\z`)
+	ytChannelIDRegex  = regexp.MustCompile(`\AUC[\w\-]{21}[AQgw]\z`)
+	ytHandleRegex     = regexp.MustCompile(`\A@[\w\-.]{3,30}\z`)
+	ytPlaylistIDRegex = regexp.MustCompile(`\A(?:PL|OLAK|RDCLAK)[-_0-9A-Za-z]+\z`)
+	ytVideoIDRegex    = regexp.MustCompile(`\A[\w\-]+\z`)
 )
 
 func (p *Plugin) InitWeb() {

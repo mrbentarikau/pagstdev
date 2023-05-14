@@ -86,10 +86,11 @@
                                 <code>{{"{{.ChannelName}}"}}</code>,
                                 <code>{{"{{.LiveStream}}"}}</code>,
                                 <code>{{"{{.SelectedRoleID}}"}}</code>,
-                                <code>{{"{{.VideoID}}"}}</code>,
+                                <code>{{"{{.URL}}"}}</code>,
                                 <code>{{"{{.VideoDescription}}"}}</code>,
-                                <code>{{"{{.VideoThumbnail}}"}}</code>,
-                                <code>{{"{{.URL}}"}}</code>
+                                <code>{{"{{.VideoDurationSeconds}}"}}</code>,
+                                <code>{{"{{.VideoID}}"}}</code>,
+                                <code>{{"{{.VideoThumbnail}}"}}</code>
                             <br/><code>{{"{{.FullSnippet}}"}}</code> holds all <a href="https://developers.google.com/youtube/v3/docs/videos#properties" target="_blank">snippet data</a> passed via feed. <code>{{"{{.ContentDetails}}"}}</code> from the same link provides information about the video content.
                             </p>
                             <span style="display: inline-block;vertical-align: middle;"><button type="submit" id="pagstAnnounceSave" class="btn btn-sm btn-success btn-block" formaction="/manage/{{.Dot.ActiveGuild.ID}}/youtube/handle_announce" data-async-form-alertsonly>Save</button>
@@ -123,10 +124,10 @@
                                 {{checkbox "MentionEveryone" "new-mention-everyone" `Mention everyone` false}}
                             </td>
                             <td style="padding-right:42px">
-                                {{checkbox "PublishShorts" "new-publish-shorts" `Publish YT-shorts` true}}
+                                {{checkbox "PublishShorts" "new-publish-shorts" `Publish YT-shorts` false}}
                             </td>
                             <td>
-                                {{checkbox "PublishLivestream" "new-publish-livestream" `Publish YT-livestreams` false}}
+                                {{checkbox "PublishLivestream" "new-publish-livestream" `Publish YT-livestreams` true}}
                             </td>
                         </tr>
                     </table>
