@@ -91,7 +91,7 @@
                                 <code>{{"{{.VideoDurationSeconds}}"}}</code>,
                                 <code>{{"{{.VideoID}}"}}</code>,
                                 <code>{{"{{.VideoThumbnail}}"}}</code>
-                            <br/><code>{{"{{.FullSnippet}}"}}</code> holds all <a href="https://developers.google.com/youtube/v3/docs/videos#properties" target="_blank">snippet data</a> passed via feed. <code>{{"{{.ContentDetails}}"}}</code> from the same link provides information about the video content.
+                            <br/><code>{{"{{.FullSnippet}}"}}</code> holds all <a href="https://developers.google.com/youtube/v3/docs/videos#properties" target="_blank">snippet data</a> passed via feed. <code>{{"{{.ContentDetails}}"}}</code> from the same link provides information about the video content. <code>{{"{{.LiveStreamingDetails}}"}}</code> holds all data concerning live/upcoming streams e.g. <code>{{"{{.LiveStreamingDetails.ScheduledStartTime}}"}}</code> - also covered in the link above.
                             </p>
                             <span style="display: inline-block;vertical-align: middle;"><button type="submit" id="pagstAnnounceSave" class="btn btn-sm btn-success btn-block" formaction="/manage/{{.Dot.ActiveGuild.ID}}/youtube/handle_announce" data-async-form-alertsonly>Save</button>
                             </span>
