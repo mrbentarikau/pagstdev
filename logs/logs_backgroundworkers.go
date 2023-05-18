@@ -22,6 +22,7 @@ func (p *Plugin) RunBackgroundWorker() {
 			if confRestrictLogsThirtyDays.GetBool() {
 				go p.DeleteOldMessages()
 				go p.DeleteOldMessageLogs()
+				go p.DeleteOldWarningsLinks()
 			}
 		case wg := <-p.stopWorkers:
 			wg.Done()
@@ -50,6 +51,14 @@ func (p *Plugin) DeleteOldMessageLogs() {
 		return
 	}
 	logger.Infof("[logs] Took %s to delete %v old message_logs2", time.Since(started), deleted)
+}
+
+func (p *Plugin) DeleteOldWarningsLinks() {
+	started := time.Now()
+	rows := common.GORM.Table("moderation_warnings").Where("created_at < now() - interval '30 days' AND logs_link != ''").Update("logs_link", "").RowsAffected
+
+	logger.Infof("[logs] Took %s to delete %v old moderation_warnings links", time.Since(started), rows)
+
 }
 
 func (p *Plugin) StopBackgroundWorker(wg *sync.WaitGroup) {
