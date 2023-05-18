@@ -60,6 +60,7 @@ import (
 	"github.com/botlabs-gg/yagpdb/stdcommands/statedbg"
 	"github.com/botlabs-gg/yagpdb/stdcommands/stateinfo"
 	"github.com/botlabs-gg/yagpdb/stdcommands/thanks"
+	"github.com/botlabs-gg/yagpdb/stdcommands/themoviedb"
 	"github.com/botlabs-gg/yagpdb/stdcommands/throw"
 	"github.com/botlabs-gg/yagpdb/stdcommands/toggledbg"
 	"github.com/botlabs-gg/yagpdb/stdcommands/topcommands"
@@ -184,9 +185,15 @@ func (p *Plugin) AddCommands() {
 		return
 	}
 
+	if !themoviedb.ShouldRegister() {
+		common.GetPluginLogger(p).Warn("The Movie DB API key not provided, skipping adding tmdb command...")
+		return
+	}
+
 	commands.AddRootCommands(p, isthereanydeal.Command)
 	commands.AddRootCommands(p, myanimelist.Command)
 	commands.AddRootCommands(p, owldictionary.Command)
+	commands.AddRootCommands(p, themoviedb.Command)
 
 }
 
