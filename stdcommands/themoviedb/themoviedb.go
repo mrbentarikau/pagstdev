@@ -190,8 +190,7 @@ func embedCreator(tmdbData tmdbSearchResults, i int, paginated bool) *discordgo.
 
 	switch t := tmdbData.Results[i]; t.MediaType {
 	case "movie":
-		date = t.ReleaseDate
-		if len(date) >= 4 {
+		if date = t.ReleaseDate; len(date) >= 4 {
 			date = fmt.Sprintf(" (%s)", t.ReleaseDate[0:4])
 		}
 
@@ -209,7 +208,7 @@ func embedCreator(tmdbData tmdbSearchResults, i int, paginated bool) *discordgo.
 			embedFields = append(embedFields, voteAverage)
 		}
 
-		movie, err := tmdbAPI.GetMovieDetails(int(t.ID), map[string]string{})
+		movie, err := tmdbAPI.GetMovieDetails(int(t.ID), map[string]string{"append_to_response": "release_dates"})
 		if err == nil {
 			if movie.Tagline != "" {
 				description += fmt.Sprintf("*%s*\n", movie.Tagline)
@@ -250,8 +249,23 @@ func embedCreator(tmdbData tmdbSearchResults, i int, paginated bool) *discordgo.
 			}
 
 			if movie.Status != "" {
-				parsedTime, _ := time.Parse(timeLayout, movie.ReleaseDate)
-				status := &discordgo.MessageEmbedField{Name: "Status", Value: fmt.Sprintf("%s\n%s", movie.Status, parsedTime.Format("02 Jan 2006")), Inline: true}
+				var cCode, rating, releaseDate string
+				for _, r := range movie.MovieReleaseDatesAppend.ReleaseDates.Results {
+					for _, rDates := range r.ReleaseDates {
+						if r.Iso3166_1 == "US" {
+							if rDates.Certification != "" {
+								rating = rDates.Certification + " (US)"
+							}
+						}
+						if len(rDates.ReleaseDate) >= 10 && rDates.ReleaseDate[0:10] == movie.ReleaseDate {
+							releaseDate = rDates.ReleaseDate[0:10]
+							cCode = r.Iso3166_1
+						}
+					}
+				}
+
+				parsedTime, _ := time.Parse(timeLayout, releaseDate)
+				status := &discordgo.MessageEmbedField{Name: "Status", Value: fmt.Sprintf("%s\n%s\n%s", movie.Status, rating, parsedTime.Format(fmt.Sprintf("02 Jan 2006 (%s)", cCode))), Inline: true}
 				embedFields = append(embedFields, status)
 			}
 
@@ -290,12 +304,26 @@ func embedCreator(tmdbData tmdbSearchResults, i int, paginated bool) *discordgo.
 		movieURL = fmt.Sprintf("%s%s/%d", tmdbBaseURL, t.MediaType, t.ID)
 		imageURL = imageBaseURL + t.PosterPath
 
-		tv, err := tmdbAPI.GetTVDetails(int(t.ID), map[string]string{})
+		tv, err := tmdbAPI.GetTVDetails(int(t.ID), map[string]string{"append_to_response": "content_ratings"})
 		if err == nil {
 			if tv.LastAirDate != "" && len(tv.LastAirDate) >= 4 {
 				date += fmt.Sprintf(" - %s)", tv.LastAirDate[0:4])
 			} else {
 				date += ")"
+			}
+
+			var rating string
+			for _, r := range tv.TVContentRatingsAppend.ContentRatings.Results {
+				if r.Iso3166_1 == "US" {
+					if r.Rating != "" {
+						rating = r.Rating + " (US)"
+					}
+				}
+
+			}
+
+			if rating != "" {
+				description += rating + "\n\n"
 			}
 
 			if tv.Tagline != "" {
