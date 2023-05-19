@@ -156,6 +156,7 @@ var Command = &commands.YAGCommand{
 			paginatedView = true
 		}
 
+		var footerExtra = "themoviedb.org"
 		var pm *paginatedmessages.PaginatedMessage
 		if totalResults > 0 {
 			if paginatedView {
@@ -163,9 +164,10 @@ var Command = &commands.YAGCommand{
 					data.GuildData.GS.ID, data.ChannelID, 1, len(tmdbSearchResultSlice.Results), func(p *paginatedmessages.PaginatedMessage, page int) (interface{}, error) {
 						i := page - 1
 						paginatedEmbed := embedCreator(tmdbSearchResultSlice, i, paginatedView)
+						p.FooterExtra = []string{footerExtra}
 
 						return paginatedEmbed, nil
-					})
+					}, footerExtra)
 				if err != nil {
 					return "Something went wrong making the paginated messages", nil
 				}
@@ -245,6 +247,12 @@ func embedCreator(tmdbData tmdbSearchResults, i int, paginated bool) *discordgo.
 				}
 				prodCompanies := &discordgo.MessageEmbedField{Name: "Production Companies", Value: genreSliceJoin(tmdbJSON, 2), Inline: true}
 				embedFields = append(embedFields, prodCompanies)
+			}
+
+			if movie.Status != "" {
+				parsedTime, _ := time.Parse(timeLayout, movie.ReleaseDate)
+				status := &discordgo.MessageEmbedField{Name: "Status", Value: fmt.Sprintf("%s\n%s", movie.Status, parsedTime.Format("02 Jan 2006")), Inline: true}
+				embedFields = append(embedFields, status)
 			}
 
 			var moviePages string
@@ -359,14 +367,14 @@ func embedCreator(tmdbData tmdbSearchResults, i int, paginated bool) *discordgo.
 
 			if lastEpisodeToAir := tv.LastEpisodeToAir; lastEpisodeToAir.AirDate != "" {
 				parsedTime, _ := time.Parse(timeLayout, lastEpisodeToAir.AirDate)
-				lastEpisodeDetails := fmt.Sprintf("S%02dE%02d - %s\n%s", lastEpisodeToAir.SeasonNumber, lastEpisodeToAir.EpisodeNumber, lastEpisodeToAir.Name, parsedTime.Format("02-Jan-2006"))
+				lastEpisodeDetails := fmt.Sprintf("S%02dE%02d - %s\n%s", lastEpisodeToAir.SeasonNumber, lastEpisodeToAir.EpisodeNumber, lastEpisodeToAir.Name, parsedTime.Format("02 Jan 2006"))
 				lastEpisode := &discordgo.MessageEmbedField{Name: "Last Episode", Value: lastEpisodeDetails, Inline: true}
 				embedFields = append(embedFields, lastEpisode)
 			}
 
 			if nextEpisodeToAir := tv.NextEpisodeToAir; nextEpisodeToAir.AirDate != "" {
 				parsedTime, _ := time.Parse(timeLayout, nextEpisodeToAir.AirDate)
-				nextEpisodeDetails := fmt.Sprintf("S%02dE%02d - %s\n%s", nextEpisodeToAir.SeasonNumber, nextEpisodeToAir.EpisodeNumber, nextEpisodeToAir.Name, parsedTime.Format("02-Jan-2006"))
+				nextEpisodeDetails := fmt.Sprintf("S%02dE%02d - %s\n%s", nextEpisodeToAir.SeasonNumber, nextEpisodeToAir.EpisodeNumber, nextEpisodeToAir.Name, parsedTime.Format("02 Jan 2006"))
 				nextEpisode := &discordgo.MessageEmbedField{Name: "Next Episode", Value: nextEpisodeDetails, Inline: true}
 				embedFields = append(embedFields, nextEpisode)
 			}
@@ -401,13 +409,13 @@ func embedCreator(tmdbData tmdbSearchResults, i int, paginated bool) *discordgo.
 
 			if person.Birthday != "" {
 				parsedTime, _ := time.Parse(timeLayout, person.Birthday)
-				birthDateField := &discordgo.MessageEmbedField{Name: "Birthdate", Value: parsedTime.Format("02-Jan-2006"), Inline: true}
+				birthDateField := &discordgo.MessageEmbedField{Name: "Birthdate", Value: parsedTime.Format("02 Jan 2006"), Inline: true}
 				embedFields = append(embedFields, birthDateField)
 			}
 
 			if person.Deathday != "" {
 				parsedTime, _ := time.Parse(timeLayout, person.Deathday)
-				dayOfDeathField := &discordgo.MessageEmbedField{Name: "Day of Death", Value: parsedTime.Format("02-Jan-2006"), Inline: true}
+				dayOfDeathField := &discordgo.MessageEmbedField{Name: "Day of Death", Value: parsedTime.Format("02 Jan 2006"), Inline: true}
 				embedFields = append(embedFields, dayOfDeathField)
 			}
 
