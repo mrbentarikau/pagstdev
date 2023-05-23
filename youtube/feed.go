@@ -23,6 +23,7 @@ import (
 
 	"github.com/mediocregopher/radix/v3"
 	"github.com/prometheus/client_golang/prometheus"
+
 	// "golang.org/x/text/cases"
 	// "golang.org/x/text/language"
 	"google.golang.org/api/option"
@@ -413,7 +414,7 @@ func (p *Plugin) parseYtUrl(channelUrl *url.URL) (id ytChannelID, err error) {
 	second := pathSegments[1]
 
 	switch first {
-	case "shorts":
+	case "shorts", "live":
 		return p.parseYtVideoID(second)
 	case "channel":
 		if ytChannelIDRegex.MatchString(second) {

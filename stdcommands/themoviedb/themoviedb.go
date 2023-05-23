@@ -33,7 +33,7 @@ func ShouldRegister() bool {
 var Command = &commands.YAGCommand{
 	CmdCategory:               commands.CategoryFun,
 	Name:                      "TheMovieDB",
-	Aliases:                   []string{"film", "tmdb", "tv"},
+	Aliases:                   []string{"film", "movie", "tmdb", "tv"},
 	Description:               "Info about movies, TV-shows and persons from The Movie DB (tmdb) API.\nWithout switches makes a general query covering all subjects.",
 	DefaultEnabled:            true,
 	ApplicationCommandEnabled: true,
@@ -46,6 +46,7 @@ var Command = &commands.YAGCommand{
 		{Name: "person", Help: "Query for persons"},
 		{Name: "tv", Help: "Query for TV"},
 		{Name: "nsfw", Help: "Include adult to query"},
+		{Name: "year", Help: "Year filter for Movies & TV", Type: dcmd.String},
 	},
 
 	RunFunc: func(data *dcmd.Data) (interface{}, error) {
@@ -54,6 +55,7 @@ var Command = &commands.YAGCommand{
 		var movie, paginatedView, person, tv bool
 		var tmdbSearchResultSlice tmdbSearchResults
 		var totalResults int64
+		var year string
 
 		include_adult := "false"
 
@@ -72,12 +74,18 @@ var Command = &commands.YAGCommand{
 			movie = false
 			person = false
 			tv = true
+			if data.Switches["year"].Str() != "" {
+				year = data.Switch("year").Str()
+			}
 		}
 
 		if data.Switches["movie"].Value != nil && data.Switches["movie"].Value.(bool) {
 			movie = true
 			person = false
 			tv = false
+			if data.Switches["year"].Str() != "" {
+				year = data.Switch("year").Str()
+			}
 		}
 
 		if data.Switches["nsfw"].Value != nil && data.Switches["nsfw"].Value.(bool) {
@@ -87,7 +95,7 @@ var Command = &commands.YAGCommand{
 		queryAPIString := data.Args[0].Str()
 
 		if movie {
-			queryResults, err := tmdbAPI.GetSearchMovies(url.QueryEscape(queryAPIString), map[string]string{"include_adult": include_adult, "lang": "en-US", "page": "1"})
+			queryResults, err := tmdbAPI.GetSearchMovies(url.QueryEscape(queryAPIString), map[string]string{"include_adult": include_adult, "lang": "en-US", "page": "1", "year": year})
 			if err != nil {
 				return fmt.Sprintf("API Error %s", err), err
 			}
@@ -104,7 +112,7 @@ var Command = &commands.YAGCommand{
 			totalResults = queryResults.TotalResults
 
 		} else if tv {
-			queryResults, err := tmdbAPI.GetSearchTVShow(url.QueryEscape(queryAPIString), map[string]string{"include_adult": include_adult, "lang": "en-US", "page": "1"})
+			queryResults, err := tmdbAPI.GetSearchTVShow(url.QueryEscape(queryAPIString), map[string]string{"include_adult": include_adult, "lang": "en-US", "page": "1", "year": year})
 			if err != nil {
 				return fmt.Sprintf("API Error %s", err), err
 			}
