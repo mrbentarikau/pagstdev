@@ -61,11 +61,11 @@ var cmds = []*commands.YAGCommand{
 	{
 		CmdCategory:  commands.CategoryTool,
 		Name:         "Remindme",
-		Description:  "Schedules a reminder, example: 'remindme 1h30min are you still alive?'\n\nSwitch -repeat will repeat the reminder starting with min duration of 1 hour.\nSwitch -time needs quoted date in either your registered time zone (using the `setz` command) or UTC. Adds first argument's duration and if repeat, sets duration to 24h. 'remindme 5m are you still alive? -time \"tomorrow 12:45\"'",
+		Description:  "Schedules a reminder, example: 'remindme 1h30min are you still alive?'\n\nSwitch -repeat will repeat the reminder starting with min duration of 1 hour.\nFlag -time needs quoted date in either your registered time zone (using the `setz` command) or UTC. Adds first argument's duration and if repeat, sets duration to 24h. 'remindme 5m are you still alive? -time \"tomorrow 12:45\"'.\n Using -time and 0 duration, first command argument is made to reminder text.",
 		Aliases:      []string{"remind", "reminder"},
 		RequiredArgs: 2,
 		Arguments: []*dcmd.ArgDef{
-			{Name: "Duration", Type: &commands.DurationArg{}},
+			{Name: "Duration", Type: dcmd.String},
 			{Name: "Message", Type: dcmd.String},
 		},
 		ArgSwitches: []*dcmd.ArgDef{
@@ -77,6 +77,7 @@ var cmds = []*commands.YAGCommand{
 		ApplicationCommandEnabled: true,
 		DefaultEnabled:            true,
 		RunFunc: func(parsed *dcmd.Data) (interface{}, error) {
+			var reminderMessage string
 			currentReminders, _ := GetUserReminders(parsed.Author.ID)
 			if len(currentReminders) >= 25 {
 				return "You can have a maximum of 25 active reminders, list your reminders with the `reminders` command", nil
@@ -86,7 +87,10 @@ var cmds = []*commands.YAGCommand{
 				return "Cannot create reminder for Bots, you're most likely trying to use execAdmin to create a reminder, use exec", nil
 			}
 
-			fromNow := parsed.Args[0].Value.(time.Duration)
+			fromNow, err := common.ParseDuration(parsed.Args[0].Str())
+			if err != nil {
+				fromNow = 0
+			}
 			durString := common.HumanizeDuration(common.DurationPrecisionSeconds, fromNow)
 			when := time.Now().Add(fromNow)
 
@@ -101,6 +105,10 @@ var cmds = []*commands.YAGCommand{
 			}
 
 			switchTime := parsed.Switch("time")
+			if fromNow == 0 && switchTime != nil {
+				reminderMessage += fmt.Sprintf("%s ", parsed.Args[0].Str())
+			}
+
 			if switchTime.Value != nil {
 				dateParser := createDateParser()
 				if parsed.Switch("repeat").Value != nil && parsed.Switch("repeat").Value.(bool) {
@@ -140,8 +148,8 @@ var cmds = []*commands.YAGCommand{
 					return "You do not have permissions to send messages there", nil
 				}
 			}
-
-			_, err := NewReminder(parsed.Author.ID, parsed.GuildData.GS.ID, id, parsed.Args[1].Str(), when, repeatDuration, disableMention)
+			reminderMessage += parsed.Args[1].Str()
+			_, err = NewReminder(parsed.Author.ID, parsed.GuildData.GS.ID, id, reminderMessage, when, repeatDuration, disableMention)
 			if err != nil {
 				return nil, err
 			}
