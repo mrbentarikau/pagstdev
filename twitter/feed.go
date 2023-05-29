@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"html"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -83,33 +84,35 @@ func (p *Plugin) getLastTweetInfo(username string) (tweetId string, tweetTime ti
 	return lastTweetID, lastProcessedTweetTime, err
 }
 
-func (p *Plugin) checkTweet(tweet *twitterscraper.Tweet) {
+func (p *Plugin) checkTweet(tweet *twitterscraper.Tweet) *twitterscraper.Tweet {
 	lastTweetID, lastTweetTime, err := p.getLastTweetInfo(tweet.Username)
 	if err != nil {
 		logrus.WithError(err).Errorf("Failed getting last tweet info for username %s", tweet.Username)
-		return
+		return nil
 	}
 
 	if lastTweetID == tweet.ID {
 		// the tweet has already been processed
-		return
+		return nil
 	}
 
 	if time.Since(tweet.TimeParsed) > time.Hour {
 		// just a safeguard against empty last tweet time's
-		return
+		return nil
 	}
 
 	if lastTweetTime.After(tweet.TimeParsed) {
 		// wasn't a new tweet
-		return
+		return nil
 	}
 
 	// This is a new tweet, post it
-	p.handleTweet(tweet)
+	// p.handleTweet(tweet)
+	return tweet
 }
 
 func (p *Plugin) getTweetsForUser(username string, attempt int, delay time.Duration) {
+	var tweets []*twitterscraper.Tweet
 	logrus.Infof("Getting tweets for user %s", username)
 	for tweet := range p.twitterScraper.GetTweets(context.Background(), username, 50) {
 		if tweet.Error != nil {
@@ -135,8 +138,21 @@ func (p *Plugin) getTweetsForUser(username string, attempt int, delay time.Durat
 
 			break
 		}
-		go p.checkTweet(&tweet.Tweet)
+		tweets = append(tweets, p.checkTweet(&tweet.Tweet))
 	}
+
+	if len(tweets) > 0 && tweets[0] == nil {
+		return
+	}
+
+	sort.SliceStable(tweets, func(i, j int) bool {
+		return tweets[i].TimeParsed.Before(tweets[j].TimeParsed)
+	})
+
+	for _, t := range tweets {
+		p.handleTweet(t)
+	}
+
 }
 
 func (p *Plugin) runFeed(feeds []*models.TwitterFeed) {
@@ -170,6 +186,7 @@ func (p *Plugin) runFeed(feeds []*models.TwitterFeed) {
 		}
 		time.Sleep(time.Duration(confTwitterBatchDelay.GetInt()) * time.Second)
 	}
+
 }
 
 func (p *Plugin) handleTweet(t *twitterscraper.Tweet) {
