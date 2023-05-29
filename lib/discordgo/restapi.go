@@ -464,7 +464,7 @@ func (s *Session) RequestWithoutBucket(method, urlStr, contentType string, b []b
 			s.log(LogInformational, "%s Failed (%s), Retrying...", urlStr, resp.Status)
 			response, err = s.RequestWithoutBucket(method, urlStr, contentType, b, sequence+1, options...)
 		} else {
-			err = fmt.Errorf("Exceeded Max retries HTTP %s, %s", resp.Status, response)
+			err = fmt.Errorf("exceeded Max retries HTTP %s, %s", resp.Status, response)
 		}
 	case 429: // TOO MANY REQUESTS - Rate limiting
 		rl := TooManyRequests{}

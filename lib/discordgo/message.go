@@ -495,17 +495,27 @@ type MessageReference struct {
 	MessageID       int64 `json:"message_id,string"`
 	ChannelID       int64 `json:"channel_id,string,omitempty"`
 	GuildID         int64 `json:"guild_id,string,omitempty"`
-	FailIfNotExists bool  `json:"fail_if_not_exists,omitempty"`
+	FailIfNotExists *bool `json:"fail_if_not_exists,omitempty"`
 }
 
-// Reference returns MessageReference of given message
-func (m *Message) Reference() *MessageReference {
+func (m *Message) reference(failIfNotExists bool) *MessageReference {
 	return &MessageReference{
 		GuildID:         m.GuildID,
 		ChannelID:       m.ChannelID,
 		MessageID:       m.ID,
-		FailIfNotExists: true,
+		FailIfNotExists: &failIfNotExists,
 	}
+}
+
+// Reference returns a MessageReference of the given message.
+func (m *Message) Reference() *MessageReference {
+	return m.reference(true)
+}
+
+// SoftReference returns a MessageReference of the given message.
+// If the message doesn't exist it will instead be sent as a non-reply message.
+func (m *Message) SoftReference() *MessageReference {
+	return m.reference(false)
 }
 
 // MessageInteraction contains information about the application command interaction which generated the message.
