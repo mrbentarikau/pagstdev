@@ -156,11 +156,8 @@ func (p *Plugin) getTweetsForUser(username string, attempt int, delay time.Durat
 	for _, t := range tweets {
 		if t != nil {
 			p.handleTweet(t)
-		} else {
-			break
 		}
 	}
-
 }
 
 func (p *Plugin) runFeed(feeds []*models.TwitterFeed) {
