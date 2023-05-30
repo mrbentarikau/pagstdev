@@ -112,7 +112,7 @@ func (p *Plugin) checkTweet(tweet *twitterscraper.Tweet) *twitterscraper.Tweet {
 }
 
 func (p *Plugin) getTweetsForUser(username string, attempt int, delay time.Duration) {
-	var tweets []*twitterscraper.Tweet
+	var tweets = make([]*twitterscraper.Tweet, 0)
 	logrus.Infof("Getting tweets for user %s", username)
 	for tweet := range p.twitterScraper.GetTweets(context.Background(), username, 50) {
 		if tweet.Error != nil {
@@ -141,16 +141,24 @@ func (p *Plugin) getTweetsForUser(username string, attempt int, delay time.Durat
 		tweets = append(tweets, p.checkTweet(&tweet.Tweet))
 	}
 
-	if len(tweets) > 0 && tweets[0] == nil {
-		return
-	}
-
 	sort.SliceStable(tweets, func(i, j int) bool {
-		return tweets[i].TimeParsed.Before(tweets[j].TimeParsed)
+		if tweets[i] != nil && tweets[j] != nil {
+			return tweets[i].TimeParsed.Before(tweets[j].TimeParsed)
+		} else if tweets[i] != nil {
+			return false
+		} else if tweets[j] != nil {
+			return true
+		} else {
+			return false
+		}
 	})
 
 	for _, t := range tweets {
-		p.handleTweet(t)
+		if t != nil {
+			p.handleTweet(t)
+		} else {
+			break
+		}
 	}
 
 }
