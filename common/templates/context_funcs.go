@@ -1542,15 +1542,19 @@ func (c *Context) tmplSetMemberTimeout(target interface{}, optionalArgs ...inter
 		return "", nil
 	}
 
-	delay := 60 * time.Second
+	delay := 300 * time.Second
 	var until time.Time
 	if len(optionalArgs) > 0 {
-		delay = c.validateDurationDelay(optionalArgs[0])
+		dur := c.validateDurationDelay(optionalArgs[0])
+		if dur > delay {
+			delay = dur
+		}
 	}
 
 	until = time.Now().Add(delay)
 
-	err := common.BotSession.GuildMemberTimeout(c.GS.ID, mID, &until, "")
+	reason := discordgo.WithAuditLogReason("Timeout from " + c.Name)
+	err := common.BotSession.GuildMemberTimeout(c.GS.ID, mID, &until, "", reason)
 	if err != nil {
 		return "", err
 	}

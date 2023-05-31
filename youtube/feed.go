@@ -241,12 +241,12 @@ func (p *Plugin) sendNewVidMessage(guild, discordChannel, channelID, mentionRole
 		if ytVideo.LiveStreamingDetails != nil {
 			if scheduler := ytVideo.LiveStreamingDetails.ScheduledStartTime; scheduler != "" {
 				schedulerTime, _ := time.Parse(layout, scheduler)
-				scheduledAt = fmt.Sprintf("Scheduled <t:%d:R>...", schedulerTime.Unix())
+				scheduledAt = fmt.Sprintf("Scheduled <t:%d:R> at <t:%[1]d>...", schedulerTime.Unix())
 			}
 
 			if startTime := ytVideo.LiveStreamingDetails.ActualStartTime; startTime != "" {
 				startedAtTime, _ := time.Parse(layout, startTime)
-				actualStartTime = fmt.Sprintf("Broadcast started <t:%d:R>...", startedAtTime.Unix())
+				actualStartTime = fmt.Sprintf("Broadcast started <t:%d:R> at <t:%[1]d>...", startedAtTime.Unix())
 			}
 		}
 
