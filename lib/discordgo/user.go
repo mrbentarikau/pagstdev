@@ -102,6 +102,9 @@ func (u *User) String() string {
 
 // Mention return a string which mentions the user
 func (u *User) Mention() string {
+	if u.Discriminator == "0" {
+		return u.Username
+	}
 	return fmt.Sprintf("<@%d>", u.ID)
 }
 

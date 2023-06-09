@@ -94,7 +94,7 @@ func TmplExecCmdFuncs(ctx *templates.Context, maxExec int, dryRun bool) (userCtx
 	execBot := func(cmd string, args ...interface{}) (interface{}, error) {
 
 		botUserCopy := *common.BotUser
-		botUserCopy.Username = common.ConfBotName.GetString() + " (cc: " + ctx.Msg.Author.Username + "#" + ctx.Msg.Author.Discriminator + ")"
+		botUserCopy.Username = common.ConfBotName.GetString() + " (cc: " + ctx.Msg.Author.String() + ")"
 
 		messageCopy := *ctx.Msg
 		messageCopy.Author = &botUserCopy

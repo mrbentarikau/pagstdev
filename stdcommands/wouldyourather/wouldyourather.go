@@ -40,7 +40,7 @@ var Command = &commands.YAGCommand{
 			Color:       int(rand.Int63n(16777215)),
 			Description: wyrDescription,
 			Footer: &discordgo.MessageEmbedFooter{
-				Text:    fmt.Sprintf("Requested by: %s#%s", data.Author.Username, data.Author.Discriminator),
+				Text:    fmt.Sprintf("Requested by: %s", data.Author.String()),
 				IconURL: discordgo.EndpointUserAvatar(data.Author.ID, data.Author.Avatar),
 			},
 		}

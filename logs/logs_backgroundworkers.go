@@ -15,15 +15,17 @@ var _ backgroundworkers.BackgroundWorkerPlugin = (*Plugin)(nil)
 
 func (p *Plugin) RunBackgroundWorker() {
 	ticker := time.NewTicker(time.Minute * 5)
-
+	if !ConfRestrictLogsThirtyDays.GetBool() {
+		logger.Infof("[logs] Disabling background worker for message log purge, set yagpdb.enable_restrict_logs to true for this ")
+		(<-p.stopWorkers).Done()
+		return
+	}
 	for {
 		select {
 		case <-ticker.C:
-			if confRestrictLogsThirtyDays.GetBool() {
-				go p.DeleteOldMessages()
-				go p.DeleteOldMessageLogs()
-				go p.DeleteOldWarningsLinks()
-			}
+			go p.DeleteOldMessages()
+			go p.DeleteOldMessageLogs()
+			//go p.DeleteOldWarningsLinks()
 		case wg := <-p.stopWorkers:
 			wg.Done()
 			return
