@@ -375,7 +375,7 @@ func createRSSEmbed(feed *gofeed.Feed, filteredItems []*gofeed.Item, feedName st
 			},
 		}
 
-		if feedItem.Image != nil {
+		if feedItem.Image != nil && feedItem.Image.URL != feed.Image.URL {
 			embed.Image = &discordgo.MessageEmbedImage{
 				URL: feedItem.Image.URL,
 			}
