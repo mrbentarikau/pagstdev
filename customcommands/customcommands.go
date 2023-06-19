@@ -342,6 +342,10 @@ func CmdRunsInChannel(cc *models.CustomCommand, channel int64) bool {
 	}
 
 	if cs != nil && cs.Type.IsThread() {
+		allowedInCategory := CmdRunsInCategory(cc, (gs.GetChannelOrThread(cs.ParentID)).ParentID)
+		if !allowedInCategory {
+			return false
+		}
 		isContained := common.ContainsInt64Slice(cc.Channels, common.ChannelOrThreadParentID(cs))
 		if cc.ChannelsWhitelistMode && !isContained {
 			return false
