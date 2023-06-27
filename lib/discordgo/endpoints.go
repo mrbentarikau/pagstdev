@@ -65,12 +65,13 @@ var (
 	EndpointReport       string
 	EndpointIntegrations string
 
-	EndpointUser               = func(uID string) string { return "" }
-	EndpointUserAvatar         = func(uID int64, aID string) string { return "" }
-	EndpointUserAvatarAnimated = func(uID int64, aID string) string { return "" }
-	EndpointDefaultUserAvatar  = func(uDiscriminator string) string { return "" }
-	EndpointUserBanner         = func(uID int64, hash string) string { return "" }
-	EndpointUserBannerAnimated = func(uID int64, hash string) string { return "" }
+	EndpointUser                      = func(uID string) string { return "" }
+	EndpointUserAvatar                = func(uID int64, aID string) string { return "" }
+	EndpointUserAvatarAnimated        = func(uID int64, aID string) string { return "" }
+	EndpointDefaultUserAvatar         = func(uDiscriminator string) string { return "" }
+	EndpointDefaultUserAvatarMigrated = func(uID int64) string { return "" }
+	EndpointUserBanner                = func(uID int64, hash string) string { return "" }
+	EndpointUserBannerAnimated        = func(uID int64, hash string) string { return "" }
 
 	EndpointUserGuilds                    = func(uID string) string { return "" }
 	EndpointUserGuild                     = func(uID string, gID int64) string { return "" }
@@ -294,6 +295,9 @@ func CreateEndpoints(base string) {
 	EndpointDefaultUserAvatar = func(uDiscriminator string) string {
 		uDiscriminatorInt, _ := strconv.Atoi(uDiscriminator)
 		return EndpointCDN + "embed/avatars/" + strconv.Itoa(uDiscriminatorInt%5) + ".png"
+	}
+	EndpointDefaultUserAvatarMigrated = func(uID int64) string {
+		return EndpointCDN + "embed/avatars/" + StrID((uID>>22)%5) + ".png"
 	}
 	EndpointUserSettings = func(uID string) string { return EndpointUsers + uID + "/settings" }
 	EndpointUserGuilds = func(uID string) string { return EndpointUsers + uID + "/guilds" }
