@@ -361,7 +361,7 @@ func CreateEndpoints(base string) {
 	EndpointGuildScheduledEvents = func(gID int64) string { return EndpointGuilds + StrID(gID) + "/scheduled-events" }
 	EndpointGuildScheduledEvent = func(gID, eID int64) string { return EndpointGuilds + StrID(gID) + "/scheduled-events/" + StrID(eID) }
 	EndpointGuildScheduledEventUsers = func(gID, eID int64) string { return EndpointGuildScheduledEvent(gID, eID) + "/users" }
-	EndpointGuildTemplate = func(tID int64) string { return EndpointGuilds + "/templates/" + StrID(tID) }
+	EndpointGuildTemplate = func(tID int64) string { return EndpointGuilds + "templates/" + StrID(tID) }
 	EndpointGuildTemplates = func(gID int64) string { return EndpointGuilds + StrID(gID) + "/templates" }
 	EndpointGuildTemplateSync = func(gID, tID int64) string { return EndpointGuilds + StrID(gID) + "/templates/" + StrID(tID) }
 	EndpointGuildMemberAvatar = func(gID int64, uID int64, aID string) string {

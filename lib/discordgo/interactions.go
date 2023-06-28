@@ -579,13 +579,13 @@ type InteractionResponse struct {
 
 // InteractionResponseData is response data for an interaction.
 type InteractionResponseData struct {
-	TTS             bool               `json:"tts"`
-	Content         string             `json:"content"`
-	Components      []MessageComponent `json:"components"`
-	Embeds          []*MessageEmbed    `json:"embeds"`
-	AllowedMentions *AllowedMentions   `json:"allowed_mentions,omitempty"`
-	//Flags           uint64             `json:"flags,omitempty"`
-	Files []*File `json:"-"`
+	TTS             bool                  `json:"tts"`
+	Content         string                `json:"content"`
+	Components      []MessageComponent    `json:"components"`
+	Embeds          []*MessageEmbed       `json:"embeds"`
+	AllowedMentions *AllowedMentions      `json:"allowed_mentions,omitempty"`
+	Files           []*File               `json:"-"`
+	Attachments     *[]*MessageAttachment `json:"attachments,omitempty"`
 
 	// NOTE: only MessageFlagsSuppressEmbeds and MessageFlagsEphemeral can be set.
 	Flags MessageFlags `json:"flags,omitempty"`
