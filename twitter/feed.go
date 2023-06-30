@@ -329,9 +329,9 @@ func (p *Plugin) createTweetEmbed(tweet *twitterscraper.Tweet, user *twitterscra
 
 	var img string
 	if tweet.Photos != nil && len(tweet.Photos) > 0 {
-		img = tweet.Photos[0]
+		img = tweet.Photos[0].URL
 	} else if tweet.QuotedStatus != nil && (tweet.QuotedStatus.Photos != nil && len(tweet.QuotedStatus.Photos) > 0) {
-		img = tweet.QuotedStatus.Photos[0]
+		img = tweet.QuotedStatus.Photos[0].URL
 	}
 
 	embed.Image = &discordgo.MessageEmbedImage{
