@@ -19,9 +19,9 @@ var (
 	confTwitterPollFrequency = config.RegisterOption("yagpdb.twitter.poll_frequency", "Minimum Delay in each feed poll for all feeds in minutes", 1)
 	confTwitterBatchDelay    = config.RegisterOption("yagpdb.twitter.batch_delay", "Delay in seconds between each batch", 10)
 
-	confTwitterUsername = config.RegisterOption("yagpdb.twitter.username", "Proxy URL to scrape feeds from twitter", "")
-	confTwitterPassword = config.RegisterOption("yagpdb.twitter.password", "Proxy URL to scrape feeds from twitter", "")
-	confTwitterEmail    = config.RegisterOption("yagpdb.twitter.email", "Proxy URL to scrape feeds from twitter", "")
+	confTwitterUsername = config.RegisterOption("yagpdb.twitter.username", "Twitter username for login", "")
+	confTwitterPassword = config.RegisterOption("yagpdb.twitter.password", "Twitter password for login", "")
+	confTwitterEmail    = config.RegisterOption("yagpdb.twitter.email", "Twitter e-mail for login", "")
 )
 
 type Plugin struct {
