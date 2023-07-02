@@ -18,6 +18,10 @@ var (
 	confTwitterBatchSize     = config.RegisterOption("yagpdb.twitter.batch_size", "Batch Size for scraping feeds", 50)
 	confTwitterPollFrequency = config.RegisterOption("yagpdb.twitter.poll_frequency", "Minimum Delay in each feed poll for all feeds in minutes", 1)
 	confTwitterBatchDelay    = config.RegisterOption("yagpdb.twitter.batch_delay", "Delay in seconds between each batch", 10)
+
+	confTwitterUsername = config.RegisterOption("yagpdb.twitter.username", "Proxy URL to scrape feeds from twitter", "")
+	confTwitterPassword = config.RegisterOption("yagpdb.twitter.password", "Proxy URL to scrape feeds from twitter", "")
+	confTwitterEmail    = config.RegisterOption("yagpdb.twitter.email", "Proxy URL to scrape feeds from twitter", "")
 )
 
 type Plugin struct {
@@ -38,6 +42,11 @@ func (p *Plugin) PluginInfo() *common.PluginInfo {
 
 func RegisterPlugin() {
 	twitterScraper := twitterscraper.New()
+	err := twitterScraper.Login(confTwitterUsername.GetString(), confTwitterPassword.GetString(), confTwitterEmail.GetString())
+	if err != nil {
+		logger.WithError(err).Error("Failed initializing TWITTER plugin, probably login error")
+		return
+	}
 	twitterProxy := confTwitterProxy.GetString()
 	if len(twitterProxy) > 0 {
 		twitterScraper.SetProxy(twitterProxy)
