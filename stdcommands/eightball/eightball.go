@@ -5,7 +5,6 @@ package eightball
 import (
 	"fmt"
 	"math/rand"
-	"time"
 
 	"github.com/botlabs-gg/yagpdb/commands"
 	"github.com/botlabs-gg/yagpdb/lib/dcmd"
@@ -53,18 +52,18 @@ var Command = &commands.YAGCommand{
 	},
 
 	RunFunc: func(data *dcmd.Data) (interface{}, error) {
-		if data.SlashCommandTriggerData != nil {
-			return "You asked: " + data.Args[0].Str() + "\n" + Shake(data), nil
+		if data.Args[0].Str() == "" {
+			return ShakeFailureMessage, nil
 		}
-		return Shake(data), nil
+
+		if data.SlashCommandTriggerData != nil {
+			return "You asked: " + data.Args[0].Str() + "\n" + Shake(), nil
+		}
+		return Shake(), nil
 	},
 }
 
-func Shake(data *dcmd.Data) string {
-	if data.Args[0].Str() == "" {
-		return ShakeFailureMessage
-	}
-
-	rand.Seed(time.Now().UnixNano())
+func Shake() string {
+	// rand.Seed(time.Now().UnixNano())
 	return fmt.Sprintf("8-Ball says: %s", magicAnswers[rand.Intn(len(magicAnswers))])
 }
