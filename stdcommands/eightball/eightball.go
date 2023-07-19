@@ -64,6 +64,5 @@ var Command = &commands.YAGCommand{
 }
 
 func Shake() string {
-	// rand.Seed(time.Now().UnixNano())
-	return fmt.Sprintf("8-Ball says: %s", magicAnswers[rand.Intn(len(magicAnswers))])
+	return fmt.Sprintf("🎱 8-Ball says: %s", magicAnswers[rand.Intn(len(magicAnswers))])
 }

@@ -153,8 +153,14 @@ func (p *Plugin) AddCommands() {
 				switch resp.Polarity {
 				case "neutral":
 					if rand.Intn(2) > 0 {
+						if cmd.SlashCommandTriggerData != nil {
+							return cmd.Args[0].Str() + " >> Yes", nil
+						}
 						return "Yes", nil
 					} else {
+						if cmd.SlashCommandTriggerData != nil {
+							return cmd.Args[0].Str() + " >> No", nil
+						}
 						return "No", nil
 					}
 				case "positive":

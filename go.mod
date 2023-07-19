@@ -66,17 +66,20 @@ require (
 	github.com/volatiletech/sqlboiler/v4 v4.5.0
 	github.com/volatiletech/strmangle v0.0.1
 	goji.io v2.0.2+incompatible
-	golang.org/x/crypto v0.9.0
+	golang.org/x/crypto v0.10.0
 	golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e
 	golang.org/x/image v0.5.0
-	golang.org/x/net v0.10.0
-	golang.org/x/oauth2 v0.8.0
-	golang.org/x/text v0.9.0
+	golang.org/x/net v0.11.0
+	golang.org/x/oauth2 v0.9.0
+	golang.org/x/text v0.10.0
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0
 	google.golang.org/api v0.103.0
 )
 
-require github.com/n0madic/twitter-scraper v0.0.0-20230625205053-302c2d461a6a
+require (
+	github.com/n0madic/twitter-scraper v0.0.0-20230707102005-63236086c83a
+	gopkg.in/yaml.v3 v3.0.1
+)
 
 require (
 	cloud.google.com/go/compute v1.15.1 // indirect
@@ -171,7 +174,7 @@ require (
 	go.uber.org/atomic v1.4.0 // indirect
 	go.uber.org/multierr v1.1.0 // indirect
 	golang.org/x/arch v0.3.0 // indirect
-	golang.org/x/sys v0.8.0 // indirect
+	golang.org/x/sys v0.9.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20230110181048-76db0878b65f // indirect
@@ -179,5 +182,4 @@ require (
 	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

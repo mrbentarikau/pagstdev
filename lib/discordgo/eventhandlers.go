@@ -11,7 +11,7 @@ const (
 	applicationCommandDeleteEventType            = "APPLICATION_COMMAND_DELETE"
 	applicationCommandPermissionsUpdateEventType = "APPLICATION_COMMAND_PERMISSIONS_UPDATE"
 	applicationCommandUpdateEventType            = "APPLICATION_COMMAND_UPDATE"
-	autoModerationActionExecutionEventType       = "AUTO_MODERATION_ACTION_EXECUTION"
+	auditLogEntryCreateEventType                 = "AUDIT_LOG_ENTRY_CREATE"
 	autoModerationRuleCreateEventType            = "AUTO_MODERATION_RULE_CREATE"
 	autoModerationRuleDeleteEventType            = "AUTO_MODERATION_RULE_DELETE"
 	autoModerationRuleUpdateEventType            = "AUTO_MODERATION_RULE_UPDATE"
@@ -164,22 +164,22 @@ func (eh applicationCommandUpdateEventHandler) Handle(s *Session, i interface{})
 	}
 }
 
-// autoModerationActionExecutionEventHandler is an event handler for AutoModerationActionExecution events.
-type autoModerationActionExecutionEventHandler func(*Session, *AutoModerationActionExecution)
+// auditLogEntryCreateEventHandler is an event handler for AuditLogEntryCreate events.
+type auditLogEntryCreateEventHandler func(*Session, *AuditLogEntryCreate)
 
-// Type returns the event type for AutoModerationActionExecution events.
-func (eh autoModerationActionExecutionEventHandler) Type() string {
-	return autoModerationActionExecutionEventType
+// Type returns the event type for AuditLogEntryCreate events.
+func (eh auditLogEntryCreateEventHandler) Type() string {
+	return auditLogEntryCreateEventType
 }
 
-// New returns a new instance of AutoModerationActionExecution.
-func (eh autoModerationActionExecutionEventHandler) New() interface{} {
-	return &AutoModerationActionExecution{}
+// New returns a new instance of AuditLogEntryCreate.
+func (eh auditLogEntryCreateEventHandler) New() interface{} {
+	return &AuditLogEntryCreate{}
 }
 
-// Handle is the handler for AutoModerationActionExecution events.
-func (eh autoModerationActionExecutionEventHandler) Handle(s *Session, i interface{}) {
-	if t, ok := i.(*AutoModerationActionExecution); ok {
+// Handle is the handler for AuditLogEntryCreate events.
+func (eh auditLogEntryCreateEventHandler) Handle(s *Session, i interface{}) {
+	if t, ok := i.(*AuditLogEntryCreate); ok {
 		eh(s, t)
 	}
 }
@@ -1576,8 +1576,8 @@ func handlerForInterface(handler interface{}) EventHandler {
 		return applicationCommandPermissionsUpdateEventHandler(v)
 	case func(*Session, *ApplicationCommandUpdate):
 		return applicationCommandUpdateEventHandler(v)
-	case func(*Session, *AutoModerationActionExecution):
-		return autoModerationActionExecutionEventHandler(v)
+	case func(*Session, *AuditLogEntryCreate):
+		return auditLogEntryCreateEventHandler(v)
 	case func(*Session, *AutoModerationRuleCreate):
 		return autoModerationRuleCreateEventHandler(v)
 	case func(*Session, *AutoModerationRuleDelete):
@@ -1728,7 +1728,7 @@ func init() {
 	registerInterfaceProvider(applicationCommandDeleteEventHandler(nil))
 	registerInterfaceProvider(applicationCommandPermissionsUpdateEventHandler(nil))
 	registerInterfaceProvider(applicationCommandUpdateEventHandler(nil))
-	registerInterfaceProvider(autoModerationActionExecutionEventHandler(nil))
+	registerInterfaceProvider(auditLogEntryCreateEventHandler(nil))
 	registerInterfaceProvider(autoModerationRuleCreateEventHandler(nil))
 	registerInterfaceProvider(autoModerationRuleDeleteEventHandler(nil))
 	registerInterfaceProvider(autoModerationRuleUpdateEventHandler(nil))

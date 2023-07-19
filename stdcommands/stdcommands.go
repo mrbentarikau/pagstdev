@@ -23,6 +23,7 @@ import (
 	"github.com/botlabs-gg/yagpdb/stdcommands/dadjoke"
 	"github.com/botlabs-gg/yagpdb/stdcommands/dcallvoice"
 	"github.com/botlabs-gg/yagpdb/stdcommands/define"
+	"github.com/botlabs-gg/yagpdb/stdcommands/dictionary"
 	"github.com/botlabs-gg/yagpdb/stdcommands/dogfact"
 	"github.com/botlabs-gg/yagpdb/stdcommands/editchannelpermissions"
 	"github.com/botlabs-gg/yagpdb/stdcommands/editrole"
@@ -46,7 +47,6 @@ import (
 	"github.com/botlabs-gg/yagpdb/stdcommands/memstats"
 	"github.com/botlabs-gg/yagpdb/stdcommands/myanimelist"
 	"github.com/botlabs-gg/yagpdb/stdcommands/openweathermap"
-	"github.com/botlabs-gg/yagpdb/stdcommands/owldictionary"
 
 	//"github.com/botlabs-gg/yagpdb/stdcommands/paginationtest"
 	"github.com/botlabs-gg/yagpdb/stdcommands/pagstatus"
@@ -111,6 +111,7 @@ func (p *Plugin) AddCommands() {
 		customembed.Command,
 		dadjoke.Command,
 		define.Command,
+		dictionary.Command,
 		dogfact.Command,
 		editchannelpermissions.Command,
 		editrole.Command,
@@ -172,11 +173,6 @@ func (p *Plugin) AddCommands() {
 	specialservers.Commands()
 	statedbg.Commands()
 
-	if !owldictionary.ShouldRegister() {
-		common.GetPluginLogger(p).Warn("Owlbot API token not provided, skipping adding owldictionary command...")
-		return
-	}
-
 	if !isthereanydeal.ShouldRegister() {
 		common.GetPluginLogger(p).Warn("IsThereAnyDeal API key not provided, skipping adding isthereanydeal command...")
 		return
@@ -194,7 +190,6 @@ func (p *Plugin) AddCommands() {
 
 	commands.AddRootCommands(p, isthereanydeal.Command)
 	commands.AddRootCommands(p, myanimelist.Command)
-	commands.AddRootCommands(p, owldictionary.Command)
 	commands.AddRootCommands(p, themoviedb.Command)
 
 }
