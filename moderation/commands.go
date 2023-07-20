@@ -1597,13 +1597,16 @@ func PaginateWarnings(parsed *dcmd.Data, count int) func(p *paginatedmessages.Pa
 			currentField.Value = "No Warnings"
 		}
 
-		username := result[0].Username
-		if username == "" {
-			warningsUser, err := common.BotSession.User(userID)
-			if err != nil {
-				username = "None"
-			} else if warningsUser != nil {
-				username = warningsUser.GlobalName
+		username := "None"
+		if len(result) > 0 {
+			username = result[0].Username
+			if username == "" {
+				warningsUser, err := common.BotSession.User(userID)
+				if err != nil {
+					username = "None"
+				} else if warningsUser != nil {
+					username = warningsUser.GlobalName
+				}
 			}
 		}
 
