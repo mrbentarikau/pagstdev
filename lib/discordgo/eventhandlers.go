@@ -12,6 +12,7 @@ const (
 	applicationCommandPermissionsUpdateEventType = "APPLICATION_COMMAND_PERMISSIONS_UPDATE"
 	applicationCommandUpdateEventType            = "APPLICATION_COMMAND_UPDATE"
 	auditLogEntryCreateEventType                 = "AUDIT_LOG_ENTRY_CREATE"
+	autoModerationActionExecutionEventType       = "AUTO_MODERATION_ACTION_EXECUTION"
 	autoModerationRuleCreateEventType            = "AUTO_MODERATION_RULE_CREATE"
 	autoModerationRuleDeleteEventType            = "AUTO_MODERATION_RULE_DELETE"
 	autoModerationRuleUpdateEventType            = "AUTO_MODERATION_RULE_UPDATE"
@@ -180,6 +181,26 @@ func (eh auditLogEntryCreateEventHandler) New() interface{} {
 // Handle is the handler for AuditLogEntryCreate events.
 func (eh auditLogEntryCreateEventHandler) Handle(s *Session, i interface{}) {
 	if t, ok := i.(*AuditLogEntryCreate); ok {
+		eh(s, t)
+	}
+}
+
+// autoModerationActionExecutionEventHandler is an event handler for AutoModerationActionExecution events.
+type autoModerationActionExecutionEventHandler func(*Session, *AutoModerationActionExecution)
+
+// Type returns the event type for AutoModerationActionExecution events.
+func (eh autoModerationActionExecutionEventHandler) Type() string {
+	return autoModerationActionExecutionEventType
+}
+
+// New returns a new instance of AutoModerationActionExecution.
+func (eh autoModerationActionExecutionEventHandler) New() interface{} {
+	return &AutoModerationActionExecution{}
+}
+
+// Handle is the handler for AutoModerationActionExecution events.
+func (eh autoModerationActionExecutionEventHandler) Handle(s *Session, i interface{}) {
+	if t, ok := i.(*AutoModerationActionExecution); ok {
 		eh(s, t)
 	}
 }
@@ -1578,6 +1599,8 @@ func handlerForInterface(handler interface{}) EventHandler {
 		return applicationCommandUpdateEventHandler(v)
 	case func(*Session, *AuditLogEntryCreate):
 		return auditLogEntryCreateEventHandler(v)
+	case func(*Session, *AutoModerationActionExecution):
+		return autoModerationActionExecutionEventHandler(v)
 	case func(*Session, *AutoModerationRuleCreate):
 		return autoModerationRuleCreateEventHandler(v)
 	case func(*Session, *AutoModerationRuleDelete):
@@ -1729,6 +1752,7 @@ func init() {
 	registerInterfaceProvider(applicationCommandPermissionsUpdateEventHandler(nil))
 	registerInterfaceProvider(applicationCommandUpdateEventHandler(nil))
 	registerInterfaceProvider(auditLogEntryCreateEventHandler(nil))
+	registerInterfaceProvider(autoModerationActionExecutionEventHandler(nil))
 	registerInterfaceProvider(autoModerationRuleCreateEventHandler(nil))
 	registerInterfaceProvider(autoModerationRuleDeleteEventHandler(nil))
 	registerInterfaceProvider(autoModerationRuleUpdateEventHandler(nil))
