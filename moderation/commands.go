@@ -1033,11 +1033,14 @@ var ModerationCommands = []*commands.YAGCommand{
 					return fmt.Sprintf("Warning with given id : `%d` does not exist.", parsed.Switches["id"].Int()), nil
 				}
 
-				userID, _ := strconv.ParseInt(warn[0].UserID, 10, 64)
-				warningsUser, err := common.BotSession.User(userID)
-				username := warningsUser.GlobalName
-				if err != nil {
-					username = "None"
+				username := warn[0].Username
+				if username == "" {
+					userID, _ := strconv.ParseInt(warn[0].UserID, 10, 64)
+					warningsUser, err := common.BotSession.User(userID)
+					username = warningsUser.GlobalName
+					if err != nil {
+						username = "None"
+					}
 				}
 
 				return &discordgo.MessageEmbed{
@@ -1544,11 +1547,11 @@ func PaginateWarnings(parsed *dcmd.Data, count int) func(p *paginatedmessages.Pa
 		limit := 6
 
 		var result []*WarningModel
-		/*var count int
+		var count int
 		err = common.GORM.Table("moderation_warnings").Where("user_id = ? AND guild_id = ?", userID, parsed.GuildData.GS.ID).Count(&count).Error
 		if err != nil && err != gorm.ErrRecordNotFound {
 			return nil, err
-		}*/
+		}
 		err = common.GORM.Where("user_id = ? AND guild_id = ?", userID, parsed.GuildData.GS.ID).Order("id desc").Offset(skip).Limit(limit).Find(&result).Error
 		if err != nil && err != gorm.ErrRecordNotFound {
 			return nil, err
@@ -1594,10 +1597,14 @@ func PaginateWarnings(parsed *dcmd.Data, count int) func(p *paginatedmessages.Pa
 			currentField.Value = "No Warnings"
 		}
 
-		warningsUser, err := common.BotSession.User(userID)
-		username := warningsUser.GlobalName
-		if err != nil {
-			username = "None"
+		username := result[0].Username
+		if username == "" {
+			warningsUser, err := common.BotSession.User(userID)
+			if err != nil {
+				username = "None"
+			} else if warningsUser != nil {
+				username = warningsUser.GlobalName
+			}
 		}
 
 		return &discordgo.MessageEmbed{
