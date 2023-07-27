@@ -360,7 +360,9 @@ func (s *Session) innerDoRequest(method, urlStr, contentType string, b []byte, e
 
 	cfg := newRequestConfig(s, req)
 	for _, opt := range options {
-		opt(cfg)
+		if opt != nil {
+			opt(cfg)
+		}
 	}
 	req = cfg.Request
 

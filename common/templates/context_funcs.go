@@ -2568,3 +2568,42 @@ func (c *Context) tmplGetApplicationCommands() ([]*discordgo.ApplicationCommand,
 
 	return applications, nil
 }
+
+func (c *Context) tmplGetGuildMembers(args ...interface{}) (members []*discordgo.Member, err error) {
+	if c.IncreaseCheckGenericAPICall() {
+		return nil, ErrTooManyAPICalls
+	}
+
+	if c.IncreaseCheckCallCounter("guild_getMembers", 2) {
+		return nil, ErrTooManyCalls
+	}
+
+	afterID := c.GS.OwnerID
+	limit := 25
+
+	if len(args) > 0 {
+		argsSdict, err := StringKeyDictionary(args...)
+		if err != nil {
+			return nil, err
+		}
+
+		for key, val := range argsSdict {
+			switch strings.ToLower(key) {
+			case "after":
+				afterID = TargetUserID(val)
+			case "limit":
+				limit = tmplToInt(val)
+				if limit < 1 {
+					limit = 1
+				} else if limit > 1000 {
+					limit = 1000
+				}
+			default:
+				return nil, errors.New(`invalid key "` + key + ` "passed to getGuildMembers builder`)
+			}
+		}
+	}
+
+	members, err = common.BotSession.GuildMembers(c.GS.ID, afterID, limit)
+	return
+}

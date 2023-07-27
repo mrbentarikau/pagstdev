@@ -752,6 +752,7 @@ func baseContextFuncs(c *Context) {
 	c.addContextFunc("getAuditLogEntries", c.tmplGetAuditLog)
 	c.addContextFunc("getGuildIntegrations", c.tmplGetGuildIntegrations)
 	c.addContextFunc("guildMemberMove", c.tmplGuildMemberMove)
+	c.addContextFunc("getGuildMembers", c.tmplGetGuildMembers)
 }
 
 type limitedWriter struct {
