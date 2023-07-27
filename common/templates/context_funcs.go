@@ -2578,7 +2578,7 @@ func (c *Context) tmplGetGuildMembers(args ...interface{}) (members []*discordgo
 		return nil, ErrTooManyCalls
 	}
 
-	afterID := c.GS.OwnerID
+	afterID := int64(0)
 	limit := 25
 
 	if len(args) > 0 {
