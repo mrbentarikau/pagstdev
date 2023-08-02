@@ -1756,7 +1756,7 @@ const (
 type AutoModerationActionMetadata struct {
 	// Channel to which user content should be logged.
 	// NOTE: should be only used with send alert message action type.
-	ChannelID string `json:"channel_id,string,omitempty"`
+	ChannelID int64 `json:"channel_id,string,omitempty"`
 
 	// Timeout duration in seconds (maximum of 2419200 - 4 weeks).
 	// NOTE: should be only used with timeout action type.
@@ -2268,7 +2268,7 @@ type Activity struct {
 	Type          ActivityType `json:"type"`
 	URL           string       `json:"url,omitempty"`
 	CreatedAt     time.Time    `json:"created_at"`
-	ApplicationID string       `json:"application_id,omitempty"`
+	//ApplicationID string       `json:"application_id,omitempty"`
 	State         string       `json:"state,omitempty"`
 	Details       string       `json:"details,omitempty"`
 	Timestamps    TimeStamps   `json:"timestamps,omitempty"`
@@ -2297,7 +2297,7 @@ func (a *Activity) UnmarshalJSONObject(dec *gojay.Decoder, key string) error {
 	case "timestamps":
 		return dec.Object(&a.Timestamps)
 	case "assets":
-	case "application_id":
+	/*case "application_id":
 		var i interface{}
 		err := dec.Interface(&i)
 		if err != nil {
@@ -2311,6 +2311,7 @@ func (a *Activity) UnmarshalJSONObject(dec *gojay.Decoder, key string) error {
 		case string:
 			a.ApplicationID = t
 		}
+	*/	
 	case "instance":
 		return dec.Bool(&a.Instance)
 	case "flags":
@@ -2332,7 +2333,7 @@ func (activity *Activity) UnmarshalJSON(b []byte) error {
 		Type          ActivityType `json:"type"`
 		URL           string       `json:"url,omitempty"`
 		CreatedAt     int64        `json:"created_at"`
-		ApplicationID string       `json:"application_id,omitempty"`
+		//ApplicationID string       `json:"application_id,omitempty"`
 		State         string       `json:"state,omitempty"`
 		Details       string       `json:"details,omitempty"`
 		Timestamps    TimeStamps   `json:"timestamps,omitempty"`
@@ -2349,7 +2350,7 @@ func (activity *Activity) UnmarshalJSON(b []byte) error {
 		return err
 	}
 	activity.CreatedAt = time.Unix(0, temp.CreatedAt*1000000)
-	activity.ApplicationID = temp.ApplicationID
+	//activity.ApplicationID = temp.ApplicationID
 	activity.Assets = temp.Assets
 	activity.Details = temp.Details
 	activity.Emoji = temp.Emoji
