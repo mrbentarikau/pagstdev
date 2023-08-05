@@ -122,6 +122,8 @@ func (u *User) UnmarshalJSONObject(dec *gojay.Decoder, key string) error {
 		return DecodeSnowflake(&u.ID, dec)
 	case "username":
 		return dec.String(&u.Username)
+	case "global_name":
+		return dec.String(&u.GlobalName)
 	case "avatar":
 		return dec.String(&u.Avatar)
 	case "locale":
