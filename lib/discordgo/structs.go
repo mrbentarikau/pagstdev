@@ -1576,8 +1576,13 @@ func (m *Member) CommunicationDisabledUntil() *time.Time {
 //	size:    The size of the user's avatar as a power of two
 //	         if size is an empty string, no size parameter will
 //	         be added to the URL.
-func (m *Member) AvatarURL(size string) string {
+func (m *Member) AvatarURL(sizeArg ...string) string {
 	var URL string
+
+	size := "256"
+	if len(sizeArg) > 0 {
+		size = sizeArg[0]
+	}
 
 	if m == nil {
 		return "Member not found"

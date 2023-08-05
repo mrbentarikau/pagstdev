@@ -19,8 +19,6 @@ import (
 	"github.com/botlabs-gg/yagpdb/automod"
 	"github.com/botlabs-gg/yagpdb/automod_basic"
 	"github.com/botlabs-gg/yagpdb/autorole"
-
-	// "github.com/botlabs-gg/yagpdb/aylien"
 	"github.com/botlabs-gg/yagpdb/cah"
 	"github.com/botlabs-gg/yagpdb/commands"
 	"github.com/botlabs-gg/yagpdb/customcommands"
@@ -64,7 +62,6 @@ func main() {
 	automod.RegisterPlugin()
 	automod_basic.RegisterPlugin()
 	autorole.RegisterPlugin()
-	// aylien.RegisterPlugin()
 	cah.RegisterPlugin()
 	commands.RegisterPlugin()
 	customcommands.RegisterPlugin()

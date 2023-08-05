@@ -159,6 +159,9 @@ type Message struct {
 
 	// The thread that was started from this message, includes thread member object
 	Thread *Channel `json:"thread,omitempty"`
+
+	// Is sent with Rich Presence-related chat embeds
+	Activity *MessageActivity `json:"activity,omitempty"`
 }
 
 func (m *Message) GetGuildID() int64 {
@@ -528,3 +531,20 @@ type MessageInteraction struct {
 	// Member is only present when the interaction is from a guild.
 	Member *Member `json:"member"`
 }
+
+// MessageActivity is sent with Rich Presence-related chat embeds
+type MessageActivity struct {
+	Type    MessageActivityType `json:"type"`
+	PartyID string              `json:"party_id"`
+}
+
+// MessageActivityType is the type of message activity
+type MessageActivityType int
+
+// Constants for the different types of Message Activity
+const (
+	MessageActivityTypeJoin        MessageActivityType = 1
+	MessageActivityTypeSpectate    MessageActivityType = 2
+	MessageActivityTypeListen      MessageActivityType = 3
+	MessageActivityTypeJoinRequest MessageActivityType = 5
+)
