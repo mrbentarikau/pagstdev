@@ -577,7 +577,7 @@ type AddedThreadMember struct {
 // NOTE: Exactly one of EmojiID and EmojiName must be set.
 type ForumDefaultReaction struct {
 	// The id of a guild's custom emoji.
-	EmojiID int64 `json:"emoji_id,omitempty,string"`
+	EmojiID int64 `json:"emoji_id,string,omitempty"`
 	// The unicode character of the emoji.
 	EmojiName string `json:"emoji_name,omitempty"`
 }
@@ -1389,7 +1389,7 @@ type RoleParams struct {
 	// Whether to display the role's users separately
 	Hoist *bool `json:"hoist,omitempty"`
 	// The overall permissions number of the role
-	Permissions *int64 `json:"permissions,omitempty,string"`
+	Permissions *int64 `json:"permissions,string,omitempty"`
 	// Whether this role is mentionable
 	Mentionable *bool `json:"mentionable,omitempty"`
 }
@@ -1681,10 +1681,10 @@ type GuildBan struct {
 
 // AutoModerationRule stores data for an auto moderation rule.
 type AutoModerationRule struct {
-	ID              int64                          `json:"id,omitempty,string"`
-	GuildID         int64                          `json:"guild_id,omitempty,string"`
+	ID              int64                          `json:"id,string,omitempty"`
+	GuildID         int64                          `json:"guild_id,string,omitempty"`
 	Name            string                         `json:"name,omitempty"`
-	CreatorID       int64                          `json:"creator_id,omitempty,string"`
+	CreatorID       int64                          `json:"creator_id,string,omitempty"`
 	EventType       AutoModerationRuleEventType    `json:"event_type,omitempty"`
 	TriggerType     AutoModerationRuleTriggerType  `json:"trigger_type,omitempty"`
 	TriggerMetadata *AutoModerationTriggerMetadata `json:"trigger_metadata,omitempty"`
@@ -2269,20 +2269,20 @@ func (g *Game) NKeys() int {
 // Activity defines the Activity sent with GatewayStatusUpdate
 // https://discord.com/developers/docs/topics/gateway#activity-object
 type Activity struct {
-	Name          string       `json:"name"`
-	Type          ActivityType `json:"type"`
-	URL           string       `json:"url,omitempty"`
-	CreatedAt     time.Time    `json:"created_at"`
+	Name      string       `json:"name"`
+	Type      ActivityType `json:"type"`
+	URL       string       `json:"url,omitempty"`
+	CreatedAt time.Time    `json:"created_at"`
 	//ApplicationID string       `json:"application_id,omitempty"`
-	State         string       `json:"state,omitempty"`
-	Details       string       `json:"details,omitempty"`
-	Timestamps    TimeStamps   `json:"timestamps,omitempty"`
-	Emoji         Emoji        `json:"emoji,omitempty"`
-	Party         Party        `json:"party,omitempty"`
-	Assets        Assets       `json:"assets,omitempty"`
-	Secrets       Secrets      `json:"secrets,omitempty"`
-	Instance      bool         `json:"instance,omitempty"`
-	Flags         int          `json:"flags,omitempty"`
+	State      string     `json:"state,omitempty"`
+	Details    string     `json:"details,omitempty"`
+	Timestamps TimeStamps `json:"timestamps,omitempty"`
+	Emoji      Emoji      `json:"emoji,omitempty"`
+	Party      Party      `json:"party,omitempty"`
+	Assets     Assets     `json:"assets,omitempty"`
+	Secrets    Secrets    `json:"secrets,omitempty"`
+	Instance   bool       `json:"instance,omitempty"`
+	Flags      int        `json:"flags,omitempty"`
 	// Buttons       []*ActivityButton `json:"buttons,omitempty"`
 }
 
@@ -2303,20 +2303,20 @@ func (a *Activity) UnmarshalJSONObject(dec *gojay.Decoder, key string) error {
 		return dec.Object(&a.Timestamps)
 	case "assets":
 	/*case "application_id":
-		var i interface{}
-		err := dec.Interface(&i)
-		if err != nil {
-			return err
-		}
-		switch t := i.(type) {
-		case int64:
-			a.ApplicationID = strconv.FormatInt(t, 10)
-		case int32:
-			a.ApplicationID = strconv.FormatInt(int64(t), 10)
-		case string:
-			a.ApplicationID = t
-		}
-	*/	
+	var i interface{}
+	err := dec.Interface(&i)
+	if err != nil {
+		return err
+	}
+	switch t := i.(type) {
+	case int64:
+		a.ApplicationID = strconv.FormatInt(t, 10)
+	case int32:
+		a.ApplicationID = strconv.FormatInt(int64(t), 10)
+	case string:
+		a.ApplicationID = t
+	}
+	*/
 	case "instance":
 		return dec.Bool(&a.Instance)
 	case "flags":
@@ -2334,20 +2334,20 @@ func (a *Activity) NKeys() int {
 // UnmarshalJSON is a custom unmarshaljson to make CreatedAt a time.Time instead of an int
 func (activity *Activity) UnmarshalJSON(b []byte) error {
 	temp := struct {
-		Name          string       `json:"name"`
-		Type          ActivityType `json:"type"`
-		URL           string       `json:"url,omitempty"`
-		CreatedAt     int64        `json:"created_at"`
+		Name      string       `json:"name"`
+		Type      ActivityType `json:"type"`
+		URL       string       `json:"url,omitempty"`
+		CreatedAt int64        `json:"created_at"`
 		//ApplicationID string       `json:"application_id,omitempty"`
-		State         string       `json:"state,omitempty"`
-		Details       string       `json:"details,omitempty"`
-		Timestamps    TimeStamps   `json:"timestamps,omitempty"`
-		Emoji         Emoji        `json:"emoji,omitempty"`
-		Party         Party        `json:"party,omitempty"`
-		Assets        Assets       `json:"assets,omitempty"`
-		Secrets       Secrets      `json:"secrets,omitempty"`
-		Instance      bool         `json:"instance,omitempty"`
-		Flags         int          `json:"flags,omitempty"`
+		State      string     `json:"state,omitempty"`
+		Details    string     `json:"details,omitempty"`
+		Timestamps TimeStamps `json:"timestamps,omitempty"`
+		Emoji      Emoji      `json:"emoji,omitempty"`
+		Party      Party      `json:"party,omitempty"`
+		Assets     Assets     `json:"assets,omitempty"`
+		Secrets    Secrets    `json:"secrets,omitempty"`
+		Instance   bool       `json:"instance,omitempty"`
+		Flags      int        `json:"flags,omitempty"`
 		// Buttons       []*ActivityButton `json:"buttons,omitempty"`
 	}{}
 	err := Unmarshal(b, &temp)
