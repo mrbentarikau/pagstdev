@@ -560,7 +560,7 @@ ul.nav-main{margin-top:0px!important}
 /*end*/
 
 /*primary font colours - default for all is #efe9f0*/
-a,.text-success{color:#5e81ac!important}
+a,.text-success{color:#81A1C1!important}
 a>span,a>i,li>a{color:#D8DEE9!important}
 a.accordion-toggle{color:#88c0d0!important}
 h1,h2,h2>a,h3,h4,p,.sidebar-title,html.sidebar-light body,form>h4,.sidebar-toggle i,.name,.userbox{color:#efe9f0!important}
@@ -620,7 +620,7 @@ div.highlight,div>pre{background-color:transparent!important; color:#D8DEE9!impo
 button.close,.alert-info{background-color: #434C5E!important; border-color: #4C566A!important;color:#88c0d0!important}
 .inner-wrapper>.sidebar-left{margin-bottom: 0px!important}
 .body{margin-bottom: 0px!important}
-.card-title{color:#5e81ac!important}
+.card-title{color:#81A1C1!important}
 .border-info{border-color:#5e81ac!important}
 .text-info,input[type="file"],.cc-text-trigger-span,.cc-text-interval-span,.cc-text-next-run-span{color:#88c0d0!important}
 .card-featured-success{border-top-color:#5e81ac!important}
@@ -646,7 +646,7 @@ form>.form-group>p.form-control-static{margin-bottom:7px!important;width:20%;pad
 .input-group-text,[class*="btn"]{color:#D8DEE9!important;text-align:left!important}
 .form-control,.form-control-static{color:#D8DEE9;text-align:left}
 [class*="form-control"],.btn-default,.dropdown-menu,.dropdown-menu-righ,.input-group-text{background-color:#434C5E!important;border-color:#434C5E!important}
-.btn-success,.btn-info,.btn-primary,.btn-primary-scale-2{color:#5e81ac!important;background-color:#434C5E!important;border-color:#434C5E!important}
+.btn-success,.btn-info,.btn-primary,.btn-primary-scale-2{color:#88c0d0!important;background-color:#434C5E!important;border-color:#434C5E!important}
 .btn-success-pagst{color:#434C5E!important;background-color:#5e81ac!important;border-color:#5e81ac!important}
 
 /*crazy stuff for future reference*/
@@ -726,7 +726,7 @@ html:hover{scrollbar-width:thin!important;scrollbar-color:#88c0d0 #2E3440!import
 form>div>button[class*="btn btn-secondary dropdown-toggle"]{background-color:#88c0d0!important; border-color:#88c0d0!important;color:#2E3440!important}
 
 /*CUSTOM COMMANDS && EDIT*/
-div.accordion.accordion-primary>div.card>div.card-header.clearfix>form>div.pull-right>button:nth-child(1){color:#5e81ac!important;background-color:#434C5E!important;border-color:#434C5E!important}
+div.accordion.accordion-primary>div.card>div.card-header.clearfix>form>div.pull-right>button:nth-child(1){color:#88c0d0!important;background-color:#434C5E!important;border-color:#434C5E!important}
 div.accordion.accordion-primary>div.card>div.card-header.clearfix>form>div.pull-right>button:nth-child(1):hover{color:#434C5E!important;background-color:#5e81ac!important}
 div.col>button.btn.btn-secondary.btn-block{border-color:#5e81ac!important}
 div.col>button.btn.btn-secondary.btn-block:hover{color:#4C566A!important; background-color:#5e81ac!important; border-color: #5e81ac!important}
@@ -742,4 +742,4 @@ a.pagst:hover{
 }
 
 a.amV2-atag{text-decoration: none;color:#D8DEE9!important;display:block;font-size:16px!important}
-span.amV2-spantag{color:#5e81ac!important}
+span.amV2-spantag{color:#81A1C1!important}
