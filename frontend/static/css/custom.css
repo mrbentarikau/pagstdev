@@ -742,4 +742,5 @@ a.pagst:hover{
 }
 
 a.amV2-atag{text-decoration: none;color:#a1a1a1!important;display:block;font-size:16px!important}
+a.cc-view-disabled,h2.card-title>a.cc-view-disabled:focus,h2.card-title>a.cc-view-disabled:hover{background-color:#5a2c26!important}
 span.amV2-spantag{color:#89aa00!important}
