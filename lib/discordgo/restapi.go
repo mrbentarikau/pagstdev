@@ -1973,8 +1973,8 @@ func (s *Session) ChannelMessageSendComplex(channelID int64, msg *MessageSend, o
 		}
 	}
 
-	if msg.StickerIds != nil {
-		if len(msg.StickerIds) > 3 {
+	if msg.StickerIDs != nil {
+		if len(msg.StickerIDs) > 3 {
 			err = fmt.Errorf("cannot send more than 3 stickers")
 			return
 		}

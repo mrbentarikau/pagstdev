@@ -37,6 +37,7 @@ type WebhookParams struct {
 	Embeds          []*MessageEmbed       `json:"embeds,omitempty"`
 	Attachments     *[]*MessageAttachment `json:"attachments,omitempty"`
 	AllowedMentions *AllowedMentions      `json:"allowed_mentions,omitempty"`
+	ThreadName      string                `json:"thread_name,omitempty"`
 	// Only MessageFlagsSuppressEmbeds and MessageFlagsEphemeral can be set.
 	// MessageFlagsEphemeral can only be set when using Followup Message Create endpoint.
 	Flags MessageFlags `json:"flags,omitempty"`

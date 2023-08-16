@@ -207,6 +207,8 @@ const (
 	MessageFlagsFailedToMentionSomeRolesInThread MessageFlags = 1 << 8
 	// MessageFlagsSuppressNotifications this message will not trigger push and desktop notifications
 	MessageFlagsSuppressNotifications MessageFlags = 1 << 12
+	// MessageFlagsIsVoiceMessage this message is a voice message.
+	MessageFlagsIsVoiceMessage MessageFlags = 1 << 13
 )
 
 // GetCustomEmojis pulls out all the custom (Non-unicode) emojis from a message and returns a Slice of the Emoji struct.
@@ -245,7 +247,7 @@ type MessageSend struct {
 	AllowedMentions AllowedMentions    `json:"allowed_mentions"`
 	Reference       *MessageReference  `json:"message_reference,omitempty"`
 	Flags           MessageFlags       `json:"flags,omitempty"`
-	StickerIds      []int64            `json:"sticker_ids"`
+	StickerIDs      []int64            `json:"sticker_ids"`
 
 	// TODO: Remove this when compatibility is not required.
 	File *File `json:"-"`

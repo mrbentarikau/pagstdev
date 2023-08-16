@@ -1236,6 +1236,9 @@ type GuildPreview struct {
 
 	// the description for the guild
 	Description string `json:"description"`
+
+	// Stickers
+	Stickers []*Sticker `json:"stickers"`
 }
 
 // IconURL returns a URL to the guild's icon.

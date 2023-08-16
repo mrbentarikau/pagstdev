@@ -303,11 +303,14 @@ func (v *VoiceConnection) open() (err error) {
 		if v.sessionID != "" {
 			break
 		}
+		// Release the lock, so sessionID can be populated upon receiving a VoiceStateUpdate event.
+		v.Unlock()
 		if i > 20 { // only loop for up to 1 second total
 			return fmt.Errorf("did not receive voice Session ID in time")
 		}
 		time.Sleep(50 * time.Millisecond)
 		i++
+		v.Lock()
 	}
 
 	// Connect to VoiceConnection Websocket
