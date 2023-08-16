@@ -549,7 +549,7 @@ maybe for the future > #00AA89, #0089AA and their inversions #FF5576, #FF7655; #
 
 /*the rest default bootstrap nonsense, to override white theme*/
 #m_background{transform:none!important}
-.page-header{border-left-color:#2E3440!important;box-shadow:1px 3px 0 1px #81a1c1!important}
+.page-header{border-left-color:#2E3440!important;box-shadow:1px 3px 0 1px #4C566A!important}
 .card-header{border-bottom-color:#3B4252!important;background:#282d36!important}
 .notification-icon{background:#282d36!important}
 .header{background:#2E3440!important;border-bottom-color:#2E3440!important;border-top-color:#3B4252!important}
