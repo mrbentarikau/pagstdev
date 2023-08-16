@@ -461,6 +461,9 @@ func (c *Context) newContextFrame(cs *dstate.ChannelState) *ContextFrame {
 func (c *Context) ExecuteAndSendWithErrors(source string, channelID int64) error {
 	out, err := c.Execute(source)
 
+	// trim whitespace for accurate character count
+	out = strings.TrimSpace(out)
+
 	if utf8.RuneCountInString(out) > 2000 {
 		out = "Template output for " + c.Name + " was longer than 2k (contact an admin on the server...)"
 	}
@@ -664,6 +667,7 @@ func baseContextFuncs(c *Context) {
 	c.addContextFunc("currentUserCreated", c.tmplCurrentUserCreated)
 	c.addContextFunc("editNickname", c.tmplEditNickname)
 	c.addContextFunc("getBotCount", c.tmplCountMembers(true))
+	c.addContextFunc("getGuildMembers", c.tmplGetGuildMembers)
 	c.addContextFunc("getMember", c.tmplGetMember)
 	c.addContextFunc("getMemberTimezone", c.tmplGetMemberTimezone)
 	c.addContextFunc("getUser", c.tmplGetUser)
@@ -745,6 +749,7 @@ func baseContextFuncs(c *Context) {
 	// Various
 	c.addContextFunc("ccCounters", c.tmplCounters)
 	c.addContextFunc("getApplicationCommands", c.tmplGetApplicationCommands)
+	c.addContextFunc("getGuildPreview", c.tmplGetGuildPreview)
 	c.addContextFunc("sleep", c.tmplSleep)
 	c.addContextFunc("sort", c.tmplSort)
 
@@ -752,7 +757,6 @@ func baseContextFuncs(c *Context) {
 	c.addContextFunc("getAuditLogEntries", c.tmplGetAuditLog)
 	c.addContextFunc("getGuildIntegrations", c.tmplGetGuildIntegrations)
 	c.addContextFunc("guildMemberMove", c.tmplGuildMemberMove)
-	c.addContextFunc("getGuildMembers", c.tmplGetGuildMembers)
 }
 
 type limitedWriter struct {

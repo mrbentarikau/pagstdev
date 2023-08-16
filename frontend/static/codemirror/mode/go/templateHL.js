@@ -152,6 +152,8 @@
     "getChannel":true,
     "getChannelPins":true,
     "getChannelOrThread":true,
+    "getGuildMembers":true,
+    "getGuildPreview":true,
     "getMember":true,
     "getMemberTimezone":true,
     "getMessage":true,

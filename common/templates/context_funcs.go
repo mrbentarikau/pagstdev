@@ -2607,3 +2607,18 @@ func (c *Context) tmplGetGuildMembers(args ...interface{}) (members []*discordgo
 	members, err = common.BotSession.GuildMembers(c.GS.ID, afterID, limit)
 	return
 }
+
+func (c *Context) tmplGetGuildPreview(arg interface{}) (guildPreview *discordgo.GuildPreview, err error) {
+	if c.IncreaseCheckGenericAPICall() {
+		return nil, ErrTooManyAPICalls
+	}
+
+	if c.IncreaseCheckCallCounter("guild_getGuildPreview", 3) {
+		return nil, ErrTooManyCalls
+	}
+
+	guildID := ToInt64(arg)
+
+	guildPreview, err = common.BotSession.GuildPreview(guildID)
+	return
+}

@@ -1242,29 +1242,34 @@ type GuildPreview struct {
 //
 //	size:    The size of the desired icon image as a power of two
 //	         Image size can be any power of two between 16 and 4096.
-func (g *Guild) IconURL(size string) string {
+func (g *Guild) IconURL(args ...string) string {
+	size := "256"
+	if len(args) > 0 {
+		size = args[0]
+	}
+
 	return iconURL(g.Icon, EndpointGuildIcon(g.ID, g.Icon), EndpointGuildIconAnimated(g.ID, g.Icon), size)
-	/*if g.Icon == "" {
-		return ""
+}
+
+func (g *GuildPreview) IconURL(args ...string) string {
+	size := "256"
+	if len(args) > 0 {
+		size = args[0]
 	}
 
-	if strings.HasPrefix(g.Icon, "a_") {
-		return EndpointGuildIconAnimated(g.ID, g.Icon)
-	}
-
-	return EndpointGuildIcon(g.ID, g.Icon)*/
+	return iconURL(g.Icon, EndpointGuildIcon(g.ID, g.Icon), EndpointGuildIconAnimated(g.ID, g.Icon), size)
 }
 
 // BannerURL returns a URL to the guild's banner.
 //
 //	size:    The size of the desired banner image as a power of two
 //	         Image size can be any power of two between 16 and 4096.
-func (g *Guild) BannerURL(size string) string {
-	return bannerURL(g.Banner, EndpointGuildBanner(g.ID, g.Banner), EndpointGuildBannerAnimated(g.ID, g.Banner), size)
-	/*if g.Banner == "" {
-		return ""
+func (g *Guild) BannerURL(args ...string) string {
+	size := "256"
+	if len(args) > 0 {
+		size = args[0]
 	}
-	return EndpointGuildBanner(g.ID, g.Banner)*/
+	return bannerURL(g.Banner, EndpointGuildBanner(g.ID, g.Banner), EndpointGuildBannerAnimated(g.ID, g.Banner), size)
 }
 
 // A Guild feature indicates the presence of a feature in a guild
