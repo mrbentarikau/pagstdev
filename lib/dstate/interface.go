@@ -451,6 +451,8 @@ type MessageState struct {
 	ParsedCreatedAt time.Time
 	ParsedEditedAt  time.Time
 
+	ReferencedMessage *discordgo.Message
+
 	Deleted bool
 }
 
