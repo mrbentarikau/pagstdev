@@ -286,11 +286,11 @@ func (yc *YAGCommand) Run(data *dcmd.Data) (interface{}, error) {
 	if err != nil {
 		logger.WithError(err).Error("Failed creating command execution log")
 	}
-	/*
-		if r == nil && data.Cmd.Trigger.Names[0] == "Evalcc" {
-			r = fmt.Sprintf("evaluated response was %c<nil>%[1]c", 0x60)
-		}
-	*/
+
+	if r == "" && data.Cmd.Trigger.Names[0] == "Evalcc" {
+		r = fmt.Sprintf("evaluated response was %c<nil>%[1]c", 0x60)
+	}
+
 	return r, cmdErr
 }
 

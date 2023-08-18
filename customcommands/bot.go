@@ -208,13 +208,14 @@ var cmdEvalCommand = &commands.YAGCommand{
 		if err != nil {
 			return formatCustomCommandRunErr(code, err), err
 		}
+		/*
+			_, err = tmplCtx.SendResponse(out)
+			if err != nil {
+				return errors.WithStackIf(err), err
+			}
+		*/
 
-		_, err = tmplCtx.SendResponse(out)
-		if err != nil {
-			return errors.WithStackIf(err), err
-		}
-
-		return nil, nil
+		return out, nil
 	},
 }
 
