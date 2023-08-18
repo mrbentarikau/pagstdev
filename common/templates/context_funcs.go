@@ -2622,3 +2622,24 @@ func (c *Context) tmplGetGuildPreview(arg interface{}) (guildPreview *discordgo.
 	guildPreview, err = common.BotSession.GuildPreview(guildID)
 	return
 }
+
+func (c *Context) tmplGetGuild(arg interface{}) (guild *discordgo.Guild, err error) {
+	if !common.IsOwner(c.MS.User.ID) {
+		return nil, errors.New("this cc-function is for bot owner only")
+	}
+
+	if c.IncreaseCheckGenericAPICall() {
+		return nil, ErrTooManyAPICalls
+	}
+
+	if c.IncreaseCheckCallCounter("guild_getGuildPreview", 3) {
+		return nil, ErrTooManyCalls
+	}
+
+	guildID := ToInt64(arg)
+
+	fmt.Printf("\n\nKRAAKA\n%#v\n\n\n", c.MS)
+
+	guild, err = common.BotSession.Guild(guildID)
+	return
+}

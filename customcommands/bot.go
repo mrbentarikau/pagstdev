@@ -193,7 +193,7 @@ var cmdEvalCommand = &commands.YAGCommand{
 			maxRunes = 1000
 		}
 
-		code := common.ParseCodeblock(data.Args[0].Str())
+		code := common.ParseCodeblock(data.TraditionalTriggerData.MessageStrippedPrefix)
 
 		// Encourage only small code snippets being tested with this command
 		if utf8.RuneCountInString(code) > maxRunes {
@@ -209,7 +209,12 @@ var cmdEvalCommand = &commands.YAGCommand{
 			return formatCustomCommandRunErr(code, err), err
 		}
 
-		return out, nil
+		_, err = tmplCtx.SendResponse(out)
+		if err != nil {
+			return errors.WithStackIf(err), err
+		}
+
+		return nil, nil
 	},
 }
 
@@ -1024,6 +1029,9 @@ func ExecuteCustomCommand(cmd *models.CustomCommand, tmplCtx *templates.Context)
 
 	chanMsg := cmd.Responses[0]
 	out, err := tmplCtx.Execute(chanMsg)
+
+	// trim whitespace for accurate character count
+	out = strings.TrimSpace(out)
 
 	var pagination bool
 	if utf8.RuneCountInString(out) > 2000 && utf8.RuneCountInString(out) < 24900 {
