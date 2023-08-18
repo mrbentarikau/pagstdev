@@ -170,6 +170,29 @@ func (gs *GuildSet) IconURL(sizeArg ...string) string {
 	return url
 }
 
+func (gs *GuildSet) BannerURL(sizeArg ...string) string {
+	if gs.Banner == "" {
+		return ""
+	}
+
+	var url string
+	size := "256"
+	if len(sizeArg) > 0 {
+		size = sizeArg[0]
+	}
+	if strings.HasPrefix(gs.Banner, "a_") {
+		url = discordgo.EndpointGuildBannerAnimated(gs.ID, gs.Banner)
+	} else {
+		url = discordgo.EndpointGuildBanner(gs.ID, gs.Banner)
+	}
+
+	if size != "" {
+		url += "?size=" + size
+	}
+
+	return url
+}
+
 type GuildState struct {
 	ID          int64  `json:"id,string"`
 	Available   bool   `json:"available"`
