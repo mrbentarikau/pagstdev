@@ -400,6 +400,11 @@ var cmdListCommands = &commands.YAGCommand{
 					Content: content,
 				}, nil
 			})
+
+		if err != nil {
+			return nil, err
+		}
+
 		return pm, nil
 	},
 }

@@ -167,7 +167,12 @@ func (u *User) AvatarURL(sizeArg ...string) string {
 //
 //		size:    The size of the desired banner image as a power of two
 //	        Image size can be any power of two between 16 and 4096.
-func (u *User) BannerURL(size string) string {
+func (u *User) BannerURL(sizeArg ...string) string {
+	size := "256"
+	if len(sizeArg) > 0 {
+		size = sizeArg[0]
+	}
+
 	return bannerURL(u.Banner, EndpointUserBanner(u.ID, u.Banner), EndpointUserBannerAnimated(u.ID, u.Banner), size)
 }
 
