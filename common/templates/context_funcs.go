@@ -18,6 +18,7 @@ import (
 	"github.com/botlabs-gg/yagpdb/lib/discordgo"
 	"github.com/botlabs-gg/yagpdb/lib/dstate"
 	tzModels "github.com/botlabs-gg/yagpdb/timezonecompanion/models"
+	"github.com/botlabs-gg/yagpdb/web/discorddata"
 
 	"golang.org/x/exp/slices"
 )
@@ -2623,7 +2624,7 @@ func (c *Context) tmplGetGuildPreview(arg interface{}) (guildPreview *discordgo.
 	return
 }
 
-func (c *Context) tmplGetGuild(arg interface{}) (guild *discordgo.Guild, err error) {
+func (c *Context) tmplGetGuild(arg interface{}) (guild *dstate.GuildSet, err error) {
 	if !common.IsOwner(c.MS.User.ID) {
 		return nil, errors.New("this cc-function is for bot owner only")
 	}
@@ -2638,8 +2639,6 @@ func (c *Context) tmplGetGuild(arg interface{}) (guild *discordgo.Guild, err err
 
 	guildID := ToInt64(arg)
 
-	fmt.Printf("\n\nKRAAKA\n%#v\n\n\n", c.MS)
-
-	guild, err = common.BotSession.Guild(guildID)
+	guild, err = discorddata.GetFullGuild(guildID)
 	return
 }
