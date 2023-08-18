@@ -208,6 +208,10 @@ var cmdEvalCommand = &commands.YAGCommand{
 		if err != nil {
 			return formatCustomCommandRunErr(code, err), err
 		}
+
+		if out == "" {
+			out = fmt.Sprintf("evaluated response was %c<nil>%[1]c", 0x60)
+		}
 		/*
 			_, err = tmplCtx.SendResponse(out)
 			if err != nil {
