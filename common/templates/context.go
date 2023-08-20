@@ -368,17 +368,7 @@ func (c *Context) Execute(source string) (string, error) {
 			// This may fail in some cases
 			c.Msg.ChannelID = c.GS.ID
 		}
-		/* this was before, memcacher and YT feeds issue
-		if c.GS != nil {
-			c.Msg.GuildID = c.GS.ID
 
-			member, err := bot.GetMember(c.GS.ID, c.BotUser.ID)
-			if err != nil {
-				return "", errors.WithMessage(err, "ctx.Execute")
-			}
-
-			c.Msg.Member = member.DgoMember()
-		}*/
 		if c.GS != nil {
 			c.Msg.GuildID = c.GS.ID
 			if bot.State != nil {

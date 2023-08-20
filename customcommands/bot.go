@@ -212,6 +212,34 @@ var cmdEvalCommand = &commands.YAGCommand{
 		if out == "" {
 			out = fmt.Sprintf("evaluated response was %c<nil>%[1]c", 0x60)
 		}
+		var pm *paginatedmessages.PaginatedMessage
+		if len(out) >= 2000 {
+			// 1900 is to make it safer for 2K
+			pm, err = paginatedmessages.CreatePaginatedMessage(
+				guildData.GS.ID, tmplCtx.CurrentFrame.CS.ID, 1, int(math.Ceil(float64(len(out))/1900.0)), func(p *paginatedmessages.PaginatedMessage, page int) (interface{}, error) {
+					i := page - 1
+					lim := 1900
+
+					var content string
+					if i == 0 {
+						content = out[:lim]
+					} else if len(out)-i*lim < lim {
+						content = out[i*lim:]
+					} else {
+						content = out[i*lim : page*lim]
+					}
+
+					return &discordgo.MessageSend{
+						Content: content,
+					}, nil
+				})
+			if err != nil {
+				return errors.WithStackIf(err), err
+			}
+		} else {
+			return out, nil
+		}
+
 		/*
 			_, err = tmplCtx.SendResponse(out)
 			if err != nil {
@@ -219,7 +247,7 @@ var cmdEvalCommand = &commands.YAGCommand{
 			}
 		*/
 
-		return out, nil
+		return pm, nil
 	},
 }
 
