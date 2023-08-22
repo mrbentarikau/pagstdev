@@ -1612,6 +1612,15 @@ func (m *Member) AvatarURL(sizeArg ...string) string {
 	return URL
 }
 
+// DisplayName returns the member's guild nickname if they have one,
+// otherwise it returns their discord display name.
+func (m *Member) DisplayName() string {
+	if m.Nick != "" {
+		return m.Nick
+	}
+	return m.User.GlobalName
+}
+
 // ClientStatus stores the online, offline, idle, or dnd status of each device of a Guild member.
 type ClientStatus struct {
 	Desktop Status `json:"desktop"`
@@ -2707,6 +2716,9 @@ const (
 	PermissionUsePrivateThreads      int64 = PermissionCreatePrivateThreads
 	PermissionUseExternalStickers    int64 = 0x0000002000000000
 	PermissionSendMessagesInThreads  int64 = 0x0000004000000000
+
+	// Allows sending voice messages.
+	PermissionSendVoiceMessages int64 = 1 << 46
 )
 
 // Constants for the different bit offsets of voice permissions
@@ -2725,6 +2737,12 @@ const (
 	PermissionRequestToSpeak        int64 = PermissionVoiceRequestToSpeak
 	PermissionUseActivities         int64 = 0x0000008000000000
 	PermissionUseEmbeddedActivities int64 = PermissionUseActivities
+
+	// Allows for using soundboard in a voice channel.
+	PermissionUseSoundboard int64 = 1 << 42
+
+	// Allows the usage of custom soundboard sounds from other servers.
+	PermissionUseExternalSounds int64 = 1 << 45
 )
 
 // Constants for general management.
@@ -2735,7 +2753,18 @@ const (
 	PermissionManageWebhooks          int64 = 0x0000000020000000
 	PermissionManageEmojis            int64 = 0x0000000040000000
 	PermissionManageEmojisAndStickers int64 = PermissionManageEmojis
-	PermissionManageEvents            int64 = 0x0000000200000000
+	// Allows management and editing of emojis, stickers, and soundboard sounds.
+	PermissionManageGuildExpressions int64 = 1 << 30
+	PermissionManageEvents           int64 = 0x0000000200000000
+
+	// Allows for viewing role subscription insights.
+	PermissionViewCreatorMonetizationAnalytics int64 = 1 << 41
+
+	// Allows for creating emojis, stickers, and soundboard sounds, and editing and deleting those created by the current user.
+	PermissionCreateGuildExpressions int64 = 1 << 43
+
+	// Allows for creating scheduled events, and editing and deleting those created by the current user.
+	PermissionCreateEvents int64 = 1 << 44
 )
 
 // Constants for the different bit offsets of general permissions
