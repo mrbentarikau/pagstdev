@@ -322,6 +322,10 @@ func handleUpdateCommand(w http.ResponseWriter, r *http.Request) (web.TemplateDa
 		}
 	}
 
+	if !premium.ContextPremium(ctx) && cmd.TriggerOnEdit {
+		return templateData.AddAlerts(web.ErrorAlert("`Trigger on edits` is a premium feature, your command wasn't saved, please save again after disabling `Trigger on edits`")), nil
+	}
+
 	dbModel := cmd.ToDBModel()
 
 	templateData["CurrentGroupID"] = dbModel.GroupID.Int64

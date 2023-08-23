@@ -164,7 +164,16 @@
                                                 <input type="text" class="pagst-trigger form-control" name="trigger" placeholder="void"
                                                 value="{{.CC.TextTrigger}}" oninput="onTriggerChanged(this)">
                                             </div>
-                                            {{checkbox "case_sensitive" "case_sensitive" "Case Sensitive" .CC.TextTriggerCaseSensitive}}
+                                            <table class="mb-3">
+                                                <tr>
+                                                    <td style="padding-right:42px">
+                                                        {{checkbox "case_sensitive" "case_sensitive" "Case Sensitive" .CC.TextTriggerCaseSensitive}}
+                                                    </td>
+                                                    <td>
+                                                        {{checkbox "trigger_on_edit" "trigger_on_edit" "Trigger on edits? (Premium Only!)" .CC.TriggerOnEdit}}
+                                                    </td>
+                                                </tr>
+                                            </table>
                                         </div>
                                     </div>
                                 </div>
@@ -184,6 +193,11 @@
                                                 </td>
                                                 <td>
                                                     {{checkbox "normalize_unicode" "normalize_unicode" "Normalize Unicode Accents & Confusables" .CC.NormalizeUnicode}}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="2">
+                                                    {{checkbox "trigger_on_edit" "trigger_on_edit" "Trigger on edits? (Premium Only!)" .CC.TriggerOnEdit}}
                                                 </td>
                                             </tr>
                                         </table>

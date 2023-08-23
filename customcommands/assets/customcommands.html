@@ -185,6 +185,7 @@
                 {{else if eq .TriggerType 6}}
                      {{if eq .ReactionTriggerMode 1}} added{{else if eq .ReactionTriggerMode 2}} removed{{else}} added/removed{{end}}{{template "cc_restrictions" .}}
                 {{end}}
+                {{if .TriggerOnEdit}}&nbsp;<sup><i title="Trigger on Edit" class="fa-solid fa-pen-nib"></i></sup>{{end}}
                 {{if .Note.String}}&nbsp;<sup><i title="Notes for #{{.LocalID}}: {{if gt (toRune ($notes := .Note.String)|len) 32}}{{slice (toRune $notes) 0 32|str}}...{{else}}{{$notes}}{{end}}" class="fa-solid fa-comment fa-sm"></i></sup>{{end}}
                 </a>
             </h2>
