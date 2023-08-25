@@ -635,7 +635,10 @@ func tmplDBGetPattern(ctx *templates.Context, inverse bool) interface{} {
 
 		amount := int(templates.ToInt64(iAmount))
 		skip := int(templates.ToInt64(iSkip))
-		if amount > 100 {
+
+		// LIMIT 0 essentially means LIMIT ALL, or no limit at all.
+		// Make sure we actually cap it at the max documented limit.
+		if amount > 100 || amount == 0 {
 			amount = 100
 		}
 
@@ -696,7 +699,7 @@ func tmplDBDelMultiple(ctx *templates.Context) interface{} {
 		}
 
 		amount := int(templates.ToInt64(iAmount))
-		if amount > 100 {
+		if amount > 100 || amount == 0 {
 			amount = 100
 		}
 		skip := int(templates.ToInt64(iSkip))
@@ -873,7 +876,7 @@ func tmplDBTopEntries(ctx *templates.Context, bottom bool) interface{} {
 
 		amount := int(templates.ToInt64(iAmount))
 		skip := int(templates.ToInt64(iSkip))
-		if amount > 100 {
+		if amount > 100 || amount == 0 {
 			amount = 100
 		}
 
