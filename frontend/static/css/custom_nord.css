@@ -647,16 +647,16 @@ form>.form-group>p.form-control-static{margin-bottom:7px!important;width:20%;pad
 .form-control,.form-control-static{color:#D8DEE9;text-align:left}
 [class*="form-control"],.btn-default,.dropdown-menu,.dropdown-menu-righ,.input-group-text{background-color:#434C5E!important;border-color:#434C5E!important}
 .btn-success,.btn-info,.btn-primary,.btn-primary-scale-2{color:#88c0d0!important;background-color:#434C5E!important;border-color:#434C5E!important}
-.btn-success-pagst{color:#434C5E!important;background-color:#5e81ac!important;border-color:#5e81ac!important}
+.btn-success-pagst{color:#434C5E!important;background-color:#88c0d0!important;border-color:#88c0d0!important}
 
 /*crazy stuff for future reference*/
 .btn-primary.focus,.btn-primary.dropdown-toggle,.btn-primary.dropdown-toggle:focus,.btn-primary:focus,.btn-primary-scale-2:focus{color:#4C566A!important; background-color:#5e81ac!important;box-shadow:none!important;}
 .btn-primary.active.focus,.btn-primary.active:focus,.btn-primary.active:hover,.btn-primary:active.focus,.btn-primary:active:focus,.btn-primary:active:hover{color:#4C566A!important; background-color:#5e81ac!important;border-color:#5e81ac!important; box-shadow: none!important}
 .btn-success.focus,.btn-success:focus,.btn-success:active{box-shadow:none!important}
 .btn-info.focus,.btn-info:focus,.btn-info:active{box-shadow:none!important}
-.btn-block{width:auto; background-color:#5e81ac!important;color:#3B4252!important}
+.btn-block{width:auto; background-color:#88c0d0!important;color:#3B4252!important}
 .btn-circle{color:#88c0d0!important; background-color:#3B4252!important;border-color:#3B4252!important}
-.btn-danger{color:#3B4252!important; background-color:#88c0d0!important;border-color:#88c0d0!important}
+.btn-danger{color:#3B4252!important; background-color:#5e81ac!important;border-color:#5e81ac!important}
 .btn-warning,.btn-danger:hover{color:#4C566A!important; background-color:#bf616a!important; border-color:#bf616a!important}
 .btn-info:hover,.btn-primary:hover,.btn-primary-scale-2:hover,.btn-success:hover,.btn-default:hover{color:#4C566A!important; background-color:#5e81ac!important; border-color: #5e81ac!important}
 .btn-outline-danger{border-color: #88c0d0!important }
