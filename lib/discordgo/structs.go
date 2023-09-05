@@ -2285,21 +2285,22 @@ func (g *Game) NKeys() int {
 
 // Activity defines the Activity sent with GatewayStatusUpdate
 // https://discord.com/developers/docs/topics/gateway#activity-object
+// KRAAKA! appID
 type Activity struct {
-	Name      string       `json:"name"`
-	Type      ActivityType `json:"type"`
-	URL       string       `json:"url,omitempty"`
-	CreatedAt time.Time    `json:"created_at"`
-	//ApplicationID string       `json:"application_id,omitempty"`
-	State      string     `json:"state,omitempty"`
-	Details    string     `json:"details,omitempty"`
-	Timestamps TimeStamps `json:"timestamps,omitempty"`
-	Emoji      Emoji      `json:"emoji,omitempty"`
-	Party      Party      `json:"party,omitempty"`
-	Assets     Assets     `json:"assets,omitempty"`
-	Secrets    Secrets    `json:"secrets,omitempty"`
-	Instance   bool       `json:"instance,omitempty"`
-	Flags      int        `json:"flags,omitempty"`
+	Name          string       `json:"name"`
+	Type          ActivityType `json:"type"`
+	URL           string       `json:"url,omitempty"`
+	CreatedAt     time.Time    `json:"created_at"`
+	ApplicationID int64        `json:"application_id,string,omitempty"`
+	State         string       `json:"state,omitempty"`
+	Details       string       `json:"details,omitempty"`
+	Timestamps    TimeStamps   `json:"timestamps,omitempty"`
+	Emoji         Emoji        `json:"emoji,omitempty"`
+	Party         Party        `json:"party,omitempty"`
+	Assets        Assets       `json:"assets,omitempty"`
+	Secrets       Secrets      `json:"secrets,omitempty"`
+	Instance      bool         `json:"instance,omitempty"`
+	Flags         int          `json:"flags,omitempty"`
 	// Buttons       []*ActivityButton `json:"buttons,omitempty"`
 }
 
@@ -2319,21 +2320,21 @@ func (a *Activity) UnmarshalJSONObject(dec *gojay.Decoder, key string) error {
 	case "timestamps":
 		return dec.Object(&a.Timestamps)
 	case "assets":
-	/*case "application_id":
-	var i interface{}
-	err := dec.Interface(&i)
-	if err != nil {
-		return err
-	}
-	switch t := i.(type) {
-	case int64:
-		a.ApplicationID = strconv.FormatInt(t, 10)
-	case int32:
-		a.ApplicationID = strconv.FormatInt(int64(t), 10)
-	case string:
-		a.ApplicationID = t
-	}
-	*/
+	case "application_id":
+		var i interface{}
+		err := dec.Interface(&i)
+		if err != nil {
+			return err
+		}
+		switch t := i.(type) {
+		case int64:
+			a.ApplicationID = t
+		case int32:
+			a.ApplicationID = int64(t)
+		case string:
+			a.ApplicationID, _ = strconv.ParseInt(t, 10, 64)
+		}
+
 	case "instance":
 		return dec.Bool(&a.Instance)
 	case "flags":
