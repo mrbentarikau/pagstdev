@@ -835,7 +835,7 @@ func handleGuildMemberUpdate(evt *eventsystem.EventData) (retry bool, err error)
 	var response *discordgo.GuildAuditLog
 	var responseChangesKey discordgo.AuditLogChangeKey
 	response, _ = common.BotSession.GuildAuditLog(update.GuildID, 0, 0, int(discordgo.AuditLogActionMemberRoleUpdate), 1)
-	if response != nil {
+	if response != nil && len(response.AuditLogEntries) > 0 && len(response.AuditLogEntries[0].Changes) > 0 {
 		responseChangesKey = *response.AuditLogEntries[0].Changes[0].Key
 	}
 
