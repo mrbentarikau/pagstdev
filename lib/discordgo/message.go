@@ -124,6 +124,12 @@ type Message struct {
 	// A list of users mentioned in the message.
 	Mentions []*User `json:"mentions"`
 
+	// Is sent with Rich Presence-related chat embeds
+	Activity *MessageActivity `json:"activity"`
+
+	// Is sent with Rich Presence-related chat embeds
+	Application *MessageApplication `json:"application"`
+
 	// Whether the message is pinned or not.
 	Pinned bool `json:"pinned"`
 
@@ -154,14 +160,16 @@ type Message struct {
 	// instead including a MessageReference, as components exist on preexisting messages.
 	Interaction *MessageInteraction `json:"interaction"`
 
+	// The flags of the message, which describe extra features of a message.
+	// This is a combination of bit masks; the presence of a certain permission can
+	// be checked by performing a bitwise AND between this int and the flag.
+	Flags MessageFlags `json:"flags"`
+
 	// An array of Sticker objects, if any were sent.
 	Stickers []*Sticker `json:"sticker_items"`
 
 	// The thread that was started from this message, includes thread member object
 	Thread *Channel `json:"thread,omitempty"`
-
-	// Is sent with Rich Presence-related chat embeds
-	Activity *MessageActivity `json:"activity,omitempty"`
 }
 
 func (m *Message) GetGuildID() int64 {
@@ -493,6 +501,14 @@ type AllowedMentions struct {
 	Users IDSlice `json:"users"`
 
 	RepliedUser bool `json:"replied_user"`
+}
+
+type MessageApplication struct {
+	ID          int64  `json:"id,string"`
+	CoverImage  string `json:"cover_image"`
+	Description string `json:"description"`
+	Icon        string `json:"icon"`
+	Name        string `json:"name"`
 }
 
 // MessageReference contains reference data sent with crossposted messages

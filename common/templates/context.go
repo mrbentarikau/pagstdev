@@ -201,8 +201,9 @@ type Context struct {
 
 	// See DelayedRunCCData.CallChain.
 	ExecCallChain          []time.Time
-	IsExecedByLeaveMessage bool
 	IsExecedByEvalCC       bool
+	IsExecedByJoinMessage  bool
+	IsExecedByLeaveMessage bool
 
 	contextFuncsAdded bool
 }
@@ -214,7 +215,8 @@ type ContextFrame struct {
 	MentionHere     bool
 	MentionRoles    []int64
 
-	DelResponse bool
+	DelResponse     bool
+	PublishResponse bool
 
 	DelResponseDelay         int
 	EmbedsToSend             []*discordgo.MessageEmbed
@@ -575,6 +577,10 @@ func (c *Context) SendResponse(content string) (*discordgo.Message, error) {
 				return m, errors.New(fmt.Sprint(goErr))
 			}*/
 		}
+
+		if c.CurrentFrame.PublishResponse && c.CurrentFrame.CS.Type == discordgo.ChannelTypeGuildNews {
+			common.BotSession.ChannelMessageCrosspost(m.ChannelID, m.ID)
+		}
 	}
 
 	return m, nil
@@ -690,6 +696,8 @@ func baseContextFuncs(c *Context) {
 	c.addContextFunc("getPinCount", c.tmplGetChannelPins(true))
 	c.addContextFunc("lastMessages", c.tmplLastMessages)
 	c.addContextFunc("pinMessage", c.tmplPinMessage(false))
+	c.addContextFunc("publishMessage", c.tmplPublishMessage)
+	c.addContextFunc("publishResponse", c.tmplPublishResponse)
 	c.addContextFunc("sendDM", c.tmplSendDM)
 	c.addContextFunc("sendMessage", c.tmplSendMessage(true, false))
 	c.addContextFunc("sendMessageNoEscape", c.tmplSendMessage(false, false))

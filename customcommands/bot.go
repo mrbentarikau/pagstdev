@@ -127,6 +127,7 @@ type DelayedRunCCData struct {
 
 	UserKey interface{} `json:"user_key"`
 
+	IsExecedByJoinMessage  bool `json:"is_execed_by_join_message"`
 	IsExecedByLeaveMessage bool `json:"is_execed_by_leave_message"`
 }
 
@@ -606,6 +607,7 @@ func handleDelayedRunCC(evt *schEventsModels.ScheduledEvent, data interface{}) (
 	}
 
 	tmplCtx.ExecCallChain = dataCast.CallChain
+	tmplCtx.IsExecedByJoinMessage = dataCast.IsExecedByJoinMessage
 	tmplCtx.IsExecedByLeaveMessage = dataCast.IsExecedByLeaveMessage
 
 	// decode userdata

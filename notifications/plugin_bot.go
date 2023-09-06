@@ -124,6 +124,7 @@ func HandleGuildMemberRemove(evt *eventsystem.EventData) (retry bool, err error)
 func sendTemplate(gs *dstate.GuildSet, cs *dstate.ChannelState, tmpl string, ms *dstate.MemberState, name string, censorInvites bool, enableSendDM bool) bool {
 	ctx := templates.NewContext(gs, cs, ms)
 	ctx.CurrentFrame.SendResponseInDM = cs.Type == discordgo.ChannelTypeDM
+	ctx.IsExecedByJoinMessage = enableSendDM
 	ctx.IsExecedByLeaveMessage = !enableSendDM
 
 	// since were changing the fields, we need a copy
@@ -162,7 +163,7 @@ func sendTemplate(gs *dstate.GuildSet, cs *dstate.ChannelState, tmpl string, ms 
 		msg = "DM sent from server **" + gs.Name + "** (ID: " + discordgo.StrID(gs.ID) + ")\n" + msg
 		m, err = common.BotSession.ChannelMessageSend(cs.ID, msg)
 	} else {
-		if len(ctx.CurrentFrame.AddResponseReactionNames) > 0 || ctx.CurrentFrame.DelResponse {
+		if len(ctx.CurrentFrame.AddResponseReactionNames) > 0 || ctx.CurrentFrame.DelResponse || ctx.CurrentFrame.PublishResponse {
 			m, err = common.BotSession.ChannelMessageSendComplex(cs.ID, ctx.MessageSend(msg))
 			if err == nil && ctx.CurrentFrame.DelResponse {
 				templates.MaybeScheduledDeleteMessage(gs.ID, cs.ID, m.ID, ctx.CurrentFrame.DelResponseDelay)
@@ -173,12 +174,18 @@ func sendTemplate(gs *dstate.GuildSet, cs *dstate.ChannelState, tmpl string, ms 
 		}
 	}
 
-	if err == nil && m != nil && len(ctx.CurrentFrame.AddResponseReactionNames) > 0 {
-		go func(frame *templates.ContextFrame) {
-			for _, v := range frame.AddResponseReactionNames {
-				common.BotSession.MessageReactionAdd(m.ChannelID, m.ID, v)
-			}
-		}(ctx.CurrentFrame)
+	if err == nil && m != nil {
+		if len(ctx.CurrentFrame.AddResponseReactionNames) > 0 {
+			go func(frame *templates.ContextFrame) {
+				for _, v := range frame.AddResponseReactionNames {
+					common.BotSession.MessageReactionAdd(m.ChannelID, m.ID, v)
+				}
+			}(ctx.CurrentFrame)
+		}
+
+		if ctx.CurrentFrame.PublishResponse && ctx.CurrentFrame.CS.Type == discordgo.ChannelTypeGuildNews {
+			common.BotSession.ChannelMessageCrosspost(m.ChannelID, m.ID)
+		}
 	}
 
 	if err != nil {
