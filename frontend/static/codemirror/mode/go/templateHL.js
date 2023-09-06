@@ -107,6 +107,8 @@
     "execTemplate":true,
     "lastMessages":true,
     "pinMessage":true,
+    "publishMessage":true,
+    "publishResponse":true,
     "sendDM":true, 
     "sendMessage":true,
     "sendMessageRetID":true,
