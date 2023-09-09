@@ -281,7 +281,7 @@
     {{else if eq .insideDot.TriggerType 6}}
         {{$triggerStyleClasses = "cc-trigger-reaction"}}
     {{end}}
-   <a style="padding:15px 20px 15px 20px"{{if .insideDot.Disabled}}title="{{printf `Custom Command #%d disabled...` .insideDot.LocalID}}"{{end}} data-toggle="collapse" data-parent="#accordion" href="#collapse_cmd{{.insideDot.LocalID}}" aria-expanded="false" aria-controls="collapse_cmd{{.insideDot.LocalID}}" class="{{$triggerStyleClasses}} cc-collapsibleDown {{if .insideDot.Disabled}}cc-view-disabled{{end}}"><span title="Run count: {{humanizeThousands .insideDot.RunCount}}">#{{.insideDot.LocalID}} - {{index .dot.CCTriggerTypes .insideDot.TriggerType -}}</span>
+   <a style="padding:15px 20px 13px 20px"{{if .insideDot.Disabled}}title="{{printf `Custom Command #%d disabled...` .insideDot.LocalID}}"{{end}} data-toggle="collapse" data-parent="#accordion" href="#collapse_cmd{{.insideDot.LocalID}}" aria-expanded="false" aria-controls="collapse_cmd{{.insideDot.LocalID}}" class="{{$triggerStyleClasses}} cc-collapsibleDown {{if .insideDot.Disabled}}cc-view-disabled{{end}}"><span title="Run count: {{humanizeThousands .insideDot.RunCount}}">#{{.insideDot.LocalID}} - {{index .dot.CCTriggerTypes .insideDot.TriggerType -}}</span>
 {{end}}
 
 {{define "cc_restrictions"}}
