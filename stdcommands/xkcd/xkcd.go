@@ -64,6 +64,9 @@ var Command = &commands.YAGCommand{
 			n := data.Args[0].Int64()
 			if n >= 1 && n <= xkcd.Num {
 				xkcdNum = n
+				if xkcdNum == 404 {
+					return "A treasured and carefully-guarded point in the space of four-character strings not found.", nil
+				}
 			} else {
 				return fmt.Sprintf("There's no comic numbered %d, current range is 1-%d", n, xkcd.Num), nil
 			}
