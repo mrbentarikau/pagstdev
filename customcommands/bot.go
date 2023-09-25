@@ -211,9 +211,11 @@ var cmdEvalCommand = &commands.YAGCommand{
 			return formatCustomCommandRunErr(code, err), err
 		}
 
+		// check commands/yagcommand.go - disabled typing there so no need for such response
 		if out == "" {
-			out = fmt.Sprintf("evaluated response was %c<nil>%[1]c", 0x60)
+			out = fmt.Sprintf("evaluated response was %c\"\"%[1]c", 0x60)
 		}
+
 		var pm *paginatedmessages.PaginatedMessage
 		if len(out) >= 2000 {
 			// 1900 is to make it safer for 2K

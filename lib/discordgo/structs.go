@@ -1056,20 +1056,35 @@ type GuildScheduledEventUser struct {
 	Member                *Member `json:"member"`
 }
 
+// GuildOnboardingMode defines the criteria used to satisfy constraints that are required for enabling onboarding.
+// https://discord.com/developers/docs/resources/guild#guild-onboarding-object-onboarding-mode
+type GuildOnboardingMode int
+
+// Block containing known GuildOnboardingMode values
+const (
+	// GuildOnboardingModeDefault counts default channels towards constraints
+	GuildOnboardingModeDefault = 0
+	// GuildOnboardingModeAdvanced counts default channels and questions towards constraints
+	GuildOnboardingModeAdvanced = 1
+)
+
 // GuildOnboarding represents the onboarding flow for a guild
 // https://discord.com/developers/docs/resources/guild#guild-onboarding-object
 type GuildOnboarding struct {
 	// ID of the guild this onboarding is part of
-	GuildID int64 `json:"guild_id,string"`
+	GuildID int64 `json:"guild_id,string,omitempty"`
 
 	// Prompts shown during onboarding and in customize community
-	Prompts []GuildOnboardingPrompt `json:"prompts"`
+	Prompts []GuildOnboardingPrompt `json:"prompts,omitempty"`
 
 	// Channel IDs that members get opted into automatically
-	DefaultChannelIDs []int64 `json:"default_channel_ids"`
+	DefaultChannelIDs []int64 `json:"default_channel_ids,omitempty"`
 
 	// 	Whether onboarding is enabled in the guild
-	Enabled bool `json:"enabled"`
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// Mode of onboarding.
+	Mode *GuildOnboardingMode `json:"mode,omitempty"`
 }
 
 // GuildOnboardingPrompt is a prompt shown during onboarding and in customize community
@@ -2983,6 +2998,9 @@ const (
 
 	ErrCodeCannotUpdateAFinishedEvent             = 180000
 	ErrCodeFailedToCreateStageNeededForStageEvent = 180002
+
+	ErrCodeCannotEnableOnboardingRequirementsAreNotMet  = 350000
+	ErrCodeCannotUpdateOnboardingWhileBelowRequirements = 350001
 )
 
 // Intent is the type of a Gateway Intent
