@@ -3741,14 +3741,6 @@ func (s *Session) DeleteInteractionResponse(applicationID int64, token string, o
 func (s *Session) CreateFollowupMessage(applicationID int64, token string, data *WebhookParams, options ...RequestOption) (st *Message, err error) {
 	body, err := s.WebhookExecuteComplex(applicationID, token, true, data, options...)
 	return body, err
-
-	// body, err := s.RequestWithBucketID("POST", EndpointWebhookToken(applicationID, token), data, EndpointWebhookToken(0, ""))
-	// if err != nil {
-	// 	return
-	// }
-
-	// err = unmarshal(body, &st)
-	// return
 }
 
 func (s *Session) FollowupMessageCreate(interaction *Interaction, wait bool, data *WebhookParams, options ...RequestOption) (st *Message, err error) {

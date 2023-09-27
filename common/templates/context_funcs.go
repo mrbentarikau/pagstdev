@@ -67,10 +67,6 @@ func (c *Context) tmplSendDM(s ...interface{}) (string, error) {
 		return "", nil
 	}
 
-	gIcon := discordgo.EndpointGuildIcon(c.GS.ID, c.GS.Icon)
-
-	info := fmt.Sprintf("Custom Command DM from the server **%s**", c.GS.Name)
-	embedInfo := fmt.Sprintf("Custom Command DM from the server %s", c.GS.Name)
 	msgSend := &discordgo.MessageSend{
 		AllowedMentions: discordgo.AllowedMentions{
 			Parse: []discordgo.AllowedMentionType{discordgo.AllowedMentionTypeUsers},
@@ -79,35 +75,28 @@ func (c *Context) tmplSendDM(s ...interface{}) (string, error) {
 
 	switch t := s[0].(type) {
 	case *discordgo.MessageEmbed:
-		t.Footer = &discordgo.MessageEmbedFooter{
-			Text:    embedInfo,
-			IconURL: gIcon,
-		}
 		msgSend.Embeds = []*discordgo.MessageEmbed{t}
 	case []*discordgo.MessageEmbed:
-		for _, e := range t {
-			e.Footer = &discordgo.MessageEmbedFooter{
-				Text:    embedInfo,
-				IconURL: gIcon,
-			}
-		}
+		msgSend.Embeds = t
 	case *discordgo.MessageSend:
 		msgSend = t
-		if len(msgSend.Embeds) > 0 {
-			for _, e := range msgSend.Embeds {
-				e.Footer = &discordgo.MessageEmbedFooter{
-					Text:    embedInfo,
-					IconURL: gIcon,
-				}
-			}
-			break
+		if (len(msgSend.Embeds) == 0 && strings.TrimSpace(msgSend.Content) == "") && (msgSend.File == nil) {
+			return "", errors.New("message to send is empty")
 		}
-		if (strings.TrimSpace(msgSend.Content) == "") && (msgSend.File == nil) {
-			return "", nil
-		}
-		msgSend.Content = info + "\n" + msgSend.Content
 	default:
-		msgSend.Content = fmt.Sprintf("%s\n%s", info, fmt.Sprint(s...))
+		msgSend.Content = fmt.Sprint(s...)
+	}
+	msgSend.Components = []discordgo.MessageComponent{
+		discordgo.ActionsRow{
+			Components: []discordgo.MessageComponent{
+				discordgo.Button{
+					Label:    "Show Server Info",
+					Style:    discordgo.PrimaryButton,
+					Emoji:    discordgo.ComponentEmoji{Name: "📬"},
+					CustomID: fmt.Sprintf("DM_%d", c.GS.ID),
+				},
+			},
+		},
 	}
 
 	channel, err := common.BotSession.UserChannelCreate(c.MS.User.ID)
@@ -420,10 +409,6 @@ func (c *Context) tmplSendMessage(filterSpecialMentions bool, returnID bool) fun
 		}
 
 		isDM := cid != c.ChannelArgNoDM(channel)
-		gName := c.GS.Name
-		info := fmt.Sprintf("Custom Command DM from the server **%s**", gName)
-		embedInfo := fmt.Sprintf("Custom Command DM from the server %s", gName)
-		icon := discordgo.EndpointGuildIcon(c.GS.ID, c.GS.Icon)
 
 		var m *discordgo.Message
 		msgSend := &discordgo.MessageSend{
@@ -437,22 +422,8 @@ func (c *Context) tmplSendMessage(filterSpecialMentions bool, returnID bool) fun
 
 		switch typedMsg := msg.(type) {
 		case *discordgo.MessageEmbed:
-			if isDM {
-				typedMsg.Footer = &discordgo.MessageEmbedFooter{
-					Text:    embedInfo,
-					IconURL: icon,
-				}
-			}
 			msgSend.Embeds = []*discordgo.MessageEmbed{typedMsg}
 		case []*discordgo.MessageEmbed:
-			if isDM {
-				for _, e := range typedMsg {
-					e.Footer = &discordgo.MessageEmbedFooter{
-						Text:    embedInfo,
-						IconURL: icon,
-					}
-				}
-			}
 		case *discordgo.MessageSend:
 			msgSend = typedMsg
 			copyAllowedMentions := typedMsg.AllowedMentions
@@ -478,27 +449,24 @@ func (c *Context) tmplSendMessage(filterSpecialMentions bool, returnID bool) fun
 			}
 
 			if msgSend.Reference != nil && msgSend.Reference.ChannelID == 0 {
-				//cid = c.CurrentFrame.CS.ID
 				msgSend.Reference.ChannelID = cid
 			}
-
-			if isDM {
-				if len(typedMsg.Embeds) > 0 {
-					for _, e := range msgSend.Embeds {
-						e.Footer = &discordgo.MessageEmbedFooter{
-							Text:    embedInfo,
-							IconURL: icon,
-						}
-					}
-				} else {
-					typedMsg.Content = info + "\n" + typedMsg.Content
-				}
-			}
 		default:
-			if isDM {
-				msgSend.Content = info + "\n" + ToString(msg)
-			} else {
-				msgSend.Content = ToString(msg)
+			msgSend.Content = ToString(msg)
+		}
+
+		if isDM {
+			msgSend.Components = []discordgo.MessageComponent{
+				discordgo.ActionsRow{
+					Components: []discordgo.MessageComponent{
+						discordgo.Button{
+							Label:    "Show Server Info",
+							Style:    discordgo.PrimaryButton,
+							Emoji:    discordgo.ComponentEmoji{Name: "📬"},
+							CustomID: fmt.Sprintf("DM_%d", c.GS.ID),
+						},
+					},
+				},
 			}
 		}
 

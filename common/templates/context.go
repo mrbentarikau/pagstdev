@@ -517,29 +517,32 @@ func (c *Context) SendResponse(content string) (*discordgo.Message, error) {
 	isDM := c.CurrentFrame.SendResponseInDM || (c.CurrentFrame.CS != nil && c.CurrentFrame.CS.IsPrivate())
 
 	var embeds []*discordgo.MessageEmbed
-	for _, v := range c.CurrentFrame.EmbedsToSend {
-		if isDM {
-			v.Footer = &discordgo.MessageEmbedFooter{
-				Text:    "Custom Command DM from the server " + c.GS.Name,
-				IconURL: c.GS.Icon,
-			}
-		}
-		embeds = append(embeds, v)
+	embeds = append(embeds, c.CurrentFrame.EmbedsToSend...)
+	msgSend := c.MessageSend("")
+	msgSend.Embeds = embeds
+	msgSend.Content = content
 
-	}
-	common.BotSession.ChannelMessageSendEmbedList(channelID, embeds)
-
-	if strings.TrimSpace(content) == "" || (c.CurrentFrame.DelResponse && c.CurrentFrame.DelResponseDelay < 1) {
+	if (len(msgSend.Embeds) == 0 && strings.TrimSpace(content) == "") || (c.CurrentFrame.DelResponse && c.CurrentFrame.DelResponseDelay < 1) {
 		// no point in sending the response if it gets deleted immediately
 		return nil, nil
 	}
 
 	if isDM {
-		content = "Custom Command DM from the server **" + c.GS.Name + "**\n" + content
+		msgSend.Components = []discordgo.MessageComponent{
+			discordgo.ActionsRow{
+				Components: []discordgo.MessageComponent{
+					discordgo.Button{
+						Label:    "Show Server Info",
+						Style:    discordgo.PrimaryButton,
+						Emoji:    discordgo.ComponentEmoji{Name: "📬"},
+						CustomID: fmt.Sprintf("DM_%d", c.GS.ID),
+					},
+				},
+			},
+		}
 	}
 
-	m, err := common.BotSession.ChannelMessageSendComplex(channelID, c.MessageSend(content))
-
+	m, err := common.BotSession.ChannelMessageSendComplex(channelID, msgSend)
 	if err != nil {
 		/* KRAAKA that error printout!!! */
 		logger.WithField("guild", c.GS.ID).WithError(err).Error("Error sending message: " + c.Name)
