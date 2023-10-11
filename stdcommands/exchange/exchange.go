@@ -35,7 +35,7 @@ var Command = &commands.YAGCommand{
 	ApplicationCommandEnabled: true,
 	RequiredArgs:              3,
 	Arguments: []*dcmd.ArgDef{
-		{Name: "Amount", Type: &dcmd.FloatArg{Min: 1, Max: 1000000000000000}},
+		{Name: "Amount", Type: &dcmd.FloatArg{Min: 1, Max: 1000000000000000, PreventInfNaN: true}},
 		{Name: "From", Type: dcmd.String}, {Name: "To", Type: dcmd.String},
 	},
 
