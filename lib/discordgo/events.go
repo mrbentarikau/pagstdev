@@ -602,3 +602,11 @@ type StageInstanceDelete struct {
 // stage instance was updated
 type StageInstanceUpdate struct {
 }
+
+// Soundboard sound was created
+type GuildSoundboardSoundCreate struct {
+}
+
+// Soundboard sound was deleted
+type GuildSoundboardSoundDelete struct {
+}
