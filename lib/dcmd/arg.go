@@ -628,7 +628,7 @@ func (f *FloatArg) ParseFromInteraction(def *ArgDef, data *Data, options *SlashC
 	}
 
 	parsedF, err := strconv.ParseFloat(v, 64)
-	if err != nil {
+	if err != nil || (f.PreventInfNaN && (math.IsNaN(parsedF) || math.IsInf(parsedF, 0))) {
 		return nil, err
 	}
 
