@@ -24,7 +24,7 @@ var Command = &commands.YAGCommand{
 					Results are given in metric system, link below would use user's local unit-system.
 
 					Needs user created AppID for WolframAlpha.
-					To setup a WolframAlpha appID, you must register a Wolfram ID and sign in to the Wolfram|Alpha Developer Portal > https://developer.wolframalpha.com/portal/
+					To setup a WolframAlpha appID, you must register a Wolfram ID and sign in to the Wolfram|Alpha Developer Portal > https://developer.wolframalpha.com/
 					Upon logging in, go to the *My Apps* tab to start creating your first app. 
 					
 					This free access gives for up to **2 000** non-commercial API calls per month.`,
