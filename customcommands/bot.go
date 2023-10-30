@@ -127,8 +127,7 @@ type DelayedRunCCData struct {
 
 	UserKey interface{} `json:"user_key"`
 
-	IsExecedByJoinMessage  bool `json:"is_execed_by_join_message"`
-	IsExecedByLeaveMessage bool `json:"is_execed_by_leave_message"`
+	ExecutedFrom templates.ExecutedFromType `json:"executed_from"`
 }
 
 var cmdEvalCommand = &commands.YAGCommand{
@@ -169,7 +168,7 @@ var cmdEvalCommand = &commands.YAGCommand{
 		}
 
 		tmplCtx := templates.NewContext(guildData.GS, channel, guildData.MS)
-		tmplCtx.IsExecedByEvalCC = true
+		tmplCtx.ExecutedFrom = templates.ExecutedFromEvalCC
 
 		// preapre message specific data
 		m := data.TraditionalTriggerData.Message
@@ -609,8 +608,7 @@ func handleDelayedRunCC(evt *schEventsModels.ScheduledEvent, data interface{}) (
 	}
 
 	tmplCtx.ExecCallChain = dataCast.CallChain
-	tmplCtx.IsExecedByJoinMessage = dataCast.IsExecedByJoinMessage
-	tmplCtx.IsExecedByLeaveMessage = dataCast.IsExecedByLeaveMessage
+	tmplCtx.ExecutedFrom = dataCast.ExecutedFrom
 
 	// decode userdata
 	if len(dataCast.UserData) > 0 {
