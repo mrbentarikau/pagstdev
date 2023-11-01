@@ -1063,9 +1063,9 @@ type GuildOnboardingMode int
 // Block containing known GuildOnboardingMode values
 const (
 	// GuildOnboardingModeDefault counts default channels towards constraints
-	GuildOnboardingModeDefault = 0
+	GuildOnboardingModeDefault GuildOnboardingMode = 0
 	// GuildOnboardingModeAdvanced counts default channels and questions towards constraints
-	GuildOnboardingModeAdvanced = 1
+	GuildOnboardingModeAdvanced GuildOnboardingMode = 1
 )
 
 // GuildOnboarding represents the onboarding flow for a guild
@@ -1075,7 +1075,7 @@ type GuildOnboarding struct {
 	GuildID int64 `json:"guild_id,string,omitempty"`
 
 	// Prompts shown during onboarding and in customize community
-	Prompts []GuildOnboardingPrompt `json:"prompts,omitempty"`
+	Prompts *[]GuildOnboardingPrompt `json:"prompts,omitempty"`
 
 	// Channel IDs that members get opted into automatically
 	DefaultChannelIDs []int64 `json:"default_channel_ids,omitempty"`
@@ -1091,7 +1091,9 @@ type GuildOnboarding struct {
 // https://discord.com/developers/docs/resources/guild#guild-onboarding-object-onboarding-prompt-structure
 type GuildOnboardingPrompt struct {
 	// ID of the prompt
-	ID int64 `json:"id,string"`
+	// NOTE: always requires to be a valid snowflake (e.g. "0"), see
+	// https://github.com/discord/discord-api-docs/issues/6320 for more information.
+	ID int64 `json:"id,string,omitempty"`
 
 	// Type of prompt
 	Type GuildOnboardingPromptType `json:"type"`
@@ -1126,7 +1128,7 @@ const (
 // https://discord.com/developers/docs/resources/guild#guild-onboarding-object-prompt-option-structure
 type GuildOnboardingPromptOption struct {
 	// ID of the prompt option
-	ID int64 `json:"id,string"`
+	ID int64 `json:"id,string,omitempty"`
 
 	// IDs for channels a member is added to when the option is selected
 	ChannelIDs []int64 `json:"channel_ids"`
@@ -2321,6 +2323,8 @@ type Activity struct {
 	Secrets       Secrets      `json:"secrets,omitempty"`
 	Instance      bool         `json:"instance,omitempty"`
 	Flags         int          `json:"flags,omitempty"`
+	//SyncID is undocumented
+	//SyncID        string       `json:"sync_id,omitempty"`
 	// Buttons       []*ActivityButton `json:"buttons,omitempty"`
 }
 
@@ -2360,6 +2364,8 @@ func (a *Activity) UnmarshalJSONObject(dec *gojay.Decoder, key string) error {
 	case "flags":
 		return dec.Int(&a.Flags)
 	case "buttons":
+		//case "sync_id":
+		//	return dec.String(&a.SyncID)
 	}
 
 	return nil
@@ -2386,6 +2392,7 @@ func (activity *Activity) UnmarshalJSON(b []byte) error {
 		Secrets    Secrets    `json:"secrets,omitempty"`
 		Instance   bool       `json:"instance,omitempty"`
 		Flags      int        `json:"flags,omitempty"`
+		//SyncID     string     `json:"sync_id,omitempty"`
 		// Buttons       []*ActivityButton `json:"buttons,omitempty"`
 	}{}
 	err := Unmarshal(b, &temp)
@@ -2406,6 +2413,7 @@ func (activity *Activity) UnmarshalJSON(b []byte) error {
 	activity.Timestamps = temp.Timestamps
 	activity.Type = temp.Type
 	activity.URL = temp.URL
+	//activity.SyncID = temp.SyncID
 	// activity.Buttons = temp.Buttons
 	return nil
 }
