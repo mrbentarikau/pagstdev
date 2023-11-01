@@ -154,7 +154,6 @@ func (p *Plugin) AddCommands() {
 		listflags.Command,
 		memstats.Command,
 		pagstatus.Command,
-		// paginationtest.Command,
 		setstatus.Command,
 		sleep.Command,
 		stateinfo.Command,

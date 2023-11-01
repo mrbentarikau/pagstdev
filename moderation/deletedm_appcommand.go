@@ -11,7 +11,7 @@ func (p *Plugin) createDeleteBotDMInteraction() *commands.YAGCommand {
 	return &commands.YAGCommand{
 		CmdCategory:          commands.CategoryGeneral,
 		Name:                 "Delete Bot DMs",
-		Cooldown:             3,
+		Cooldown:             15,
 		CmdNoRun:             true,
 		RunInDM:              true,
 		HideFromHelp:         true,
