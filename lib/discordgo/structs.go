@@ -2237,74 +2237,6 @@ func (a *Activities) UnmarshalJSONArray(dec *gojay.Decoder) error {
 	return nil
 }
 
-// GameType is the type of "game" (see GameType* consts) in the Game struct
-type GameType int
-
-// Valid GameType values
-const (
-	GameTypeGame GameType = iota
-	GameTypeStreaming
-	GameTypeListening
-	GameTypeWatching
-	GameTypeCustom
-	GameTypeCompeting
-)
-
-// A Game struct holds the name of the "playing .." game for a user
-type Game struct {
-	Name          string     `json:"name"`
-	Type          GameType   `json:"type"`
-	URL           string     `json:"url,omitempty"`
-	Details       string     `json:"details,omitempty"`
-	State         string     `json:"state,omitempty"`
-	TimeStamps    TimeStamps `json:"timestamps,omitempty"`
-	Assets        Assets     `json:"assets,omitempty"`
-	ApplicationID string     `json:"application_id,omitempty"`
-	Instance      int8       `json:"instance,omitempty"`
-	// TODO: Party and Secrets (unknown structure)
-}
-
-// implement gojay.UnmarshalerJSONObject
-func (g *Game) UnmarshalJSONObject(dec *gojay.Decoder, key string) error {
-	switch key {
-	case "name":
-		return dec.String(&g.Name)
-	case "type":
-		return dec.Int((*int)(&g.Type))
-	case "url":
-		return dec.String(&g.URL)
-	case "details":
-		return dec.String(&g.Details)
-	case "state":
-		return dec.String(&g.State)
-	case "timestamps":
-		return dec.Object(&g.TimeStamps)
-	case "assets":
-	case "application_id":
-		var i interface{}
-		err := dec.Interface(&i)
-		if err != nil {
-			return err
-		}
-		switch t := i.(type) {
-		case int64:
-			g.ApplicationID = strconv.FormatInt(t, 10)
-		case int32:
-			g.ApplicationID = strconv.FormatInt(int64(t), 10)
-		case string:
-			g.ApplicationID = t
-		}
-	case "instance":
-		return dec.Int8(&g.Instance)
-	}
-
-	return nil
-}
-
-func (g *Game) NKeys() int {
-	return 0
-}
-
 // Activity defines the Activity sent with GatewayStatusUpdate
 // https://discord.com/developers/docs/topics/gateway#activity-object
 // KRAAKA! appID
@@ -2459,6 +2391,17 @@ type ActivityType int
 
 // Valid ActivityType values
 const (
+	ActivityTypePlaying ActivityType = iota
+	ActivityTypeStreaming
+	ActivityTypeListening
+	ActivityTypeWatching
+	ActivityTypeCustom
+	ActivityTypeCompeting
+)
+
+/*
+// Valid ActivityType values
+const (
 	ActivityTypeGame      ActivityType = 0
 	ActivityTypeStreaming ActivityType = 1
 	ActivityTypeListening ActivityType = 2
@@ -2466,6 +2409,7 @@ const (
 	ActivityTypeCustom    ActivityType = 4
 	ActivityTypeCompeting ActivityType = 5
 )
+*/
 
 // Identify is sent during initial handshake with the discord gateway.
 // https://discord.com/developers/docs/topics/gateway#identify
