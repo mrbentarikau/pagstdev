@@ -110,6 +110,7 @@ var (
 
 		// misc
 		"adjective":          common.RandomAdjective,
+		"adjectiveNoAPI":     common.RandomAdjectiveNoAPI,
 		"cembed":             CreateEmbed,
 		"complexMessage":     CreateMessageSend,
 		"complexMessageEdit": CreateMessageEdit,
