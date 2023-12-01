@@ -53,6 +53,7 @@
     
     // misc
     "adjective":true,
+    "adjectiveNoAPI":true,
     "cembed":true,
     "complexMessage":true,
     "complexMessageEdit":true,
