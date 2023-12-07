@@ -21,6 +21,8 @@ cmd/yagpdb/static/video/*
 cmd/capturepanics/capturepanics
 cmd/shardorchestrator/shardorchestrator
 
+stdcommands/exchange/currency_codes.go
+
 # We don't want filthy pre-configured config files here ! >:O
 # The graw agent file
 *.agent

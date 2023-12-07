@@ -21,6 +21,7 @@ import (
 	"github.com/forPelevin/gomoji"
 	"github.com/lib/pq"
 	"github.com/mediocregopher/radix/v3"
+	"github.com/microcosm-cc/bluemonday"
 	"github.com/rivo/uniseg"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/image/colornames"
@@ -41,6 +42,7 @@ var LinkRegexBotlabs = regexp.MustCompile(`(?i)([a-z\d]+:\/\/)([\w_-]+(?:(?:\.[\
 var LinkRegex = regexp.MustCompile(`(?i)([a-z\d]+://)((\w+:\w+@)?([a-z\d.-]+\.[a-z]{2,64})(:\d+)?(/.*)?)`)
 var DomainFinderRegex = regexp.MustCompile(`(?i)(?:[a-z\d](?:[a-z\d-]{0,61}[a-z\d])?\.)+[a-z\d][a-z\d-]{0,61}[a-z\d]`)
 var ThanksRegex = regexp.MustCompile(`(?i)(?:\A|.+)(?:\+(?:\s+|rep)?|t(?:y(?:sm|vm)?|h(?:a?nks?|n?x)(?:\s+(?:yo)?u)?(?:\s+(?:so|very)\s+much|\s+?a?\s*lot)?)|danke?s?)+.*<@!?\d{17,19}>(?:.+|\z)`)
+var UGCHtmlPolicy = bluemonday.NewPolicy().AllowElements("h1", "h2", "h3", "h4", "h5", "h6", "p", "ol", "ul", "li", "dl", "dd", "dt", "blockquote", "table", "thead", "th", "tr", "td", "tbody", "del", "i", "b")
 
 type GuildWithConnected struct {
 	*discordgo.UserGuild
