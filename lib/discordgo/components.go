@@ -187,7 +187,7 @@ const (
 // SelectMenuDefaultValue represents an entity selected by default in auto-populated select menus.
 type SelectMenuDefaultValue struct {
 	// ID of the entity.
-	ID string `json:"id"`
+	ID int64 `json:"id,string"`
 	// Type of the entity.
 	Type SelectMenuDefaultValueType `json:"type"`
 }
@@ -219,11 +219,11 @@ type SelectMenu struct {
 	MaxValues int `json:"max_values,omitempty"`
 	// List of default values for auto-populated select menu.
 	// NOTE: Number of entries should be in the range defined by MinValues and MaxValues.
-	DefaultValues *[]SelectMenuDefaultValue `json:"default_values,omitempty"`
-	Options       []SelectMenuOption        `json:"options,omitempty"`
-	Disabled      bool                      `json:"disabled"`
-	// Returned selected menu options values.
-	// Values []string `json:"values,omitempty"`
+	DefaultValues []SelectMenuDefaultValue `json:"default_values,omitempty"`
+
+	Options  []SelectMenuOption `json:"options,omitempty"`
+	Disabled bool               `json:"disabled"`
+
 	// NOTE: Can only be used in SelectMenu with Channel menu type.
 	ChannelTypes []ChannelType `json:"channel_types,omitempty"`
 }
