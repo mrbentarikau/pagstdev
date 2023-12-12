@@ -91,9 +91,10 @@
     </header>
     <div class="card-body">
         <div class="table-responsive">
-            <table class="table table-hover table-striped table-responsive-md" id="db-table">
+            <table class="table table-bordered table-striped table-responsive-md" id="db-table">
                 <thead>
                     <tr>
+                        <th>#</th>
                         <th>ID</th>
                         <th>Created At (UTC)</th>
                         <th>Updated At (UTC)</th>
@@ -105,8 +106,9 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {{range .DBEntries}}
+                    {{range $k, $v := .DBEntries}}
                     <tr>
+                        <td>{{add $k 1}}</td>
                         <td>{{.ID}}</td>
                         <td>{{.CreatedAt.UTC.Format "2006-01-02 15:04:05"}}</td>
                         <td>{{.UpdatedAt.UTC.Format "2006-01-02 15:04:05"}}</td>
