@@ -2,7 +2,6 @@
 {{template "cp_head" .}}
 
 <style>
-    .db-footer,
     .db-header,
     .db-navigation {
         display: flex;
@@ -19,6 +18,7 @@
     <h2>Custom Commands Database</h2>
 </header>
 {{template "cp_alerts" .}}
+{{$entryLimiter := 100}}
 
 <div class="row">
     <div class="col-lg-6">
@@ -62,9 +62,9 @@
                 <p>
                     To search select a filter type and enter a value to search for. The search will return all entries
                     that match the filter type and value.
+                    <br/>
                 </p>
-                <p>
-                    <strong>Filter Types:</strong>
+                <strong>Filter Types:</strong>
                 <ul>
                     <li>ID: The unique ID of the entry.</li>
                     <li>User ID: The ID of the user associated with the entry.</li>
@@ -72,22 +72,23 @@
                         Key: The key of the entry. This supports PostgreSQL patterns (<code>%</code> and<code>_</code>).
                     </li>
                 </ul>
-                </p>
+                <span>Maximum number of entries shown per page is {{$entryLimiter}}.</span>
             </div>
         </section>
     </div>
 </div>
 <section class="card">
-    <header class="card-header db-header">
-        <div>
-            <h2 class="card-title">Database Entries</h2>
-        </div>
-        <div class="db-navigation">
-            {{if not .FirstPage}}
-            <a href="?after={{.Newest}}" class="nav-link btn btn-sm btn-primary mr-1">Newer</a>
-            {{end}}
-            <a href="?before={{.Oldest}}" class="nav-link btn btn-sm btn-primary">Older</a>
-        </div>
+    <header class="card-header clearfix">
+        <h2 class="card-title">Database Entries
+            <div class="pull-right db-navigation">
+                {{if not .FirstPage}}
+                <a href="?after={{.Newest}}" class="nav-link btn btn-sm btn-primary mr-1">Newer</a>
+                {{end}}
+                {{if ge (len .DBEntries) $entryLimiter}}
+                <a href="?before={{.Oldest}}" class="nav-link btn btn-sm btn-primary">Older</a>
+                {{end}}
+            </div>
+        </h2>
     </header>
     <div class="card-body">
         <div class="table-responsive">
@@ -133,12 +134,14 @@
             </table>
         </div>
     </div>
-    <div class="card-footer db-footer">
-        <div class="db-navigation">
+    <div class="card-footer clearfix">
+        <div class="pull-right db-navigation">
             {{if not .FirstPage}}
             <a href="?after={{.Newest}}" class="nav-link btn btn-sm btn-primary mr-1">Newer</a>
             {{end}}
+            {{if ge (len .DBEntries) $entryLimiter}}
             <a href="?before={{.Oldest}}" class="nav-link btn btn-sm btn-primary">Older</a>
+            {{end}}
         </div>
     </div>
 </section>
