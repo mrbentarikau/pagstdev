@@ -270,6 +270,10 @@ func handleCommands(w http.ResponseWriter, r *http.Request) (web.TemplateData, e
 		return templateData, err
 	}
 
+	var isWrite bool
+	_, isWrite, _ = web.IsAdminRequest(r.Context(), r)
+	templateData["WriteAccess"] = isWrite
+
 	updateTemplateWithCountData(int(count), templateData, ctx)
 
 	return serveGroupSelected(r, templateData, groupID, activeGuild.ID)
@@ -312,6 +316,10 @@ func handleGetCommandsGroup(w http.ResponseWriter, r *http.Request) (web.Templat
 	if err != nil {
 		return templateData, err
 	}
+
+	var isWrite bool
+	_, isWrite, _ = web.IsAdminRequest(r.Context(), r)
+	templateData["WriteAccess"] = isWrite
 
 	updateTemplateWithCountData(int(count), templateData, ctx)
 
