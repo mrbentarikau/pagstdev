@@ -72,6 +72,8 @@ var (
 	panelLogKeyNewGroup     = cplogs.RegisterActionFormat(&cplogs.ActionFormat{Key: "customcommands_new_group", FormatString: "Created a new custom command group: %s"})
 	panelLogKeyUpdatedGroup = cplogs.RegisterActionFormat(&cplogs.ActionFormat{Key: "customcommands_updated_group", FormatString: "Updated custom command group: %s"})
 	panelLogKeyRemovedGroup = cplogs.RegisterActionFormat(&cplogs.ActionFormat{Key: "customcommands_removed_group", FormatString: "Removed custom command group: %d"})
+
+	panelLogKeyDeleteCCDBEntry = cplogs.RegisterActionFormat(&cplogs.ActionFormat{Key: "customcommands_db_entry_delete", FormatString: "Deleted CC DBEntry: %d"})
 )
 
 // InitWeb implements web.Plugin
@@ -176,6 +178,10 @@ func handleGetDatabase(w http.ResponseWriter, r *http.Request) (web.TemplateData
 
 	entries := convertEntries(result)
 
+	var isWrite bool
+	_, isWrite, _ = web.IsAdminRequest(r.Context(), r)
+	templateData["WriteAccess"] = isWrite
+
 	templateData["DBEntries"] = entries
 	if len(entries) > 0 {
 		templateData["Oldest"] = entries[len(entries)-1].ID
@@ -237,6 +243,8 @@ func handleDeleteDatabaseEntry(w http.ResponseWriter, r *http.Request) (web.Temp
 	if err != nil {
 		return templateData, err
 	}
+
+	go cplogs.RetryAddEntry(web.NewLogEntryFromContext(r.Context(), panelLogKeyDeleteCCDBEntry, &cplogs.Param{Type: cplogs.ParamTypeInt, Value: id}))
 
 	return templateData.AddAlerts(), nil
 }

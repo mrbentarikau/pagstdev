@@ -118,7 +118,7 @@
                         <td>{{.Key}}</td>
                         <td>{{.Value}}</td>
                         <td>{{if ge .ValueSize 1000}}{{fdiv .ValueSize 1000|printf "%.2f kB"}}{{else}}{{humanizeThousands .ValueSize}}{{end}}</td>
-                        {{ if $.IsAdmin }}
+                        {{ if $.WriteAccess }}
                         <td>
                             <form method="post" data-async-form>
                                 <input class="hidden" type="text" name="id" value="{{.ID}}" />
