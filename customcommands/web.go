@@ -178,10 +178,6 @@ func handleGetDatabase(w http.ResponseWriter, r *http.Request) (web.TemplateData
 
 	entries := convertEntries(result)
 
-	var isWrite bool
-	_, isWrite, _ = web.IsAdminRequest(r.Context(), r)
-	templateData["WriteAccess"] = isWrite
-
 	templateData["DBEntries"] = entries
 	if len(entries) > 0 {
 		templateData["Oldest"] = entries[len(entries)-1].ID
@@ -270,10 +266,6 @@ func handleCommands(w http.ResponseWriter, r *http.Request) (web.TemplateData, e
 		return templateData, err
 	}
 
-	var isWrite bool
-	_, isWrite, _ = web.IsAdminRequest(r.Context(), r)
-	templateData["WriteAccess"] = isWrite
-
 	updateTemplateWithCountData(int(count), templateData, ctx)
 
 	return serveGroupSelected(r, templateData, groupID, activeGuild.ID)
@@ -316,10 +308,6 @@ func handleGetCommandsGroup(w http.ResponseWriter, r *http.Request) (web.Templat
 	if err != nil {
 		return templateData, err
 	}
-
-	var isWrite bool
-	_, isWrite, _ = web.IsAdminRequest(r.Context(), r)
-	templateData["WriteAccess"] = isWrite
 
 	updateTemplateWithCountData(int(count), templateData, ctx)
 
