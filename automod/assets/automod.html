@@ -576,7 +576,7 @@ $(function(){
                 input.attr("required", true)
             }
 
-            if(opt.Default){
+            if(opt.Default || opt.Default===0){
                 input.attr("value", opt.Default)
             }
 

@@ -17,12 +17,9 @@ import (
 	"github.com/botlabs-gg/yagpdb/lib/discordgo"
 	"github.com/botlabs-gg/yagpdb/lib/dstate"
 	"github.com/botlabs-gg/yagpdb/safebrowsing"
-	"golang.org/x/text/runes"
-	"golang.org/x/text/transform"
-	"golang.org/x/text/unicode/norm"
 )
 
-var tChain = transform.Chain(norm.NFD, runes.Remove(runes.In(unicode.Mn)), norm.NFC)
+// var tChain = transform.Chain(norm.NFD, runes.Remove(runes.In(unicode.Mn)), norm.NFC)
 var forwardSlashReplacer = strings.NewReplacer("\\", "")
 
 /////////////////////////////////////////////////////////////
@@ -585,20 +582,22 @@ func (a *AntiPhishingLinkTrigger) CheckMessage(triggerCtx *TriggerContext, cs *d
 		return true, nil
 	}
 
-	matches := common.LinkRegexJonas.FindAllString(forwardSlashReplacer.Replace(m.Content), -1)
+	/*
+		matches := common.LinkRegexJonas.FindAllString(forwardSlashReplacer.Replace(m.Content), -1)
 
-	for _, v := range matches {
-		trasparencyReport, err := common.TransparencyReportQuery(v)
-		if err != nil {
-			logger.WithError(err).Error("Failed checking URLs from Google's Transparency Report API.")
-			return false, nil
+		for _, v := range matches {
+			trasparencyReport, err := common.TransparencyReportQuery(v)
+			if err != nil {
+				logger.WithError(err).Error("Failed checking URLs from Google's Transparency Report API.")
+				return false, nil
+			}
+
+			if trasparencyReport.UnsafeContent == 2 { // || trasparencyReport.ScoreTotal >= 2
+				return true, nil
+			}
+
 		}
-
-		if trasparencyReport.UnsafeContent == 2 { // || trasparencyReport.ScoreTotal >= 2
-			return true, nil
-		}
-
-	}
+	*/
 
 	return false, nil
 }
