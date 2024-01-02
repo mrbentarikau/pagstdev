@@ -43,7 +43,6 @@ require (
 	github.com/miolini/datacounter v0.0.0-20190724021726-aa48df3a02c1
 	github.com/mitchellh/cli v1.1.2
 	github.com/mmcdole/gofeed v1.1.3
-	// github.com/n0madic/twitter-scraper v0.0.0-20230423143228-6d13e319a39d
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/oragono/confusables v0.0.0-20201108231250-4ab98ab61fb1
 	github.com/patrickmn/go-cache v2.1.0+incompatible
@@ -72,7 +71,7 @@ require (
 )
 
 require (
-	github.com/n0madic/twitter-scraper v0.0.0-20230711213008-94503a2bc36c
+	github.com/n0madic/twitter-scraper v0.0.0-20231104223941-296710769dd8
 	golang.org/x/crypto v0.17.0
 	golang.org/x/image v0.10.0
 	golang.org/x/net v0.17.0

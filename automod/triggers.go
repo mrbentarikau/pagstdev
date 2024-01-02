@@ -830,14 +830,8 @@ func (s *SlowmodeTrigger) CheckMessage(triggerCtx *TriggerContext, cs *dstate.Ch
 			}
 		}
 
-		/*if s.Links && !common.LinkRegex.MatchString(forwardSlashReplacer.Replace(v.Content)) {
-			continue // were only checking messages with links
-		}*/
-
 		if s.Links {
-			//&& !common.LinkRegex.MatchString(forwardSlashReplacer.Replace(v.Content)) {
 			linksLen := len(common.LinkRegexJonas.FindAllString(forwardSlashReplacer.Replace(v.Content), -1))
-			//continue // were only checking messages with links
 			if linksLen < 1 {
 				continue // we're only checking messages with links
 			}
