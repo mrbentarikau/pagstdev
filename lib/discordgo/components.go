@@ -132,10 +132,10 @@ type ComponentEmoji struct {
 
 // Button represents button component.
 type Button struct {
-	Label    string         `json:"label"`
-	Style    ButtonStyle    `json:"style"`
-	Disabled bool           `json:"disabled"`
-	Emoji    ComponentEmoji `json:"emoji"`
+	Label    string          `json:"label"`
+	Style    ButtonStyle     `json:"style"`
+	Disabled bool            `json:"disabled"`
+	Emoji    *ComponentEmoji `json:"emoji,omitempty"`
 
 	// NOTE: Only button with LinkButton style can have link. Also, URL is mutually exclusive with CustomID.
 	URL      string `json:"url,omitempty"`
@@ -166,10 +166,10 @@ func (Button) Type() ComponentType {
 
 // SelectMenuOption represents an option for a select menu.
 type SelectMenuOption struct {
-	Label       string         `json:"label,omitempty"`
-	Value       string         `json:"value"`
-	Description string         `json:"description"`
-	Emoji       ComponentEmoji `json:"emoji"`
+	Label       string          `json:"label,omitempty"`
+	Value       string          `json:"value"`
+	Description string          `json:"description"`
+	Emoji       *ComponentEmoji `json:"emoji"`
 	// Determines whenever option is selected by default or not.
 	Default bool `json:"default"`
 }
@@ -221,8 +221,8 @@ type SelectMenu struct {
 	// NOTE: Number of entries should be in the range defined by MinValues and MaxValues.
 	DefaultValues []SelectMenuDefaultValue `json:"default_values,omitempty"`
 
-	Options  []SelectMenuOption `json:"options,omitempty"`
-	Disabled bool               `json:"disabled"`
+	Options  []*SelectMenuOption `json:"options,omitempty"`
+	Disabled bool                `json:"disabled"`
 
 	// NOTE: Can only be used in SelectMenu with Channel menu type.
 	ChannelTypes []ChannelType `json:"channel_types,omitempty"`
