@@ -1594,6 +1594,20 @@ type Member struct {
 	TimeoutExpiresAt *time.Time `json:"communication_disabled_until,omitempty"`
 }
 
+// String returns a unique identifier of the form username#discriminator
+// or username only if the discriminator is "0"
+func (m *Member) String() string {
+	// If the user has been migrated from the legacy username system, their discriminator is "0".
+	// See https://support-dev.discord.com/hc/en-us/articles/13667755828631
+	if m.User.Discriminator == "0" {
+		return m.User.Username
+	}
+
+	// The code below handles applications and users without a migrated username.
+	// https://support-dev.discord.com/hc/en-us/articles/13667755828631
+	return m.User.Username + "#" + m.User.Discriminator
+}
+
 func (m *Member) GetGuildID() int64 {
 	return m.GuildID
 }

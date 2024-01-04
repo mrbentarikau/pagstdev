@@ -169,7 +169,7 @@ type SelectMenuOption struct {
 	Label       string          `json:"label,omitempty"`
 	Value       string          `json:"value"`
 	Description string          `json:"description"`
-	Emoji       *ComponentEmoji `json:"emoji"`
+	Emoji       *ComponentEmoji `json:"emoji,omitempty"`
 	// Determines whenever option is selected by default or not.
 	Default bool `json:"default"`
 }
