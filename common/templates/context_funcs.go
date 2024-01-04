@@ -1000,14 +1000,17 @@ func (c *Context) tmplGetMessageReactions(channel, msgID, emoji interface{}) (in
 	}
 }
 
-func (c *Context) tmplGetMember(target interface{}) (*discordgo.Member, error) {
+func (c *Context) tmplGetMember(target ...interface{}) (*discordgo.Member, error) {
 	if c.IncreaseCheckGenericAPICall() {
 		return nil, ErrTooManyAPICalls
 	}
 
-	mID := TargetUserID(target)
-	if mID == 0 {
-		return nil, nil
+	var mID int64 = c.MS.User.ID
+	if len(target) > 0 {
+		mID = TargetUserID(target[0])
+		if mID == 0 {
+			return nil, nil
+		}
 	}
 
 	member, _ := bot.GetMember(c.GS.ID, mID)
@@ -2466,7 +2469,7 @@ func (c *Context) tmplGetAuditLog(args ...interface{}) ([]*discordgo.AuditLogEnt
 	return response.AuditLogEntries, nil
 }
 
-func (c *Context) tmplGetUser(target interface{}) (*discordgo.User, error) {
+func (c *Context) tmplGetUser(target ...interface{}) (*discordgo.User, error) {
 	if c.IncreaseCheckGenericAPICall() {
 		return nil, ErrTooManyAPICalls
 	}
@@ -2475,9 +2478,12 @@ func (c *Context) tmplGetUser(target interface{}) (*discordgo.User, error) {
 		return nil, ErrTooManyCalls
 	}
 
-	uID := TargetUserID(target)
-	if uID == 0 {
-		return nil, nil
+	var uID int64 = c.MS.User.ID
+	if len(target) > 0 {
+		uID = TargetUserID(target[0])
+		if uID == 0 {
+			return nil, nil
+		}
 	}
 
 	user, err := common.BotSession.User(uID)
