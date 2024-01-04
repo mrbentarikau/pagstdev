@@ -61,6 +61,10 @@ var Command = &commands.YAGCommand{
 			return cf, nil
 		}
 
+		if data.Switches["raw"].Value != nil && data.Switches["raw"].Value.(bool) {
+			return cf, nil
+		}
+
 		//return cf, nil
 		/*
 			if data.Switches["raw"].Value != nil && data.Switches["raw"].Value.(bool) {
