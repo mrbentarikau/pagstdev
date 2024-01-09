@@ -1,0 +1,27 @@
+package trivia
+
+import (
+	"github.com/botlabs-gg/yagpdb/commands"
+	"github.com/botlabs-gg/yagpdb/lib/dcmd"
+)
+
+func (p *Plugin) AddCommands() {
+	commands.AddRootCommands(p, &commands.YAGCommand{
+		CmdCategory:               commands.CategoryFun,
+		Cooldown:                  10,
+		Name:                      "Trivia",
+		Description:               "Asks a random question, you have got 30 seconds to answer!",
+		RunInDM:                   false,
+		ApplicationCommandEnabled: true,
+		RunFunc: func(parsed *dcmd.Data) (interface{}, error) {
+			err := manager.NewTrivia(parsed.GuildData.GS.ID, parsed.ChannelID)
+			if err != nil {
+				if err == ErrSessionInChannel {
+					return "There's already a trivia session in this channel", nil
+				}
+				return nil, err
+			}
+			return "Failed Running Trivia, unknown error", nil
+		},
+	})
+}

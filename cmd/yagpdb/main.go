@@ -41,6 +41,7 @@ import (
 	"github.com/botlabs-gg/yagpdb/streaming"
 	"github.com/botlabs-gg/yagpdb/tickets"
 	"github.com/botlabs-gg/yagpdb/timezonecompanion"
+	"github.com/botlabs-gg/yagpdb/trivia"
 	"github.com/botlabs-gg/yagpdb/twitter"
 	"github.com/botlabs-gg/yagpdb/verification"
 	"github.com/botlabs-gg/yagpdb/youtube"
@@ -88,6 +89,7 @@ func main() {
 	streaming.RegisterPlugin()
 	tickets.RegisterPlugin()
 	timezonecompanion.RegisterPlugin()
+	trivia.RegisterPlugin()
 	twitter.RegisterPlugin()
 	verification.RegisterPlugin()
 	youtube.RegisterPlugin()
