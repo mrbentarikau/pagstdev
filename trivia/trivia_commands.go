@@ -19,9 +19,9 @@ func (p *Plugin) AddCommands() {
 				if err == ErrSessionInChannel {
 					return "There's already a trivia session in this channel", nil
 				}
-				return nil, err
+				return "Failed Running Trivia, unknown error", err
 			}
-			return "Failed Running Trivia, unknown error", nil
+			return nil, nil
 		},
 	})
 }
