@@ -17,6 +17,7 @@ func (p *Plugin) AddCommands() {
 			err := manager.NewTrivia(parsed.GuildData.GS.ID, parsed.ChannelID)
 			if err != nil {
 				if err == ErrSessionInChannel {
+					logger.WithError(err).Error("Failed to create new trivia")
 					return "There's already a trivia session in this channel", nil
 				}
 				return "Failed Running Trivia, unknown error", err
