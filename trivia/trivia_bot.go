@@ -241,7 +241,7 @@ func (t *triviaSession) buildButtons() []discordgo.MessageComponent {
 
 func (t *triviaSession) buildEmbed() *discordgo.MessageEmbed {
 	embed := &discordgo.MessageEmbed{}
-	embed.Title = fmt.Sprintf("Trivia Category: %s ", t.Question.Category)
+	embed.Title = fmt.Sprintf("Trivia Category: %s (%s)", t.Question.Category, t.Question.Difficulty)
 	embed.Description += fmt.Sprintf("\n ## %s \n", t.Question.Question)
 	embed.Color = t.EmbedColor
 

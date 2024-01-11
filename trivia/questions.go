@@ -10,14 +10,16 @@ import (
 
 	"github.com/botlabs-gg/yagpdb/commands"
 	"github.com/botlabs-gg/yagpdb/common"
+	"github.com/botlabs-gg/yagpdb/stdcommands/util"
 )
 
 type TriviaQuestion struct {
-	Answer   string   `json:"correct_answer"`
-	Category string   `json:"category"`
-	Question string   `json:"question"`
-	Type     string   `json:"type"`
-	Options  []string `json:"incorrect_answers"`
+	Answer     string   `json:"correct_answer"`
+	Category   string   `json:"category"`
+	Difficulty string   `json:"difficulty"`
+	Question   string   `json:"question"`
+	Type       string   `json:"type"`
+	Options    []string `json:"incorrect_answers"`
 }
 
 type TriviaResponse struct {
@@ -40,23 +42,14 @@ func FetchQuestions(amount int) ([]*TriviaQuestion, error) {
 	}
 
 	url := fmt.Sprintf("https://opentdb.com/api.php?amount=%d&encode=base64", amount)
-	req, err := http.NewRequest("GET", url, nil)
+	responseBytes, err := util.RequestFromAPI(url)
 	if err != nil {
 		return nil, err
-	}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, commands.NewPublicError("Failed Getting Questions from opentdb")
 	}
 
 	var triviaResponse TriviaResponse
-	err = json.NewDecoder(resp.Body).Decode(&triviaResponse)
+	readerToDecoder := strings.NewReader(string(responseBytes))
+	err = json.NewDecoder(readerToDecoder).Decode(&triviaResponse)
 	if err != nil {
 		return nil, err
 	}
@@ -82,6 +75,7 @@ func (q *TriviaQuestion) Decode() {
 	q.Question, _ = common.Base64DecodeToString(q.Question)
 	q.Answer, _ = common.Base64DecodeToString(q.Answer)
 	q.Category, _ = common.Base64DecodeToString(q.Category)
+	q.Difficulty, _ = common.Base64DecodeToString(q.Difficulty)
 	q.Type, _ = common.Base64DecodeToString(q.Type)
 	for index, option := range q.Options {
 		q.Options[index], _ = common.Base64DecodeToString(option)

@@ -1,18 +1,16 @@
 package bashquotes
 
 import (
+	"bytes"
 	"fmt"
-	"io"
 	"net"
-	"net/http"
 	"regexp"
-	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/botlabs-gg/yagpdb/commands"
-	"github.com/botlabs-gg/yagpdb/common"
 	"github.com/botlabs-gg/yagpdb/lib/dcmd"
+	"github.com/botlabs-gg/yagpdb/stdcommands/util"
 )
 
 func ShouldRegister() bool {
@@ -42,30 +40,12 @@ var Command = &commands.YAGCommand{
 			query = fmt.Sprintf("%s?%d", bashHost, data.Args[0].Int64())
 		}
 
-		req, err := http.NewRequest("GET", query, nil)
+		body, err := util.RequestFromAPI(query)
 		if err != nil {
 			return "", err
 		}
 
-		req.Header.Set("User-Agent", common.ConfBotUserAgent.GetString())
-
-		resp, err := http.DefaultClient.Do(req)
-		if err != nil {
-			return "Something wonky happened getting results, bash.org is probably down", err
-		}
-
-		if resp.StatusCode != 200 {
-			return "", commands.NewPublicError("HTTP Response was not 200, but ", resp.StatusCode)
-		}
-
-		defer resp.Body.Close()
-
-		bytes, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return "", err
-		}
-
-		toReader := strings.NewReader(string(bytes))
+		toReader := bytes.NewReader(body)
 		parseData, err := goquery.NewDocumentFromReader(toReader)
 		if err != nil {
 			return nil, err

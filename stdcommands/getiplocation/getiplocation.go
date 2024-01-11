@@ -1,16 +1,15 @@
 package getiplocation
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"math/rand"
-	"net/http"
 
 	"github.com/botlabs-gg/yagpdb/commands"
-	"github.com/botlabs-gg/yagpdb/common"
 	"github.com/botlabs-gg/yagpdb/lib/dcmd"
 	"github.com/botlabs-gg/yagpdb/lib/discordgo"
+	"github.com/botlabs-gg/yagpdb/stdcommands/util"
 )
 
 type ipAPIJSON struct {
@@ -63,12 +62,12 @@ var Command = &commands.YAGCommand{
 		queryURL := fmt.Sprintf("http://%s/%s/%s", ipAPIHost, queryType, ipArg)
 
 		//let's get that API data
-		body, err := getData(queryURL)
+		body, err := util.RequestFromAPI(queryURL)
 		if err != nil {
 			return nil, err
 		}
-
-		queryErr := json.Unmarshal([]byte(body), &ipJSON)
+		readerToDecoder := bytes.NewReader(body)
+		queryErr := json.NewDecoder(readerToDecoder).Decode(&ipJSON)
 		if queryErr != nil {
 			return nil, queryErr
 		}
@@ -90,29 +89,4 @@ var Command = &commands.YAGCommand{
 		}
 		return embed, nil
 	},
-}
-
-func getData(query string) ([]byte, error) {
-	req, err := http.NewRequest("GET", query, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("User-Agent", common.ConfBotUserAgent.GetString())
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.StatusCode != 200 {
-		return nil, commands.NewPublicError("Cannot fetch IP-location. Try again later.")
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	return body, nil
 }

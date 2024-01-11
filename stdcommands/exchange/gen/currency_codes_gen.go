@@ -7,6 +7,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -58,7 +59,8 @@ func main() {
 	}
 
 	check := &Currencies{}
-	err = json.Unmarshal([]byte(body), &check)
+	readerToDecoder := bytes.NewReader(body)
+	err = json.NewDecoder(readerToDecoder).Decode(&check)
 	if err != nil {
 		return
 	}
