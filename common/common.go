@@ -43,7 +43,7 @@ var (
 
 	RedisPoolSize = 0
 
-	Testing = os.Getenv("YAGPDB_TESTING") != ""
+	Testing = os.Getenv("PAGSTDB_TESTING") != ""
 
 	CurrentRunCounter int64
 

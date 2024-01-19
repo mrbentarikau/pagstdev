@@ -71,7 +71,7 @@ func CreateLink(guildID int64, id int) string {
 	return fmt.Sprintf("%s/public/%d/log/%d", web.BaseURL(), guildID, id)
 }
 
-func CreateChannelLog(ctx context.Context, config *models.GuildLoggingConfig, guildID, channelID int64, author string, authorID int64, count int) (*models.MessageLogs2, error) {
+func CreateChannelLog(ctx context.Context, config *models.GuildLoggingConfig, guildID, channelID, cParentID int64, author string, authorID int64, count int) (*models.MessageLogs2, error) {
 	if config == nil {
 		var err error
 		config, err = GetConfig(common.PQ, ctx, guildID)
@@ -80,11 +80,12 @@ func CreateChannelLog(ctx context.Context, config *models.GuildLoggingConfig, gu
 		}
 	}
 
-	// note: since the blacklisted channels column is just a TEXT type with a comma seperator...
+	// note: since the blacklisted channels column is just a TEXT type with a comma separator...
 	// i was not a smart person back then
 	strCID := strconv.FormatInt(channelID, 10)
+	strCParentID := strconv.FormatInt(cParentID, 10)
 	split := strings.Split(config.BlacklistedChannels.String, ",")
-	if common.ContainsStringSlice(split, strCID) {
+	if common.ContainsStringSlice(split, strCID) || (cParentID != 0 && common.ContainsStringSlice(split, strCParentID)) {
 		return nil, ErrChannelBlacklisted
 	}
 

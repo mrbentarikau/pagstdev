@@ -794,7 +794,7 @@ func WarnUser(config *Config, guildID int64, channel *dstate.ChannelState, msg *
 }
 
 func CreateLogs(guildID, channelID int64, user *discordgo.User) string {
-	lgs, err := logs.CreateChannelLog(context.TODO(), nil, guildID, channelID, user.Username, user.ID, 100)
+	lgs, err := logs.CreateChannelLog(context.TODO(), nil, guildID, channelID, 0, user.Username, user.ID, 100)
 	if err != nil {
 		if err == logs.ErrChannelBlacklisted {
 			return ""
