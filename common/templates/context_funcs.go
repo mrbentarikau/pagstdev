@@ -155,6 +155,10 @@ func (c *Context) baseChannelArg(v interface{}) *dstate.ChannelState {
 			// Channel id passed
 			cid = ToInt64(t)
 		case string:
+			if strings.HasPrefix(t, "<#") && strings.HasSuffix(t, ">") && (len(t) > 4) {
+				trimmed := t[2 : len(t)-1]
+				t = trimmed
+			}
 			parsed, err := strconv.ParseInt(t, 10, 64)
 			if err == nil {
 				// Channel id passed in string format
