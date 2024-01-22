@@ -71,26 +71,13 @@ func CreateLink(guildID int64, id int) string {
 	return fmt.Sprintf("%s/public/%d/log/%d", web.BaseURL(), guildID, id)
 }
 
-func CreateChannelLog(ctx context.Context, config *models.GuildLoggingConfig, guildID, channelID, cParentID int64, author string, authorID int64, count int) (*models.MessageLogs2, error) {
+func CreateChannelLog(ctx context.Context, config *models.GuildLoggingConfig, guildID, channelID int64, author string, authorID int64, count int) (*models.MessageLogs2, error) {
 	if config == nil {
 		var err error
 		config, err = GetConfig(common.PQ, ctx, guildID)
 		if err != nil {
 			return nil, err
 		}
-	}
-
-	// note: since the blacklisted channels column is just a TEXT type with a comma separator...
-	// i was not a smart person back then
-	strCID := strconv.FormatInt(channelID, 10)
-	strCParentID := strconv.FormatInt(cParentID, 10)
-	split := strings.Split(config.BlacklistedChannels.String, ",")
-	if common.ContainsStringSlice(split, strCID) || (cParentID != 0 && common.ContainsStringSlice(split, strCParentID)) {
-		return nil, ErrChannelBlacklisted
-	}
-
-	if count > 300 {
-		count = 300
 	}
 
 	gs := bot.State.GetGuild(guildID)
@@ -102,6 +89,25 @@ func CreateChannelLog(ctx context.Context, config *models.GuildLoggingConfig, gu
 	channel := gs.GetChannelOrThread(channelID)
 	if channel == nil {
 		return nil, errors.New("Unknown channel")
+	}
+
+	// note: since the blacklisted channels column is just a TEXT type with a comma separator...
+	// i was not a smart person back then
+	blacklist := strings.Split(config.BlacklistedChannels.String, ",")
+	if channel.Type.IsThread() {
+		parentIDStr := strconv.FormatInt(channel.ParentID, 10)
+		if common.ContainsStringSlice(blacklist, parentIDStr) {
+			return nil, ErrChannelBlacklisted
+		}
+	} else {
+		idStr := strconv.FormatInt(channel.ID, 10)
+		if common.ContainsStringSlice(blacklist, idStr) {
+			return nil, ErrChannelBlacklisted
+		}
+	}
+
+	if count > 300 {
+		count = 300
 	}
 
 	msgs, err := bot.GetMessages(guildID, channel.ID, count, true)

@@ -65,7 +65,6 @@ var cmdLogs = &commands.YAGCommand{
 		num := cmd.Args[0].Int()
 
 		cID := cmd.ChannelID
-		cParentID := cmd.GuildData.CS.ParentID
 		if cmd.Switch("channel").Value != nil {
 			cID = cmd.Switch("channel").Value.(*dstate.ChannelState).ID
 
@@ -79,10 +78,10 @@ var cmdLogs = &commands.YAGCommand{
 			}
 		}
 
-		l, err := CreateChannelLog(cmd.Context(), nil, cmd.GuildData.GS.ID, cID, cParentID, cmd.Author.Username, cmd.Author.ID, num)
+		l, err := CreateChannelLog(cmd.Context(), nil, cmd.GuildData.GS.ID, cID, cmd.Author.Username, cmd.Author.ID, num)
 		if err != nil {
 			if err == ErrChannelBlacklisted {
-				return "This channel is blacklisted from creating message logs, this can be changed in the control panel.", nil
+				return "This channel/thread's parent is blacklisted from creating message logs, this can be changed in the control panel.", nil
 			}
 
 			return "", err

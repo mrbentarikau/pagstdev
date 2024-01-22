@@ -7,6 +7,7 @@ import (
 	"github.com/botlabs-gg/yagpdb/commands"
 	"github.com/botlabs-gg/yagpdb/common"
 	"github.com/botlabs-gg/yagpdb/lib/dcmd"
+	"github.com/botlabs-gg/yagpdb/stdcommands/util"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
@@ -21,7 +22,7 @@ var Command = &commands.YAGCommand{
 	ArgSwitches: []*dcmd.ArgDef{
 		{Name: "id", Type: dcmd.BigInt},
 	},
-	RunFunc: func(data *dcmd.Data) (interface{}, error) {
+	RunFunc: util.RequireBotAdmin(func(data *dcmd.Data) (interface{}, error) {
 		skip := data.Args[0].Int()
 
 		if data.Switches["id"].Value != nil {
@@ -35,7 +36,7 @@ var Command = &commands.YAGCommand{
 			serverID = data.Switch("id").Int64()
 			const q = `SELECT member_count, name, row_number FROM (SELECT id, member_count, name, left_at, row_number() OVER (ORDER BY member_count DESC) FROM joined_guilds WHERE left_at IS NULL) AS total WHERE id=$1 AND left_at IS NULL;`
 			err := common.PQ.QueryRow(q, serverID).Scan(&position.MemberCount, &position.Name, &position.Place)
-			return fmt.Sprintf("```Server with ID %d is placed:\n#%-2d: %-25s (%d members)\n```", serverID, position.Place, position.Name, position.MemberCount), err
+			return fmt.Sprintf("```Server with ID %d is placed:\n#%-2d: %-25s (%d members)\n```", serverID, position.Place, common.SanitizeText(position.Name), position.MemberCount), err
 		}
 
 		results, err := models.JoinedGuilds(qm.Where("left_at is null"), qm.OrderBy("member_count desc"), qm.Limit(20), qm.Offset(skip)).AllG(data.Context())
@@ -48,5 +49,5 @@ var Command = &commands.YAGCommand{
 			out += fmt.Sprintf("\n#%-2d: %-25s (%d members)", k+skip+1, common.SanitizeText(v.Name), v.MemberCount)
 		}
 		return "Top servers the bot is on:\n" + out + "\n```", nil
-	},
+	}),
 }

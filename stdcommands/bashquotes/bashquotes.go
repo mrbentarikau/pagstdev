@@ -16,7 +16,10 @@ import (
 func ShouldRegister() bool {
 	dialHost := "bash.org:http"
 	timeout := 1 * time.Second
-	_, err := net.DialTimeout("tcp", dialHost, timeout)
+	conn, err := net.DialTimeout("tcp", dialHost, timeout)
+	if conn != nil {
+		defer conn.Close()
+	}
 	return err == nil
 }
 
