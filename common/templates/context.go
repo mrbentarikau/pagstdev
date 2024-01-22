@@ -664,14 +664,19 @@ func (c *Context) addContextFunc(name string, f interface{}) {
 
 func baseContextFuncs(c *Context) {
 	// Channel functions
+	c.addContextFunc("addThreadMember", c.tmplThreadMemberAdd)
+	c.addContextFunc("createThread", c.tmplCreateThread)
+	c.addContextFunc("createMessageThread", c.tmplCreateMessageThread)
+	c.addContextFunc("deleteThread", c.tmplDeleteThread)
+	c.addContextFunc("editChannelName", c.tmplEditChannelName)
+	c.addContextFunc("editChannelTopic", c.tmplEditChannelTopic)
 	c.addContextFunc("getChannel", c.tmplGetChannel)
 	c.addContextFunc("getChannelPins", c.tmplGetChannelPins(false))
 	c.addContextFunc("getChannelOrThread", c.tmplGetChannelOrThread)
 	c.addContextFunc("getThread", c.tmplGetThread)
 	c.addContextFunc("getThreadsAllActive", c.tmplGetGuildThreadsActive)
 	c.addContextFunc("getThreadsArchived", c.tmplGetThreadsArchived)
-	c.addContextFunc("editChannelName", c.tmplEditChannelName)
-	c.addContextFunc("editChannelTopic", c.tmplEditChannelTopic)
+	c.addContextFunc("removeThreadMember", c.tmplThreadMemberRemove)
 
 	// Member & User
 	c.addContextFunc("currentUserAgeHuman", c.tmplCurrentUserAgeHuman)
