@@ -1044,56 +1044,283 @@ func (c *Context) tmplGetChannel(channel interface{}) (*CtxChannel, error) {
 	return CtxChannelFromCS(cstate), nil
 }
 
-func (c *Context) CreateThread(channel interface{}, create func(int64) (*discordgo.Channel, error), sendThreadCreateError bool) (*CtxChannel, error) {
+func (c *Context) tmplGetChannelOrThread(channel interface{}) (*CtxChannel, error) {
+	if c.IncreaseCheckGenericAPICall() {
+		return nil, ErrTooManyAPICalls
+	}
+
+	cID := c.ChannelArg(channel)
+	if cID == 0 {
+		return nil, nil //dont send an error , a nil output would indicate invalid/unknown channel
+	}
+
+	cstate := c.GS.GetChannelOrThread(cID)
+
+	if cstate == nil {
+		return nil, errors.New("thread/channel not in state")
+	}
+
+	return CtxChannelFromCS(cstate), nil
+}
+
+/*
+func (c *Context) tmplComplexThread(values ...interface{}) (*CtxThreadStart, error) {
+	if c.IncreaseCheckGenericAPICall() {
+		return nil, ErrTooManyAPICalls
+	}
+
+	// TODO: More things to possibly expose: auto_archive_duration, rate_limit_per_user
+	thread := &CtxThreadStart{
+		Name:                "Thread",
+		AutoArchiveDuration: 4320, // 3 days
+		Type:                discordgo.ChannelTypeGuildPublicThread,
+		Invitable:           true,
+	}
+
+	if len(values) == 0 {
+		return thread, nil
+	}
+
+	if name, ok := values[0].(string); len(values) == 1 {
+		if ok {
+			thread.Name = name
+			return thread, nil
+		} else {
+			return nil, errors.New("requires string type")
+		}
+	}
+
+	threadSdict, err := StringKeyDictionary(values...)
+	if err != nil {
+		return nil, err
+	}
+
+	for key, val := range threadSdict {
+		key = strings.ToLower(key)
+		switch key {
+		case "name":
+			thread.Name = ToString(val)
+		case "private":
+			if val == true {
+				thread.Type = discordgo.ChannelTypeGuildPrivateThread
+			}
+		case "invitable":
+			thread.Invitable = val == true
+		case "tags":
+			const maxTagsPerThread = 5 // Discord limitation
+			v, _ := indirect(reflect.ValueOf(val))
+			if v.Kind() == reflect.Slice {
+				size := v.Len()
+				if size > maxTagsPerThread {
+					size = maxTagsPerThread
+				}
+
+				thread.AppliedTagNames = make([]string, size)
+				for i := 0; i < size; i++ {
+					thread.AppliedTagNames[i] = ToString(v.Index(i).Interface())
+				}
+			} else if v.Kind() == reflect.String {
+				thread.AppliedTagNames = []string{ToString(val)}
+			} else {
+				return nil, errors.New("wrong type for tags (expected string or cslice)")
+			}
+		case "message_id":
+			thread.MessageID = ToInt64(val)
+		case "content":
+			switch val := val.(type) {
+			case *discordgo.MessageSend:
+				thread.Content = val
+			case *discordgo.MessageEmbed:
+				content, err := CreateMessageSend("embed", val)
+				if err != nil {
+					return nil, err
+				}
+				thread.Content = content
+			default:
+				strVal := ToString(val)
+				if len(strVal) == 0 {
+					return nil, errors.New("content must be non-zero length")
+				}
+
+				content, err := CreateMessageSend("content", strVal)
+				if err != nil {
+					return nil, err
+				}
+				thread.Content = content
+			}
+		}
+	}
+
+	return thread, nil
+}
+
+func AppliedTagIDsFromNames(availableTags []discordgo.ForumTag, appliedTags []string) []discordgo.ForumTag {
+	if availableTags == nil || appliedTags == nil {
+		return nil
+	}
+
+	// discordgo gives us a list of tag names - convert them to ForumTag by walking
+	// available tags list
+	applied := make([]discordgo.ForumTag, 0, len(appliedTags))
+	for _, name := range appliedTags {
+		for _, tag := range availableTags {
+			if tag.Name == name {
+				applied = append(applied, tag)
+				break
+			}
+		}
+	}
+
+	return applied
+}
+
+func ConvertForumTagIds(c *dstate.ChannelState, tagNames []string) []string {
+	tags := AppliedTagIDsFromNames(c.AvailableTags, tagNames)
+	if tags == nil {
+		return nil
+	}
+
+	tagIds := make([]string, len(tags))
+	for i, tag := range tags {
+		tagIds[i] = discordgo.StrID(tag.ID)
+	}
+
+	return tagIds
+}
+
+func (c *Context) tmplCreateThreadForForums(channel, thread interface{}) (*CtxChannel, error) {
+
 	if c.IncreaseCheckCallCounterPremium("create_thread", 1, 2) {
+		return nil, ErrTooManyCalls
+	}
+
+	if thread == nil {
+		return nil, errors.New("nil passed as thread argument")
+	}
+
+	cID := c.ChannelArg(channel)
+	if cID == 0 {
+		return nil, nil //don't send an error, a nil output would indicate invalid/unknown channel
+	}
+
+	cstate := c.GS.GetChannel(cID)
+	if cstate == nil {
+		return nil, errors.New("channel not in state")
+	}
+
+	var data *CtxThreadStart
+	switch thread := thread.(type) {
+	case string:
+		data, _ = c.tmplComplexThread(thread)
+	case *CtxThreadStart:
+		data = thread
+	default:
+		return nil, errors.New("thread argument must be either string (name) or value returned from complexThread")
+	}
+	start := &discordgo.ThreadStart{
+		Name:                data.Name,
+		AutoArchiveDuration: data.AutoArchiveDuration,
+		Type:                data.Type,
+		Invitable:           data.Invitable,
+		RateLimitPerUser:    data.RateLimitPerUser,
+		AppliedTags:         ConvertForumTagIds(cstate, data.AppliedTagNames),
+	}
+
+	var ctxThread *discordgo.Channel
+	var err error = nil
+	// For non-forum threads we can't specify content in the initial discordgo CreateThread
+	// request, but we can send a followup message into the newly created thread
+	sendFollowupMsg := false
+	if cstate.Type == discordgo.ChannelTypeGuildForum {
+		// Override public/private thread to Forum
+		start.Type = discordgo.ChannelTypeGuildForum
+
+		// Make sure content has something valid, otherwise Forum API call will fail
+		if data.Content == nil {
+			return nil, errors.New("forum threads must have valid, non-zero length content")
+		}
+
+		// TODO: When ctxThread.AvailableTags is present, convert all tag names to tag ids
+		ctxThread, err = common.BotSession.ForumThreadStartComplex(cID, start, data.Content)
+	} else if data.MessageID > 0 {
+		ctxThread, err = common.BotSession.MessageThreadStartComplex(cID, data.MessageID, start)
+		sendFollowupMsg = data.Content != nil
+	} else {
+		ctxThread, err = common.BotSession.ThreadStartComplex(cID, start)
+		sendFollowupMsg = data.Content != nil
+	}
+
+	if err != nil {
+		return nil, errors.New("unable to create thread")
+	}
+
+	tstate := dstate.ChannelStateFromDgo(ctxThread)
+
+	// Perform a copy so we don't mutate global array
+	gsCopy := *c.GS
+	gsCopy.Threads = make([]dstate.ChannelState, len(c.GS.Threads), len(c.GS.Threads)+1)
+	copy(gsCopy.Threads, c.GS.Threads)
+
+	// Add new thread to copied guild state
+	gsCopy.Threads = append(gsCopy.Threads, tstate)
+	c.GS = &gsCopy
+
+	// Only true for non-Forum threads that specified content
+	if sendFollowupMsg {
+		c.tmplSendMessage(true, false)(tstate.ID, data.Content)
+	}
+
+	return CtxChannelFromCS(&tstate), nil
+}
+*/
+
+func (c *Context) tmplCreateThread(channel, msgID interface{}, name string, private ...interface{}) (*CtxChannel, error) {
+	if c.IncreaseCheckCallCounterPremium("create_thread", 1, 1) {
 		return nil, ErrTooManyCalls
 	}
 
 	cID := c.ChannelArg(channel)
 	if cID == 0 {
-		return nil, nil //dont send an error, a nil output would indicate invalid/unknown channel
+		return nil, nil //don't send an error, a nil output would indicate invalid/unknown channel
 	}
 
-	cstate := c.GS.GetChannelOrThread(cID)
+	cstate := c.GS.GetChannel(cID)
 	if cstate == nil {
 		return nil, errors.New("channel not in state")
 	}
 
-	if cstate.Type != discordgo.ChannelTypeGuildText {
-		return nil, nil //dont send an error, a nil output would indicate invalid
-	}
+	mID := ToInt64(msgID)
 
-	thread, err := create(cID)
-	if err != nil {
-		if sendThreadCreateError {
-			return nil, errors.New("unable to create thread")
-		} else {
-			return nil, nil
+	threadType := discordgo.ChannelTypeGuildPublicThread
+	if len(private) > 0 {
+		switch v := private[0].(type) {
+		case bool:
+			if v {
+				threadType = discordgo.ChannelTypeGuildPrivateThread
+			}
 		}
 	}
 
-	overwrites := make([]discordgo.PermissionOverwrite, len(thread.PermissionOverwrites))
-	for i, v := range thread.PermissionOverwrites {
-		overwrites[i] = *v
+	start := &discordgo.ThreadStart{
+		Name:                name,
+		AutoArchiveDuration: 10080, // 7 days
+		Type:                threadType,
+		Invitable:           false,
 	}
 
-	tstate := dstate.ChannelState{
-		ID:                   thread.ID,
-		GuildID:              thread.GuildID,
-		Name:                 thread.Name,
-		Topic:                thread.Topic,
-		Type:                 thread.Type,
-		NSFW:                 thread.NSFW,
-		Icon:                 thread.Icon,
-		Position:             thread.Position,
-		Bitrate:              thread.Bitrate,
-		UserLimit:            thread.UserLimit,
-		ParentID:             thread.ParentID,
-		RateLimitPerUser:     thread.RateLimitPerUser,
-		OwnerID:              thread.OwnerID,
-		ThreadMetadata:       thread.ThreadMetadata,
-		PermissionOverwrites: overwrites,
+	var ctxThread *discordgo.Channel
+	var err error = nil
+	if mID > 0 {
+		ctxThread, err = common.BotSession.MessageThreadStartComplex(cID, mID, start)
+	} else {
+		ctxThread, err = common.BotSession.ThreadStartComplex(cID, start)
 	}
+
+	if err != nil {
+		return nil, nil //don't send an error, a nil output would indicate invalid/unknown channel
+	}
+
+	tstate := dstate.ChannelStateFromDgo(ctxThread)
 
 	// Perform a copy so we don't mutate global array
 	gsCopy := *c.GS
@@ -1107,30 +1334,9 @@ func (c *Context) CreateThread(channel interface{}, create func(int64) (*discord
 	return CtxChannelFromCS(&tstate), nil
 }
 
-func (c *Context) tmplCreateThread(channel interface{}, name string, isPrivate ...bool) (*CtxChannel, error) {
-	ctype := discordgo.ChannelTypeGuildPublicThread
-	if len(isPrivate) > 0 {
-		if isPrivate[0] {
-			ctype = discordgo.ChannelTypeGuildPrivateThread
-		}
-	}
-
-	return c.CreateThread(channel, func(cID int64) (*discordgo.Channel, error) {
-		return common.BotSession.ThreadStart(cID, name, ctype, 60)
-	}, true)
-}
-
-func (c *Context) tmplCreateMessageThread(channel, msgID interface{}, name string) (*CtxChannel, error) {
-
-	mID := ToInt64(msgID)
-
-	return c.CreateThread(channel, func(cID int64) (*discordgo.Channel, error) {
-		return common.BotSession.MessageThreadStart(cID, mID, name, 60)
-	}, false) // don't send message upon thread create fail since that can happen if a thread already exists for the given message
-}
-
 func (c *Context) tmplDeleteThread(thread interface{}) (string, error) {
-	if c.IncreaseCheckCallCounterPremium("delete_thread", 1, 2) {
+
+	if c.IncreaseCheckCallCounterPremium("delete_thread", 1, 1) {
 		return "", ErrTooManyCalls
 	}
 
@@ -1149,6 +1355,7 @@ func (c *Context) tmplDeleteThread(thread interface{}) (string, error) {
 }
 
 func (c *Context) tmplThreadMemberAdd(threadID, memberID interface{}) string {
+
 	if c.IncreaseCheckGenericAPICall() {
 		return ""
 	}
@@ -1216,7 +1423,7 @@ func (c *Context) tmplGetThread(channel interface{}) (*CtxChannel, error) {
 	return CtxChannelFromCS(cstate), nil
 }
 
-func (c *Context) tmplGetGuildThreadsActive() (*discordgo.ThreadsList, error) {
+func (c *Context) tmplGetGuildThreadsActive() ([]*discordgo.Channel, error) {
 	if c.IncreaseCheckGenericAPICall() {
 		return nil, ErrTooManyAPICalls
 	}
@@ -1227,17 +1434,15 @@ func (c *Context) tmplGetGuildThreadsActive() (*discordgo.ThreadsList, error) {
 
 	gID := c.GS.ID
 	if gID == 0 {
-		return nil, nil //dont send an error , a nil output would indicate invalid/unknown channel
+		return nil, nil //dont send an error , a nil output would indicate invalid/unknown guild
 	}
-
-	fmt.Println("gID", gID)
 
 	response, err := common.BotSession.GuildThreadsActive(gID)
 	if err != nil {
 		return nil, err
 	}
 
-	return response, nil
+	return response.Threads, nil
 }
 
 func (c *Context) tmplGetThreadsArchived(channel interface{}, args ...interface{}) (*discordgo.ThreadsList, error) {
@@ -1301,26 +1506,6 @@ func (c *Context) tmplGetThreadsArchived(channel interface{}, args ...interface{
 	}
 
 	return response, nil
-}
-
-func (c *Context) tmplGetChannelOrThread(channel interface{}) (*CtxChannel, error) {
-
-	if c.IncreaseCheckGenericAPICall() {
-		return nil, ErrTooManyAPICalls
-	}
-
-	cID := c.ChannelArg(channel)
-	if cID == 0 {
-		return nil, nil //dont send an error , a nil output would indicate invalid/unknown channel
-	}
-
-	cstate := c.GS.GetChannelOrThread(cID)
-
-	if cstate == nil {
-		return nil, errors.New("thread/channel not in state")
-	}
-
-	return CtxChannelFromCS(cstate), nil
 }
 
 func (c *Context) tmplGetChannelPins(pinCount bool) func(channel interface{}) (interface{}, error) {

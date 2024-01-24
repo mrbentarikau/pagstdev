@@ -80,7 +80,7 @@ func EventHandler(evt *eventsystem.EventData) (retry bool, err error) {
 
 	case eventsystem.EventNewGuild:
 		guild := evt.GuildCreate().Guild
-		msg = fmt.Sprintf(":white_check_mark: Joined guild **%s** guildID %d :D", common.ReplaceServerInvites(guild.Name, 0, "[removed-server-invite]"), guild.ID)
+		msg = fmt.Sprintf(":white_check_mark: Joined guild **%s** guildID: %d :D", common.ReplaceServerInvites(guild.Name, 0, "[removed-server-invite]"), guild.ID)
 		msg += fmt.Sprintf(" owned by %s userID: %d", (bot.State.GetMember(guild.ID, guild.OwnerID)).User.Username, guild.OwnerID)
 	}
 

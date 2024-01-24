@@ -26,6 +26,32 @@ type CtxChannel struct {
 	ParentID             int64                            `json:"parent_id"`
 	RateLimitPerUser     int                              `json:"rate_limit_per_user"`
 	OwnerID              int64                            `json:"owner_id"`
+
+	// The set of tags that can be used in a forum channel.
+	AvailableTags []discordgo.ForumTag `json:"available_tags"`
+
+	// The IDs of the set of tags that have been applied to a thread in a forum channel.
+	AppliedTags []string `json:"applied_tags"`
+}
+
+// CtxThreadStart is almost a 1:1 copy of discordgo.ThreadStart but with some added fields
+type CtxThreadStart struct {
+	Name                string                `json:"name"`
+	AutoArchiveDuration int                   `json:"auto_archive_duration,omitempty"`
+	Type                discordgo.ChannelType `json:"type,omitempty"`
+	Invitable           bool                  `json:"invitable"`
+	RateLimitPerUser    int                   `json:"rate_limit_per_user,omitempty"`
+
+	Content *discordgo.MessageSend `json:"content,omitempty"`
+
+	// NOTE: forum threads only - these are names not ids
+	AppliedTagNames []string `json:"applied_tag_names,omitempty"`
+
+	// NOTE: forum threads only - IDs
+	AppliedTags []string `json:"applied_tags,omitempty"`
+
+	// NOTE: message threads only
+	MessageID int64 `json:"message_id,omitempty"`
 }
 
 func (c *CtxChannel) Mention() (string, error) {
@@ -58,6 +84,8 @@ func CtxChannelFromCS(cs *dstate.ChannelState) *CtxChannel {
 		ParentID:             cs.ParentID,
 		RateLimitPerUser:     cs.RateLimitPerUser,
 		OwnerID:              cs.OwnerID,
+		AvailableTags:        cs.AvailableTags,
+		AppliedTags:          cs.AppliedTags,
 	}
 
 	return ctxChannel

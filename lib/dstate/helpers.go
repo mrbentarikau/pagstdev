@@ -166,6 +166,8 @@ func ChannelStateFromDgo(c *discordgo.Channel) ChannelState {
 		Bitrate:              c.Bitrate,
 		RateLimitPerUser:     c.RateLimitPerUser,
 		OwnerID:              c.OwnerID,
+		AvailableTags:        c.AvailableTags,
+		AppliedTags:          c.AppliedTags,
 	}
 }
 

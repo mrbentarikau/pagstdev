@@ -136,7 +136,6 @@
     // Channel
     "addThreadMember":true,
     "deleteThread":true,
-    "createMessageThread":true,
     "createThread":true,
     "editChannelName":true,
     "editChannelTopic":true,
