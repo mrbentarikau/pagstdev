@@ -315,7 +315,7 @@ type ChannelState struct {
 	AvailableTags []discordgo.ForumTag `json:"available_tags"`
 
 	// The IDs of the set of tags that have been applied to a thread in a forum channel.
-	AppliedTags []string `json:"applied_tags"`
+	AppliedTags []int64 `json:"applied_tags"`
 }
 
 func (c *ChannelState) IsPrivate() bool {

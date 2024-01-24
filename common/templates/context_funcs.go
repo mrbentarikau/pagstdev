@@ -1174,21 +1174,21 @@ func AppliedTagIDsFromNames(availableTags []discordgo.ForumTag, appliedTags []st
 	return applied
 }
 
-func ConvertForumTagIds(c *dstate.ChannelState, tagNames []string) []string {
+func ConvertForumTagIds(c *dstate.ChannelState, tagNames []string) []int64 {
 	tags := AppliedTagIDsFromNames(c.AvailableTags, tagNames)
 	if tags == nil {
 		return nil
 	}
 
-	tagIds := make([]string, len(tags))
+	tagIds := make([]int64, len(tags))
 	for i, tag := range tags {
-		tagIds[i] = discordgo.StrID(tag.ID)
+		tagIds[i] = tag.ID
 	}
 
 	return tagIds
 }
 
-func (c *Context) tmplCreateThreadForForums(channel, thread interface{}) (*CtxChannel, error) {
+func (c *Context) tmplCreateThreadForForum(channel, thread interface{}) (*CtxChannel, error) {
 
 	if c.IncreaseCheckCallCounterPremium("create_thread", 1, 2) {
 		return nil, ErrTooManyCalls

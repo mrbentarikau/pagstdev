@@ -423,7 +423,7 @@ type Channel struct {
 	AvailableTags []ForumTag `json:"available_tags,omitempty"`
 
 	// The IDs of the set of tags that have been applied to a thread in a forum channel.
-	AppliedTags []string `json:"applied_tags,omitempty"`
+	AppliedTags IDSlice `json:"applied_tags,omitempty"`
 
 	// Emoji to use as the default reaction to a forum post.
 	DefaultReactionEmoji ForumDefaultReaction `json:"default_reaction_emoji,omitempty"`
@@ -486,7 +486,7 @@ type ChannelEdit struct {
 	DefaultForumLayout   *ForumLayout          `json:"default_forum_layout,omitempty"`
 
 	// NOTE: forum threads only
-	AppliedTags *[]string `json:"applied_tags,omitempty"`
+	AppliedTags *IDSlice `json:"applied_tags,omitempty"`
 }
 
 // A ChannelFollow holds data returned after following a news channel
@@ -527,7 +527,7 @@ type ThreadStart struct {
 	RateLimitPerUser    int         `json:"rate_limit_per_user,omitempty"`
 
 	// NOTE: forum threads only
-	AppliedTags []string `json:"applied_tags,omitempty"`
+	AppliedTags IDSlice `json:"applied_tags,omitempty"`
 }
 
 // ThreadMetadata contains a number of thread-specific channel fields that are not needed by other channel types.
