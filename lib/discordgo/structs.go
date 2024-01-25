@@ -459,6 +459,10 @@ func (t ChannelType) IsThread() bool {
 	return t == ChannelTypeGuildPrivateThread || t == ChannelTypeGuildPublicThread
 }
 
+func (t ChannelType) IsForum() bool {
+	return t == ChannelTypeGuildForum
+}
+
 // A ChannelEdit holds Channel Feild data for a channel edit.
 type ChannelEdit struct {
 	Name                          string                 `json:"name,omitempty"`

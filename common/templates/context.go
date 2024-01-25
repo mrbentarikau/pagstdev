@@ -665,8 +665,9 @@ func (c *Context) addContextFunc(name string, f interface{}) {
 func baseContextFuncs(c *Context) {
 	// Channel functions
 	c.addContextFunc("addThreadMember", c.tmplThreadMemberAdd)
-	//c.addContextFunc("complexThread", c.tmplComplexThread)
+	c.addContextFunc("createForumPost", c.tmplCreateForumPost)
 	c.addContextFunc("createThread", c.tmplCreateThread)
+	c.addContextFunc("deleteForumPost", c.tmplDeleteThread)
 	c.addContextFunc("deleteThread", c.tmplDeleteThread)
 	c.addContextFunc("editChannelName", c.tmplEditChannelName)
 	c.addContextFunc("editChannelTopic", c.tmplEditChannelTopic)

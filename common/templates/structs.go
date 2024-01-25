@@ -26,6 +26,7 @@ type CtxChannel struct {
 	ParentID             int64                            `json:"parent_id"`
 	RateLimitPerUser     int                              `json:"rate_limit_per_user"`
 	OwnerID              int64                            `json:"owner_id"`
+	IsForum              bool
 
 	// The set of tags that can be used in a forum channel.
 	AvailableTags []discordgo.ForumTag `json:"available_tags"`
@@ -71,6 +72,7 @@ func CtxChannelFromCS(cs *dstate.ChannelState) *CtxChannel {
 
 	ctxChannel := &CtxChannel{
 		ID:                   cs.ID,
+		IsForum:              cs.Type.IsForum(),
 		IsPrivate:            cs.IsPrivate(),
 		IsThread:             cs.Type.IsThread(),
 		GuildID:              cs.GuildID,
