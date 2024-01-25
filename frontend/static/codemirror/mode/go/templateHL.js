@@ -135,8 +135,10 @@
     
     // Channel
     "addThreadMember":true,
-    "deleteThread":true,
+    "createForumPost":true,
     "createThread":true,
+    "deleteForumPost":true,
+    "deleteThread":true,
     "editChannelName":true,
     "editChannelTopic":true,
     "getChannel":true,
