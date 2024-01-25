@@ -1213,8 +1213,7 @@ func ConvertTagNameToId(c *dstate.ChannelState, tagName string) int64 {
 }
 
 func ProcessOptionalForumPostArgs(c *dstate.ChannelState, values ...interface{}) (int, []int64, error) {
-
-	if values == nil || len(values) == 0 {
+	if len(values) == 0 {
 		return c.DefaultThreadRateLimitPerUser, nil, nil
 	}
 
@@ -1285,7 +1284,7 @@ func ProcessOptionalForumPostArgs(c *dstate.ChannelState, values ...interface{})
 	return rateLimit, tags, nil
 }
 
-func (c *Context) tmplCreateForumPost(channel, content interface{}, name string, optional ...interface{}) (*CtxChannel, error) {
+func (c *Context) tmplCreateForumPost(channel interface{}, name string, content interface{}, optional ...interface{}) (*CtxChannel, error) {
 
 	// shares same counter as create thread
 	if c.IncreaseCheckCallCounterPremium("create_thread", 1, 1) {
