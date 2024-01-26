@@ -527,7 +527,7 @@ func (c *Context) SendResponse(content string) (*discordgo.Message, error) {
 		}
 	}
 
-	isDM := c.CurrentFrame.SendResponseInDM || (c.CurrentFrame.CS != nil && c.CurrentFrame.CS.IsPrivate())
+	isDM := c.CurrentFrame.SendResponseInDM || (c.CurrentFrame.CS != nil && c.CurrentFrame.CS.IsDMChannel())
 
 	var embeds []*discordgo.MessageEmbed
 	embeds = append(embeds, c.CurrentFrame.EmbedsToSend...)

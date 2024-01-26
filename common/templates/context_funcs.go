@@ -151,6 +151,8 @@ func (c *Context) baseChannelArg(v interface{}) *dstate.ChannelState {
 	var cid int64
 	if v != nil {
 		switch t := v.(type) {
+		case *CtxChannel:
+			cid = t.ID
 		case int, int64:
 			// Channel id passed
 			cid = ToInt64(t)
@@ -196,7 +198,7 @@ func (c *Context) ChannelArg(v interface{}) int64 {
 // ChannelArgNoDM is the same as ChannelArg but will not accept DM channels
 func (c *Context) ChannelArgNoDM(v interface{}) int64 {
 	cs := c.baseChannelArg(v)
-	if cs == nil || cs.IsPrivate() {
+	if cs == nil || cs.IsDMChannel() {
 		return 0
 	}
 
@@ -205,7 +207,7 @@ func (c *Context) ChannelArgNoDM(v interface{}) int64 {
 
 func (c *Context) ChannelArgNoDMNoThread(v interface{}) int64 {
 	cs := c.baseChannelArg(v)
-	if cs == nil || cs.IsPrivate() || cs.Type.IsThread() {
+	if cs == nil || cs.IsDMChannel() || cs.Type.IsThread() {
 		return 0
 	}
 
@@ -1074,7 +1076,7 @@ func (c *Context) AddThreadToGuildSet(t *dstate.ChannelState) {
 	c.GS = &gsCopy
 }
 
-func (c *Context) tmplCreateThread(channel, msgID interface{}, name string, private ...interface{}) (*CtxChannel, error) {
+func (c *Context) tmplCreateThread(channel, name interface{}, values ...interface{}) (*CtxChannel, error) {
 	if c.IncreaseCheckCallCounterPremium("create_thread", 1, 1) {
 		return nil, ErrTooManyCalls
 	}
@@ -1089,23 +1091,40 @@ func (c *Context) tmplCreateThread(channel, msgID interface{}, name string, priv
 		return nil, errors.New("channel not in state")
 	}
 
-	mID := ToInt64(msgID)
-
 	threadType := discordgo.ChannelTypeGuildPublicThread
-	if len(private) > 0 {
-		switch v := private[0].(type) {
-		case bool:
-			if v {
-				threadType = discordgo.ChannelTypeGuildPrivateThread
+	rateLimit := cstate.DefaultThreadRateLimitPerUser
+	var mID int64
+	var invitable bool
+
+	if len(values) > 0 {
+		threadSdict, err := StringKeyDictionary(values...)
+		if err != nil {
+			return nil, err
+		}
+
+		for key, val := range threadSdict {
+			key = strings.ToLower(key)
+			switch key {
+			case "invitable":
+				invitable = val.(bool)
+			case "message_id":
+				mID = ToInt64(val)
+			case "private":
+				if val.(bool) {
+					threadType = discordgo.ChannelTypeGuildPrivateThread
+				}
+			case "slowmode":
+				rateLimit = tmplToInt(val)
 			}
 		}
 	}
 
 	start := &discordgo.ThreadStart{
-		Name:                name,
+		Name:                ToString(name),
 		AutoArchiveDuration: 10080, // 7 days
 		Type:                threadType,
-		Invitable:           false,
+		Invitable:           invitable,
+		RateLimitPerUser:    rateLimit,
 	}
 
 	var ctxThread *discordgo.Channel
@@ -1128,7 +1147,6 @@ func (c *Context) tmplCreateThread(channel, msgID interface{}, name string, priv
 }
 
 func (c *Context) tmplDeleteThread(thread interface{}) (string, error) {
-
 	if c.IncreaseCheckCallCounterPremium("delete_thread", 1, 1) {
 		return "", ErrTooManyCalls
 	}
@@ -1148,7 +1166,6 @@ func (c *Context) tmplDeleteThread(thread interface{}) (string, error) {
 }
 
 func (c *Context) tmplThreadMemberAdd(threadID, memberID interface{}) string {
-
 	if c.IncreaseCheckGenericAPICall() {
 		return ""
 	}
@@ -1173,7 +1190,6 @@ func (c *Context) tmplThreadMemberAdd(threadID, memberID interface{}) string {
 }
 
 func (c *Context) tmplThreadMemberRemove(threadID, memberID interface{}) string {
-
 	if c.IncreaseCheckGenericAPICall() {
 		return ""
 	}
@@ -1225,7 +1241,6 @@ func ProcessOptionalForumPostArgs(c *dstate.ChannelState, values ...interface{})
 	rateLimit := c.DefaultThreadRateLimitPerUser
 	var tags []int64 = nil
 	for key, val := range threadSdict {
-
 		key = strings.ToLower(key)
 		switch key {
 		case "slowmode":
@@ -1284,7 +1299,7 @@ func ProcessOptionalForumPostArgs(c *dstate.ChannelState, values ...interface{})
 	return rateLimit, tags, nil
 }
 
-func (c *Context) tmplCreateForumPost(channel interface{}, name string, content interface{}, optional ...interface{}) (*CtxChannel, error) {
+func (c *Context) tmplCreateForumPost(channel, name, content interface{}, optional ...interface{}) (*CtxChannel, error) {
 
 	// shares same counter as create thread
 	if c.IncreaseCheckCallCounterPremium("create_thread", 1, 1) {
@@ -1297,7 +1312,7 @@ func (c *Context) tmplCreateForumPost(channel interface{}, name string, content 
 
 	cID := c.ChannelArg(channel)
 	if cID == 0 {
-		return nil, nil //dont send an error, a nil output would indicate invalid/unknown channel
+		return nil, nil //don't send an error, a nil output would indicate invalid/unknown channel
 	}
 
 	cstate := c.GS.GetChannel(cID)
@@ -1315,7 +1330,7 @@ func (c *Context) tmplCreateForumPost(channel interface{}, name string, content 
 	}
 
 	start := &discordgo.ThreadStart{
-		Name:             name,
+		Name:             ToString(name),
 		Type:             discordgo.ChannelTypeGuildPublicThread,
 		Invitable:        false,
 		RateLimitPerUser: rateLimit,
@@ -1889,175 +1904,6 @@ func (c *Context) tmplLastMessages(channel interface{}, num ...int) ([]*discordg
 
 	return msg, err
 }
-
-/*
-func (c *Context) tmplSort(input interface{}, sortargs ...interface{}) (interface{}, error) {
-	if c.IncreaseCheckCallCounterPremium("sortfuncs", 1, 10) {
-		return "", ErrTooManyCalls
-	}
-
-	//inputSlice := reflect.ValueOf(input)
-	inputSlice, _ := indirect(reflect.ValueOf(input))
-	switch inputSlice.Kind() {
-	case reflect.Slice, reflect.Array:
-		// valid
-	default:
-		return "", fmt.Errorf("can not use type %s as input to the sort func", inputSlice.Type().String())
-	}
-
-	var dict SDict
-	var err error
-
-	// We have optional args to set the output of the func
-	//
-	// Reverse
-	// Reverses the order
-	// From [0 1 2] to [2 1 0]
-	//
-	// Subslices
-	// By default the function returns a single slice with all the values sorted.
-	// Setting subslices to true will make the function return a set of sublices
-	// based on the input type/kind
-	// From [1 2 3 a b c] to [[1 2 3] [a b c]]
-	//
-	// Emptyslices
-	// By default the function only returns the slices that had an input to them.
-	// If you sort only strings, the output would be a slice of strings.
-	// But with this flag the function returns all possible slices, this is helpful for indexing
-	// From [[1 2 3] [a b c] [map[a:1 b:2]]] to [[1 2 3] [] [a b c] [] [] [map[a:1 b:2]] []]
-	//
-	// We can have up to 7 subslices total:
-	// intSlice, floatSlice, stringSlice, timeSlice, sliceSlice, mapSlice and defaultSlice
-	//
-	// Note that the output will always be an `Slice` even if all the items
-	// of the slice are of a single type/kind
-	switch len(sortargs) {
-	case 0:
-		dict = SDict{
-			"reverse":     false,
-			"subslices":   false,
-			"emptyslices": false,
-		}
-	case 1:
-		dict, err = StringKeyDictionary(sortargs[0])
-		if err != nil {
-			return "", err
-		}
-	default:
-		dict, err = StringKeyDictionary(sortargs...)
-		if err != nil {
-			return "", err
-		}
-	}
-
-	var intSlice, floatSlice, stringSlice, timeSlice, csliceSlice, mapSlice, defaultSlice, outputSlice Slice
-
-	for i := 0; i < inputSlice.Len(); i++ {
-		//switch t := inputSlice.Index(i).Interface().(type) {
-		iv, _ := indirect(inputSlice.Index(i))
-		switch t := iv.Interface().(type) {
-		case int, int64:
-			intSlice = append(intSlice, t)
-		case *int:
-			if t != nil {
-				intSlice = append(intSlice, *t)
-			}
-		case *int64:
-			if t != nil {
-				intSlice = append(intSlice, *t)
-			}
-		case float64:
-			floatSlice = append(floatSlice, t)
-		case *float64:
-			if t != nil {
-				floatSlice = append(floatSlice, *t)
-			}
-		case string:
-			stringSlice = append(stringSlice, t)
-		case *string:
-			if t != nil {
-				stringSlice = append(stringSlice, *t)
-			}
-		case time.Time:
-			timeSlice = append(timeSlice, t)
-		case *time.Time:
-			if t != nil {
-				timeSlice = append(timeSlice, *t)
-			}
-		default:
-			v := reflect.ValueOf(t)
-			switch v.Kind() {
-			case reflect.Slice:
-				csliceSlice = append(csliceSlice, t)
-			case reflect.Map:
-				mapSlice = append(mapSlice, t)
-			default:
-				defaultSlice = append(defaultSlice, t)
-			}
-		}
-	}
-
-	if dict.Get(strings.ToLower("reverse")) == true { // User wants the output in reversed order
-		sort.Slice(intSlice, func(i, j int) bool { return ToInt64(intSlice[i]) > ToInt64(intSlice[j]) })
-		sort.Slice(floatSlice, func(i, j int) bool { return ToFloat64(floatSlice[i]) > ToFloat64(floatSlice[j]) })
-		sort.Slice(stringSlice, func(i, j int) bool { return ToString(stringSlice[i]) > ToString(stringSlice[j]) })
-		sort.Slice(timeSlice, func(i, j int) bool { return timeSlice[i].(time.Time).Before(timeSlice[j].(time.Time)) })
-		sort.Slice(csliceSlice, func(i, j int) bool { return getLen(csliceSlice[i]) > getLen(csliceSlice[j]) })
-		sort.Slice(mapSlice, func(i, j int) bool { return getLen(mapSlice[i]) > getLen(mapSlice[j]) })
-	} else { // User wants the output in standard order
-		sort.Slice(intSlice, func(i, j int) bool { return ToInt64(intSlice[i]) < ToInt64(intSlice[j]) })
-		sort.Slice(floatSlice, func(i, j int) bool { return ToFloat64(floatSlice[i]) < ToFloat64(floatSlice[j]) })
-		sort.Slice(stringSlice, func(i, j int) bool { return ToString(stringSlice[i]) < ToString(stringSlice[j]) })
-		sort.Slice(timeSlice, func(i, j int) bool { return timeSlice[j].(time.Time).Before(timeSlice[i].(time.Time)) })
-		sort.Slice(csliceSlice, func(i, j int) bool { return getLen(csliceSlice[i]) < getLen(csliceSlice[j]) })
-		sort.Slice(mapSlice, func(i, j int) bool { return getLen(mapSlice[i]) < getLen(mapSlice[j]) })
-	}
-
-	if dict.Get(strings.ToLower("subslices")) == true { // User wants the output to be separated by type/kind
-		if dict.Get(strings.ToLower("emptyslices")) == true { // User wants the output to be filled with empty slices
-			outputSlice = append(outputSlice, intSlice, floatSlice, stringSlice, timeSlice, csliceSlice, mapSlice, defaultSlice)
-		} else { // User only wants the subset of slices that contain data
-			if len(intSlice) > 0 {
-				outputSlice = append(outputSlice, intSlice)
-			}
-
-			if len(floatSlice) > 0 {
-				outputSlice = append(outputSlice, floatSlice)
-			}
-
-			if len(stringSlice) > 0 {
-				outputSlice = append(outputSlice, stringSlice)
-			}
-
-			if len(timeSlice) > 0 {
-				outputSlice = append(outputSlice, timeSlice)
-			}
-
-			if len(csliceSlice) > 0 {
-				outputSlice = append(outputSlice, csliceSlice)
-			}
-
-			if len(mapSlice) > 0 {
-				outputSlice = append(outputSlice, mapSlice)
-			}
-
-			if len(defaultSlice) > 0 {
-				outputSlice = append(outputSlice, defaultSlice)
-			}
-		}
-	} else { // User wants a single slice output, without any subset
-		outputSlice = append(outputSlice, intSlice...)
-		outputSlice = append(outputSlice, floatSlice...)
-		outputSlice = append(outputSlice, stringSlice...)
-		outputSlice = append(outputSlice, timeSlice...)
-		outputSlice = append(outputSlice, csliceSlice...)
-		outputSlice = append(outputSlice, mapSlice...)
-		outputSlice = append(outputSlice, defaultSlice...)
-	}
-
-	return outputSlice, nil
-}
-*/
 
 func (c *Context) tmplSort(input interface{}, args ...interface{}) (interface{}, error) {
 	if c.IncreaseCheckCallCounterPremium("sort", 1, 3) {

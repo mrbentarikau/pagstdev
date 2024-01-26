@@ -11,10 +11,11 @@ import (
 // we also cant use discordgo.Channel because that would likely break a lot of custom commands at this point.
 type CtxChannel struct {
 	// These fields never change
-	ID        int64
-	GuildID   int64
-	IsPrivate bool
-	IsThread  bool
+	ID              int64
+	GuildID         int64
+	IsDMChannel     bool
+	IsPrivateThread bool
+	IsThread        bool
 
 	Name                 string                           `json:"name"`
 	Type                 discordgo.ChannelType            `json:"type"`
@@ -73,7 +74,8 @@ func CtxChannelFromCS(cs *dstate.ChannelState) *CtxChannel {
 	ctxChannel := &CtxChannel{
 		ID:                   cs.ID,
 		IsForum:              cs.Type.IsForum(),
-		IsPrivate:            cs.IsPrivate(),
+		IsDMChannel:          cs.IsDMChannel(),
+		IsPrivateThread:      cs.IsPrivateThread(),
 		IsThread:             cs.Type.IsThread(),
 		GuildID:              cs.GuildID,
 		Name:                 cs.Name,

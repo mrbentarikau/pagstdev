@@ -323,12 +323,16 @@ type ChannelState struct {
 	DefaultForumLayout            discordgo.ForumLayout          `json:"default_forum_layout"`
 }
 
-func (c *ChannelState) IsPrivate() bool {
+func (c *ChannelState) IsDMChannel() bool {
 	if c.Type == discordgo.ChannelTypeDM || c.Type == discordgo.ChannelTypeGroupDM {
 		return true
 	}
 
 	return false
+}
+
+func (c *ChannelState) IsPrivateThread() bool {
+	return c.Type == discordgo.ChannelTypeGuildPrivateThread
 }
 
 func (c *ChannelState) Mention() (string, error) {
