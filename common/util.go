@@ -379,7 +379,7 @@ func RemoveRoleDS(ms *dstate.MemberState, role int64) error {
 }
 
 var StringPerms = map[int64]string{
-	discordgo.PermissionReadMessages:       "Read Messages",
+	discordgo.PermissionViewChannel:        "Read Messages",
 	discordgo.PermissionSendMessages:       "Send Messages",
 	discordgo.PermissionSendTTSMessages:    "Send TTS Messages",
 	discordgo.PermissionManageMessages:     "Manage Messages",
@@ -470,7 +470,7 @@ func HumanizePermissions(perms int64) (res []string) {
 	if perms&discordgo.PermissionViewGuildInsights == discordgo.PermissionViewGuildInsights {
 		res = append(res, "ViewGuildInsights")
 	}
-	if perms&discordgo.PermissionReadMessages == discordgo.PermissionReadMessages {
+	if perms&discordgo.PermissionViewChannel == discordgo.PermissionViewChannel {
 		res = append(res, "ReadMessages")
 	}
 	if perms&discordgo.PermissionSendMessages == discordgo.PermissionSendMessages {
