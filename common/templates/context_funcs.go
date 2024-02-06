@@ -1150,6 +1150,59 @@ func (c *Context) tmplCreateThread(channel, name interface{}, values ...interfac
 	return CtxChannelFromCS(&tstate), nil
 }
 
+func (c *Context) tmplEditThread(channel interface{}, values ...interface{}) (*CtxChannel, error) {
+	if c.IncreaseCheckCallCounterPremium("edit_thread", 1, 1) {
+		return nil, ErrTooManyCalls
+	}
+
+	cID := c.ChannelArg(channel)
+	if cID == 0 {
+		cID = ToInt64(channel)
+	}
+
+	dgoChannel, err := common.BotSession.Channel(cID)
+	if err != nil {
+		return nil, errors.New("channel not found")
+	}
+
+	if !dgoChannel.Type.IsThread() {
+		return nil, errors.New("not a thread")
+	}
+
+	channelEdit := &discordgo.ChannelEdit{}
+
+	if len(values) > 0 {
+		threadSdict, err := StringKeyDictionary(values...)
+		if err != nil {
+			return nil, err
+		}
+
+		for key, val := range threadSdict {
+			key = strings.ToLower(key)
+			switch key {
+			case "archived":
+				valB := val.(bool)
+				channelEdit.Archived = &valB
+			case "invitable":
+				valB := val.(bool)
+				channelEdit.Invitable = &valB
+			case "locked":
+				valB := val.(bool)
+				channelEdit.Locked = &valB
+			}
+		}
+	}
+
+	var ctxThread *discordgo.Channel
+	ctxThread, err = common.BotSession.ChannelEdit(cID, channelEdit)
+	if err != nil {
+		return nil, err
+	}
+
+	tstate := dstate.ChannelStateFromDgo(ctxThread)
+	return CtxChannelFromCS(&tstate), nil
+}
+
 func (c *Context) tmplDeleteThread(thread interface{}) (string, error) {
 	if c.IncreaseCheckCallCounterPremium("delete_thread", 1, 1) {
 		return "", ErrTooManyCalls
@@ -2759,6 +2812,19 @@ func (c *Context) tmplGetGuild(arg interface{}) (guild *dstate.GuildSet, err err
 	guildID := ToInt64(arg)
 
 	guild, err = discorddata.GetFullGuild(guildID)
+	return
+}
+
+func (c *Context) tmplGetGuildChannel(arg interface{}) (channel *discordgo.Channel, err error) {
+	if c.IncreaseCheckGenericAPICall() {
+		return nil, ErrTooManyAPICalls
+	}
+
+	if c.IncreaseCheckCallCounter("guild_getGuildChannel", 3) {
+		return nil, ErrTooManyCalls
+	}
+
+	channel, err = common.BotSession.Channel(ToInt64(arg))
 	return
 }
 
