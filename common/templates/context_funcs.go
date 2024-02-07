@@ -1099,6 +1099,7 @@ func (c *Context) tmplCreateThread(channel, name interface{}, values ...interfac
 	rateLimit := cstate.DefaultThreadRateLimitPerUser
 	var mID int64
 	var invitable bool
+	aaDuration := 4320
 
 	if len(values) > 0 {
 		threadSdict, err := StringKeyDictionary(values...)
@@ -1109,6 +1110,17 @@ func (c *Context) tmplCreateThread(channel, name interface{}, values ...interfac
 		for key, val := range threadSdict {
 			key = strings.ToLower(key)
 			switch key {
+			case "auto_archive_duration":
+				aaDuration = tmplToInt(val)
+				if aaDuration < 1440 {
+					aaDuration = 60
+				} else if aaDuration < 4320 {
+					aaDuration = 1440
+				} else if aaDuration < 10080 {
+					aaDuration = 4320
+				} else if aaDuration >= 10080 {
+					aaDuration = 10080
+				}
 			case "invitable":
 				value, ok := val.(bool)
 				if !ok {
@@ -1137,7 +1149,7 @@ func (c *Context) tmplCreateThread(channel, name interface{}, values ...interfac
 
 	start := &discordgo.ThreadStart{
 		Name:                ToString(name),
-		AutoArchiveDuration: 10080, // 7 days
+		AutoArchiveDuration: aaDuration,
 		Type:                threadType,
 		Invitable:           invitable,
 		RateLimitPerUser:    rateLimit,
@@ -1207,6 +1219,17 @@ func (c *Context) tmplEditThread(channel interface{}, values ...interface{}) (*C
 					return nil, fmt.Errorf("value for \"%s\" is not of type bool", key)
 				}
 				channelEdit.Archived = &value
+			case "auto_archive_duration":
+				aaDuration := tmplToInt(val)
+				if aaDuration < 1440 {
+					channelEdit.AutoArchiveDuration = 60
+				} else if aaDuration < 4320 {
+					channelEdit.AutoArchiveDuration = 1440
+				} else if aaDuration < 10080 {
+					channelEdit.AutoArchiveDuration = 4320
+				} else if aaDuration >= 10080 {
+					channelEdit.AutoArchiveDuration = 10080
+				}
 			case "invitable":
 				value, ok := val.(bool)
 				if !ok {
@@ -1223,8 +1246,7 @@ func (c *Context) tmplEditThread(channel interface{}, values ...interface{}) (*C
 				rateLimit := tmplToInt(val)
 				if rateLimit < 0 {
 					rateLimit = 0
-				}
-				if rateLimit > 21600 {
+				} else if rateLimit > 21600 {
 					rateLimit = 21600
 				}
 				channelEdit.RateLimitPerUser = &rateLimit
