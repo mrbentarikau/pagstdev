@@ -49,10 +49,6 @@ type CtxChannel struct {
 	// The default sort order type used to order posts in forum channels.
 	// Defaults to null, which indicates a preferred sort order hasn't been set by a channel admin.
 	DefaultSortOrder *discordgo.ForumSortOrderType `json:"default_sort_order"`
-
-	// The initial RateLimitPerUser to set on newly created threads in a channel.
-	// This field is copied to the thread at creation time and does not live update.
-	DefaultThreadRateLimitPerUser int `json:"default_thread_rate_limit_per_user"`
 }
 
 // CtxThreadStart is almost a 1:1 copy of discordgo.ThreadStart but with some added fields
@@ -115,10 +111,9 @@ func CtxChannelFromCS(cs *dstate.ChannelState) *CtxChannel {
 		AvailableTags: cs.AvailableTags,
 		AppliedTags:   cs.AppliedTags,
 
-		DefaultForumLayout:            cs.DefaultForumLayout,
-		DefaultSortOrder:              cs.DefaultSortOrder,
-		DefaultReactionEmoji:          cs.DefaultReactionEmoji,
-		DefaultThreadRateLimitPerUser: cs.DefaultThreadRateLimitPerUser,
+		DefaultForumLayout:   cs.DefaultForumLayout,
+		DefaultSortOrder:     cs.DefaultSortOrder,
+		DefaultReactionEmoji: cs.DefaultReactionEmoji,
 	}
 
 	return ctxChannel
