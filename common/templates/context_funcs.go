@@ -1111,9 +1111,10 @@ func (c *Context) tmplCreateThread(channel, name interface{}, values ...interfac
 			switch key {
 			case "invitable":
 				value, ok := val.(bool)
-				if ok {
-					invitable = value
+				if !ok {
+					return nil, fmt.Errorf("value for \"%s\" is not of type bool", key)
 				}
+				invitable = value
 			case "message_id":
 				mID = ToInt64(val)
 			case "private":
