@@ -1081,7 +1081,7 @@ func (c *Context) AddThreadToGuildSet(t *dstate.ChannelState) {
 }
 
 func (c *Context) tmplCreateThread(channel, name interface{}, values ...interface{}) (*CtxChannel, error) {
-	if c.IncreaseCheckCallCounterPremium("create_thread", 1, 1) {
+	if c.IncreaseCheckCallCounterPremium("create_thread", 1, 3) {
 		return nil, ErrTooManyCalls
 	}
 
@@ -1175,10 +1175,13 @@ func (c *Context) tmplCreateThread(channel, name interface{}, values ...interfac
 }
 
 func (c *Context) tmplEditThread(channel interface{}, values ...interface{}) (*CtxChannel, error) {
-	if c.IncreaseCheckCallCounterPremium("edit_thread", 1, 1) {
+	if c.IncreaseCheckCallCounterPremium("edit_thread", 1, 3) {
 		return nil, ErrTooManyCalls
 	}
+
 	var cID int64
+	var cState *dstate.ChannelState
+
 	cID = c.ChannelArg(channel)
 	if cID == 0 {
 		// thread probably not in state and is archived
@@ -1189,17 +1192,17 @@ func (c *Context) tmplEditThread(channel interface{}, values ...interface{}) (*C
 			return nil, errors.New("channel/thread not found")
 		}
 
-		if !dgoChannel.Type.IsThread() {
-			return nil, errors.New("not a thread")
-		}
+		toCState := dstate.ChannelStateFromDgo(dgoChannel)
+		cState = &toCState
 	} else {
-		cstate := c.GS.GetThread(cID)
-		if cstate == nil {
+		cState = c.GS.GetChannelOrThread(cID)
+		if cState == nil {
 			return nil, errors.New("channel/thread not in state")
 		}
-		if !cstate.Type.IsThread() {
-			return nil, errors.New("not a thread")
-		}
+	}
+
+	if !cState.Type.IsThread() {
+		return nil, errors.New("not a thread")
 	}
 
 	channelEdit := &discordgo.ChannelEdit{}
@@ -1265,7 +1268,7 @@ func (c *Context) tmplEditThread(channel interface{}, values ...interface{}) (*C
 }
 
 func (c *Context) tmplDeleteThread(thread interface{}) (string, error) {
-	if c.IncreaseCheckCallCounterPremium("delete_thread", 1, 1) {
+	if c.IncreaseCheckCallCounterPremium("delete_thread", 1, 3) {
 		return "", ErrTooManyCalls
 	}
 
@@ -1426,7 +1429,7 @@ func ProcessOptionalForumPostArgs(c *dstate.ChannelState, values ...interface{})
 func (c *Context) tmplCreateForumPost(channel, name, content interface{}, optional ...interface{}) (*CtxChannel, error) {
 
 	// shares same counter as create thread
-	if c.IncreaseCheckCallCounterPremium("create_thread", 1, 1) {
+	if c.IncreaseCheckCallCounterPremium("create_thread", 1, 3) {
 		return nil, ErrTooManyCalls
 	}
 
