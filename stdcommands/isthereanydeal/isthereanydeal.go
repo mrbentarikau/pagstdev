@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"html"
 	"math/rand"
 	"net/url"
 	"strings"
@@ -168,7 +169,7 @@ var Command = &commands.YAGCommand{
 
 			}
 			compactData := fmt.Sprintf("%s: %s | CUT: %d%% | %s: <%s> | ITAD: <%s>",
-				itadSearchResults[0].Title,
+				html.UnescapeString(itadSearchResults[0].Title),
 				compactPriceNew,
 				compactPrice.PriceCut,
 				compactPrice.Shop.Name,
@@ -310,7 +311,7 @@ func embedCreator(itadComplete *ItadComplete, i int, paginated, compact bool) *d
 			IconURL: "https://d2uym1p5obf9p8.cloudfront.net/images/favicon.png",
 		},
 
-		Title:       itadComplete.Search.Data.Results[i].Title,
+		Title:       html.UnescapeString(itadComplete.Search.Data.Results[i].Title),
 		Description: embedDescription,
 
 		Color: int(rand.Int63n(16777215)),
