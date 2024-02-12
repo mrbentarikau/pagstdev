@@ -90,11 +90,40 @@ var Command = &commands.YAGCommand{
 			return nil, err
 		}
 
-		if len(itadSearch.Data.Results) == 0 {
+		if len(itadSearch.Data) == 0 {
 			return "Game title not found", nil
 		}
 
-		itadSearchResults := itadSearch.Data.Results
+		// itadSearchResults := itadSearch.Data
+
+		// remove duplicate game IDs
+		duplicateMap := make(map[string]ItadSearchResult)
+		var bufferSlice []string
+	OUTER:
+		for pos, itadSearchItem := range itadSearch.Data {
+			if pos == 0 {
+				bufferSlice = append(bufferSlice, itadSearchItem.ID)
+			} else {
+				for _, uuid := range bufferSlice {
+					if uuid == itadSearchItem.ID {
+						continue OUTER
+					}
+				}
+			}
+
+			bufferSlice = append(bufferSlice, itadSearchItem.ID)
+
+			duplicateMap[itadSearchItem.ID] = ItadSearchResult{
+				ID:    itadSearchItem.ID,
+				Plain: itadSearchItem.Plain,
+				Title: itadSearchItem.Title,
+			}
+		}
+
+		var itadSearchResults []ItadSearchResult
+		for _, value := range bufferSlice {
+			itadSearchResults = append(itadSearchResults, duplicateMap[value])
+		}
 
 		var plainsBuilder strings.Builder
 		var plainsSlice = make([]string, 0)
@@ -112,7 +141,9 @@ var Command = &commands.YAGCommand{
 		if !compactView {
 			for i := 0; i <= len(plainsSlice)/5; i++ {
 				var joinedPlains string
-				if (len(plainsSlice)-i*5)/5 != 0 {
+				if !paginatedView {
+					joinedPlains = plainsSlice[0]
+				} else if (len(plainsSlice)-i*5)/5 != 0 {
 					joinedPlains = strings.Join(plainsSlice[i*5:i*5+5], ",")
 				} else {
 					joinedPlains = strings.Join(plainsSlice[i*5:], ",")
@@ -147,7 +178,14 @@ var Command = &commands.YAGCommand{
 
 		// Query for store prices (discount, regular)
 		var itadPrice ItadPrice
-		queryPrice := fmt.Sprintf("%s/v01/game/prices/?key=%s&plains=%s&country=%s", itadAPIHost, itadAPIKey, plainsBuilder.String(), country)
+		var pricePlains string
+		if compactView || !paginatedView {
+			pricePlains = itadSearchResults[0].Plain
+		} else {
+			pricePlains = plainsBuilder.String()
+		}
+
+		queryPrice := fmt.Sprintf("%s/v01/game/prices/?key=%s&plains=%s&country=%s", itadAPIHost, itadAPIKey, pricePlains, country)
 		body, err = util.RequestFromAPI(queryPrice)
 		if err != nil {
 			return nil, err
@@ -159,7 +197,7 @@ var Command = &commands.YAGCommand{
 			return nil, err
 		}
 
-		if compactView && !paginatedView {
+		if compactView {
 			var compactPriceNew string
 			compactPrice := itadPrice.Data[itadSearchResults[0].Plain].List[0]
 			if itadPrice.Meta.Currency == "EUR" {
@@ -196,10 +234,10 @@ var Command = &commands.YAGCommand{
 		}
 
 		itadComplete := &ItadComplete{
-			Search:   itadSearch,
-			Price:    itadPrice,
-			PriceLow: itadPriceLow,
-			GameInfo: itadGameInfo,
+			SearchData: &itadSearchResults,
+			Price:      &itadPrice,
+			PriceLow:   &itadPriceLow,
+			GameInfo:   &itadGameInfo,
 		}
 
 		itadEmbed := embedCreator(itadComplete, 0, paginatedView, compactView)
@@ -207,7 +245,7 @@ var Command = &commands.YAGCommand{
 		var pm *paginatedmessages.PaginatedMessage
 		if paginatedView {
 			pm, err = paginatedmessages.CreatePaginatedMessage(
-				data.GuildData.GS.ID, data.ChannelID, 1, len(itadComplete.Search.Data.Results), func(p *paginatedmessages.PaginatedMessage, page int) (interface{}, error) {
+				data.GuildData.GS.ID, data.ChannelID, 1, len(*itadComplete.SearchData), func(p *paginatedmessages.PaginatedMessage, page int) (interface{}, error) {
 					i := page - 1
 					paginatedEmbed := embedCreator(itadComplete, i, paginatedView, compactView)
 					return paginatedEmbed, nil
@@ -236,12 +274,13 @@ func embedCreator(itadComplete *ItadComplete, i int, paginated, compact bool) *d
 	}
 
 	embedDescription = embedPricingHeader
+	itadCSD := (*itadComplete.SearchData)[i]
 
-	itadPriceDataListSlice := itadComplete.Price.Data[itadComplete.Search.Data.Results[i].Plain].List
+	itadPriceDataListSlice := itadComplete.Price.Data[itadCSD.Plain].List
 	lenItadPDL := len(itadPriceDataListSlice)
 
 	for _, v := range itadPriceDataListSlice {
-		priceLow := itadComplete.PriceLow.Compact[itadComplete.Search.Data.Results[i].Plain][v.Shop.ID]
+		priceLow := itadComplete.PriceLow.Compact[itadCSD.Plain][v.Shop.ID]
 		if itadComplete.Price.Meta.Currency == "EUR" {
 			embedPriceNew = fmt.Sprintf("%.2f%s", v.PriceNew, embedCurrency)
 			if !compact {
@@ -306,12 +345,12 @@ func embedCreator(itadComplete *ItadComplete, i int, paginated, compact bool) *d
 	embed := &discordgo.MessageEmbed{
 		Author: &discordgo.MessageEmbedAuthor{
 			Name: "IsThereAnyDeal",
-			URL:  itadComplete.Price.Data[itadComplete.Search.Data.Results[i].Plain].Urls.Game,
+			URL:  itadComplete.Price.Data[itadCSD.Plain].Urls.Game,
 			//IconURL: "https://raw.githubusercontent.com/IsThereAnyDeal/AugmentedSteam/master/src/img/itad.png",
 			IconURL: "https://d2uym1p5obf9p8.cloudfront.net/images/favicon.png",
 		},
 
-		Title:       html.UnescapeString(itadComplete.Search.Data.Results[i].Title),
+		Title:       html.UnescapeString(itadCSD.Title),
 		Description: embedDescription,
 
 		Color: int(rand.Int63n(16777215)),
@@ -319,7 +358,7 @@ func embedCreator(itadComplete *ItadComplete, i int, paginated, compact bool) *d
 
 	if !compact {
 		embed.Thumbnail = &discordgo.MessageEmbedThumbnail{
-			URL: itadComplete.GameInfo.Data[itadComplete.Search.Data.Results[i].Plain].Image,
+			URL: itadComplete.GameInfo.Data[itadCSD.Plain].Image,
 		}
 	}
 
