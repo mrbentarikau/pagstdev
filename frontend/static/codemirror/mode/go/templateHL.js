@@ -167,7 +167,7 @@
     "deleteTrigger":true,
     "editNickname":true,
     "getAllMessageReactions":true,
-    // "getAuditLogEntries":true,
+    "getAuditLogEntries":true,
     "getBotCount":true,
     "getGuildMembers":true,
     "getGuildPreview":true,

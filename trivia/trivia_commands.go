@@ -13,8 +13,16 @@ func (p *Plugin) AddCommands() {
 		Description:               "Asks a random question, you have got 30 seconds to answer!",
 		RunInDM:                   false,
 		ApplicationCommandEnabled: true,
+		ArgSwitches: []*dcmd.ArgDef{
+			{Name: "local", Help: "In-built Trivia"},
+		},
 		RunFunc: func(parsed *dcmd.Data) (interface{}, error) {
-			err := manager.NewTrivia(parsed.GuildData.GS.ID, parsed.ChannelID)
+			var local bool
+			if parsed.Switches["local"].Value != nil && parsed.Switches["local"].Value.(bool) {
+				local = true
+			}
+
+			err := manager.NewTrivia(parsed.GuildData.GS.ID, parsed.ChannelID, local)
 			if err != nil {
 				if err == ErrSessionInChannel {
 					logger.WithError(err).Error("Failed to create new trivia")
