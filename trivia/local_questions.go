@@ -1863,4 +1863,131 @@ var LocalQuestions = map[string][]TriviaQuestion{
 			Options:  []string{"Voyager 1", "Cassini", "Voyager 2"},
 		},
 	},
+	"Art": {
+		{
+			Answer:   "Antonio Canova",
+			Question: "Which Neoclassical Italian sculptor is celebrated for his marble sculptures, often portraying classical themes and figures, like 'Psyche Revived by Cupid's Kiss' and 'The Three Graces'?",
+			Options:  []string{"Auguste Rodin", "Donatello", "Gian Lorenzo Bernini"},
+		},
+		{
+			Answer:   "Salvador Dalí",
+			Question: "Who painted 'The Persistence of Memory' featuring melting clocks?",
+			Options:  []string{"Claude Monet", "Vincent van Gogh", "Pablo Picasso"},
+		},
+		{
+			Answer:   "Georgia O'Keeffe",
+			Question: "Which American artist is renowned for her paintings of enlarged flowers, New York skyscrapers, and New Mexico landscapes, often exploring the themes of sexuality and femininity?",
+			Options:  []string{"Yayoi Kusama", "Tamara de Lempicka", "Frida Kahlo"},
+		},
+		{
+			Answer:   "Mark Rothko",
+			Question: "Which American abstract expressionist painter is recognized for his large colour-field paintings like 'No. 61 (Rust and Blue)' and 'White Center (Yellow, Pink and Lavender on Rose)'?",
+			Options:  []string{"Jackson Pollock", "Franz Kline", "Willem de Kooning"},
+		},
+		{
+			Answer:   "Leonardo da Vinci",
+			Question: "Which artist painted the famous scene of 'The Last Supper'?",
+			Options:  []string{"Claude Monet", "Michelangelo", "Caravaggio"},
+		},
+		{
+			Answer:   "Sacred and Profane Love",
+			Question: "Which painting by the Venetian Renaissance artist Titian, shrouded in symbolism, juxtaposes two women, one robed and the other disrobed?",
+			Options:  []string{"The School of Athens", "Bird of Venus", "Primavera"},
+		},
+		{
+			Answer:   "Peter Blake",
+			Question: "Who is known for his cut-out artworks and designed the cover for The Beatles' 'Sgt. Pepper's Lonely Hearts Club Band' album?",
+			Options:  []string{"Henri Matisse", "Keith Haring", "Andy Warhol"},
+		},
+		{
+			Answer:   "Egon Schiele",
+			Question: "Which Austrian artist, associated with the Expressionist movement, is known for his provocative and emotionally charged works, often featuring twisted and distorted figures?",
+			Options:  []string{"Edward Munch", "Pablo Picasso", "Henri Matisse"},
+		},
+		{
+			Answer:   "Romanticism",
+			Question: "Which art movement, prevalent in the 18th to mid-19th centuries, emphasized emotion, individualism, and the sublime in nature, seen in works like 'Wanderer above the Sea of Fog' by Caspar David Friedrich and 'The Third of May 1808' by Francisco Goya?",
+			Options:  []string{"Impressionism", "Realism", "Neoclassicism"},
+		},
+		{
+			Answer:   "Albrecht Dürer",
+			Question: "Which German Renaissance artist is recognized for his meticulous and detailed woodcuts, engravings, and paintings like 'Melencolia I' and 'Young Hare'?",
+			Options:  []string{"Jan van Eyck", "Pieter Bruegel the Elder", "Hieronymus Bosch"},
+		},
+		{
+			Answer:   "Kiki Smith",
+			Question: "Which American artist is known for her diverse body of work, spanning various mediums, including sculpture, printmaking, and drawing, often exploring themes of feminism, nature and the human body?",
+			Options:  []string{"Jenny Holzer", "Yayoi Kusama", "Cindy Sherman"},
+		},
+		{
+			Answer:   "Phidias",
+			Question: "Who sculpted the monumental statue of Athena Parthenos that once stood in the Parthenon on the Acropolis in Athens?",
+			Options:  []string{"Praxiteles", "Myron", "Polykleitos"},
+		},
+		{
+			Answer:   "Raphael",
+			Question: "Which Italian painter and architect is known for his works in the High Renaissance, including 'The School of Athens' and 'The Marriage of the Virgin'?",
+			Options:  []string{"Piet Mondrian", "Vincent van Gogh", "René Magritte"},
+		},
+		{
+			Answer:   "James McNeill Whistler",
+			Question: "Who is known for creating the 'Whistler's Mother' portrait?",
+			Options:  []string{"John Singer Sargent", "Édouard Manet", "Gustav Klimt"},
+		},
+		{
+			Answer:   "Artemisia Gentileschi",
+			Question: "Which Italian Baroque artist is known for her powerful and dramatic paintings, often featuring strong female characters, such as 'Judith slaying Holofernes' and 'Susanna and the Elders'?",
+			Options:  []string{"Giana Lorenzo Bernini", "Caravaggio", "Raphael"},
+		},
+		{
+			Answer:   "William Blake",
+			Question: "Which English artist, poet, and printmaker is recognized for his visionary and symbolic artworks, such as 'The Ancient of Days' and 'Songs of Innocence and Experience'?",
+			Options:  []string{"John Constable", "Thomas Gainsborough", "J.M.W. Turner"},
+		},
+		{
+			Answer:   "Titian",
+			Question: "Which Venetian Renaissance painter is recognized for his mastery of colour and brushwork, seen in paintings like 'Venus of Urbino' and 'Bacchus and Ariadne'?",
+			Options:  []string{"Raphael", "Caravaggio", "Leonardo da Vinci"},
+		},
+		{
+			Answer:   "Line art",
+			Question: "What artistic technique involves creating images using only lines, without the use of shading or colour, often resulting in clean, minimalist representations of subjects?",
+			Options:  []string{"Pointillism", "Fauvism", "Cubism"},
+		},
+		{
+			Answer:   "Guggenheim Museum",
+			Question: "Which modern and contemporary art museum, with its distinctive spiral design, is recognized for its exceptional collection, including works by artists like Kandinsky, Picasso, and van Gogh?",
+			Options:  []string{"The Tate Museum", "The Museum of Modern Art (MoMA)", "The Metropolitan Museum of Art"},
+		},
+		{
+			Answer:   "Jacob Lawrence",
+			Question: "Which artist, a key figure in the Harlem Renaissance, is known for his vibrant and energetic depictions of African American life in the 20th century?",
+			Options:  []string{"Aaron Douglas", "Romare Bearden", "Charles Alston"},
+		},
+		{
+			Answer:   "Frida Kahlo",
+			Question: "Who is known for her vibrant and chaotic paintings, often portraying the human condition and political issues, such as 'The Two Fridas' and 'Self-Portrait with Thorn Necklace and Hummingbird'?",
+			Options:  []string{"Jose Clemente Orozco", "Diego Rivera", "David Alfaro Sigueiros"},
+		},
+		{
+			Answer:   "The British Museum",
+			Question: "Which renowned museum is known for its vast and diverse collection, including the Rosetta Stone, the Elgin Marbles, and the Egyptian mummies?",
+			Options:  []string{"The Tate Museum", "The Victoria and Albert Museum", "The Louvre Museum"},
+		},
+		{
+			Answer:   "Vincent van Gogh",
+			Question: "Which artist, known for his unique style and self-portraits, famously cut off a portion of his own ear?",
+			Options:  []string{"Pablo Picasso", "Andy Warhol", "Salvador Dalí"},
+		},
+		{
+			Answer:   "Francis Bacon",
+			Question: "Who is known for his distorted and unsettling depictions of the human figure, often associated with the Surrealist movement?",
+			Options:  []string{"Max Ernst", "Giorgio de Chirico", "Salvador Dalí"},
+		},
+		{
+			Answer:   "Katsushika Hokusai",
+			Question: "Who is known for his intricate woodcuts and prints, particularly 'The Great Wave off Kanagawa'?",
+			Options:  []string{"Utagawa Hiroshige", "Takashi Murakami", "Yayoi Kusama"},
+		},
+	},
 }

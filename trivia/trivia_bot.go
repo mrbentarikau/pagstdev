@@ -100,8 +100,9 @@ func (tm *triviaSessionManager) NewTrivia(guildID, channelID int64, localQuestio
 		question.Category = categories[0]
 		question.Type = "Multiple"
 		question.RandomizeOptionOrder()
-	} else {
+	} else if len(triviaQuestions) > 0 {
 		question = triviaQuestions[0]
+
 	}
 
 	if question.Type == "boolean" {
