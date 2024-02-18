@@ -1,7 +1,7 @@
 // local trivia uses some questions from Pixel Puzzles Trivia - SteamAppID: 1005210
 package trivia
 
-var LocalQuestions = map[string][]*TriviaQuestion{
+var LocalQuestions = map[string][]TriviaQuestion{
 	"Entertainment - Movies": {
 		{
 			Answer:   "Jareth",
@@ -1204,6 +1204,138 @@ var LocalQuestions = map[string][]*TriviaQuestion{
 			Answer:   "Tetris",
 			Question: "What was the first video game played in space?",
 			Options:  []string{"Pac-Man", "Super Mario Bros.", "Donkey Kong"},
+		},
+	},
+	"Science - Space": {
+		{
+			Answer:   "Isaac Newton",
+			Question: "Which famous scientist and mathematician formulated the laws of motion and universal gravitation, laying the foundation for modern physics?",
+			Options:  []string{"Johannes Kepler", "Galileo Galilei", "Gottfried Wilhelm Leibniz"},
+		},
+		{
+			Answer:   "John Glenn",
+			Question: "Who was the first American to orbit the Earth, completing three orbits in the Friendship 7 spacecraft?",
+			Options:  []string{"Scott Carpenter", "Alan Shepard", "Gus Grissom"},
+		},
+		{
+			Answer:   "Ursa Minor",
+			Question: "Of what constellation is the Little Dipper a part?",
+			Options:  []string{"Draco", "Lyra", "Cepheus"},
+		},
+		{
+			Answer:   "Hayabusa",
+			Question: "Which mission was the first to return samples from an asteroid, collecting material from the surface of Itokawa in 2005?",
+			Options:  []string{"Rosetta", "OSIRIS-REx", "Dawn"},
+		},
+		{
+			Answer:   "Galileo",
+			Question: "What is the name of the spacecraft that successfully orbited Jupiter and its moons, providing crucial data about the gas giant and its Galilean moons?",
+			Options:  []string{"Juno", "Cassini", "New Horizons"},
+		},
+		{
+			Answer:   "Mercury",
+			Question: "Which of the following planets is not a gas giant?",
+			Options:  []string{"Jupiter", "Saturn", "Uranus"},
+		},
+		{
+			Answer:   "Crab Nebula",
+			Question: "What is the name of the supernova remnant located in the constellation Taurus, resulting from a supernova explosion observed in 1054 AD?",
+			Options:  []string{"Veil Nebula", "Cassiopeia A", "Tycho's Supernova Remnant"},
+		},
+		{
+			Answer:   "Apollo 11",
+			Question: "What is the name of the mission that successfully landed humans on the Moon for the first time in 1969?",
+			Options:  []string{"Gemini 8", "Vostok 1", "Apollo 13"},
+		},
+		{
+			Answer:   "Io",
+			Question: "Which moon of Jupiter is known for its intense volcanic activity and colourful surface?",
+			Options:  []string{"Europa", "Ganymede", "Callisto"},
+		},
+		{
+			Answer:   "The Hunter",
+			Question: "What is the larger constellation that includes Orion's Belt sometimes referred to as?",
+			Options:  []string{"Ursa Major", "Leo", "Cygnus"},
+		},
+		{
+			Answer:   "Jupiter",
+			Question: "Which planet in our solar system has the largest ocean, composed of liquid metallic hydrogen?",
+			Options:  []string{"Earth", "Neptune", "Uranus"},
+		},
+		{
+			Answer:   "Neptune",
+			Question: "Which planet in our solar system is the coldest, with surface temperatures dropping as low as -224 degrees Celsius (-371 deggrees Fahrenheit)?",
+			Options:  []string{"Uranus", "Saturn", "Mercury"},
+		},
+		{
+			Answer:   "Uranus",
+			Question: "Which planet in our solar system is the seventh to the Sun?",
+			Options:  []string{"Neptune", "Saturn", "Jupiter"},
+		},
+		{
+			Answer:   "Saturn",
+			Question: "Which planet in our solar system is the sixth to the Sun?",
+			Options:  []string{"Neptune", "Uranus", "Jupiter"},
+		},
+		{
+			Answer:   "Andromeda",
+			Question: "Which of the following is not a Zodiac constellation?",
+			Options:  []string{"Pisces", "Taurus", "Virgo"},
+		},
+		{
+			Answer:   "Hubble Space Telescope",
+			Question: "Which telescope. launched in 1990, has provided stunning images of distant galaxies and nebulas?",
+			Options:  []string{"James Webb Space Telescope", "Chandra X-ray Observatory", "Spitzer Space Telescope"},
+		},
+		{
+			Answer:   "A line-up of three celestial bodies, such as the Sun, Earth, and Moon during an eclipse",
+			Question: "What is syzygy?",
+			Options:  []string{"The outermost layer of a star's atmosphere", "A group of stars forming a recognizable pattern", "The point in an object's orbit where it is closest to the Sun"},
+		},
+		{
+			Answer:   "Moon",
+			Question: "Which celestial body is home to the Sea of Tranquillity?",
+			Options:  []string{"Mars", "Venus", "Jupiter"},
+		},
+		{
+			Answer:   "Europa",
+			Question: "Which Moon of Jupiter is known for its geysers that spew water vapour into space?",
+			Options:  []string{"Io", "Callisto", "Ganymede"},
+		},
+		{
+			Answer:   "NASA",
+			Question: "Which space agency launched the Mars rovers Spirit and Opportunity in 2003 for exploration of the Martian surface?",
+			Options:  []string{"ESA", "ISRO", "Roscosmos"},
+		},
+		{
+			Answer:   "Pioneer 10",
+			Question: "What is the name of the NASA spacecraft that was the first to travel through the asteroid belt and make a flyby of Jupiter, providing valuable data about the gas giant?",
+			Options:  []string{"New Horizons", "Voyager 2", "Voyager 1"},
+		},
+		{
+			Answer:   "Hercules-Corona Borealis Great Wall",
+			Question: "What is the name of the largest known structure in the universe, a filament of galaxies spanning hundred of millions of light years?",
+			Options:  []string{"Eridanus Supervoid", "Sloan Great Wall", "Boötes Void"},
+		},
+		{
+			Answer:   "About 1670 km/h (1037 mi/h)",
+			Question: "Approximately how fast does the Earth spin on its axis at the equator?",
+			Options:  []string{"About 2000 km/h (1242 mi/h)", "About 500 km/h (310 mi/h)", "About 1000 km/h (621 mi/h)"},
+		},
+		{
+			Answer:   "Mercury and Venus",
+			Question: "Which to planets in our solar system do not have any natural moons?",
+			Options:  []string{"Earth and Mars", "Uranus and Neptune", "Uranus and Saturn"},
+		},
+		{
+			Answer:   "About 13.8 billion years",
+			Question: "How old is the universe, approximately, based on current scientific estimates?",
+			Options:  []string{"About 2 billion years", "About 78.4 million years", "About 4.5 billion years"},
+		},
+		{
+			Answer:   "Galaxy Cluster",
+			Question: "What is the term for a massive concentration of matter in the universe, typically containing thousands of galaxies bound together by gravity?",
+			Options:  []string{"Dark Matter Halo", "Quasar", "Supermassive Black Hole"},
 		},
 	},
 }

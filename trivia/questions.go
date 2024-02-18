@@ -70,8 +70,8 @@ func (q *TriviaQuestion) Decode() {
 // RandomizeOptionOrder randomizes the option order and returns the result
 // this also adds the answer to the list of options
 func (q *TriviaQuestion) RandomizeOptionOrder() {
-	cop := make([]string, len(q.Options)+1)
-	copy(cop, q.Options)
+	cop := make([]string, len(defaultOptionEmojis))
+	copy(cop, q.Options[:len(defaultOptionEmojis)-1])
 	cop[len(cop)-1] = q.Answer
 
 	rand.Shuffle(len(cop), func(i, j int) {

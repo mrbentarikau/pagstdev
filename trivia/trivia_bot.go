@@ -58,6 +58,12 @@ type triviaSession struct {
 }
 
 var ErrSessionInChannel = errors.New("a trivia session already exists in this channel")
+var defaultOptionEmojis = []string{
+	"\U0001F1E6", // Regional ind. A
+	"\U0001F1E7", // Regional ind. B
+	"\U0001F1E8", // Regional ind. C
+	"\U0001F1E9", // Regional ind. D
+}
 
 func (tm *triviaSessionManager) NewTrivia(guildID, channelID int64, localQuestions bool) error {
 	tm.mu.Lock()
@@ -68,12 +74,18 @@ func (tm *triviaSessionManager) NewTrivia(guildID, channelID int64, localQuestio
 		}
 	}
 
-	triviaQuestions, err := FetchQuestions(1)
-	if err != nil {
-		localQuestions = true
+	var optionEmojis []string = defaultOptionEmojis
+	var question *TriviaQuestion
+	var triviaQuestions []*TriviaQuestion
+	var err error
+
+	if !localQuestions {
+		triviaQuestions, err = FetchQuestions(1)
+		if err != nil {
+			localQuestions = true
+		}
 	}
 
-	var question *TriviaQuestion
 	if localQuestions {
 		categories := make([]string, 0)
 		for cat := range LocalQuestions {
@@ -82,27 +94,20 @@ func (tm *triviaSessionManager) NewTrivia(guildID, channelID int64, localQuestio
 		rand.Shuffle(len(categories), func(i, j int) { categories[i], categories[j] = categories[j], categories[i] })
 
 		insideLocalQuestions := LocalQuestions[categories[0]]
-		question = insideLocalQuestions[rand.Intn(len(insideLocalQuestions))]
+		questionBuff := insideLocalQuestions[rand.Intn(len(insideLocalQuestions))]
+		question = &questionBuff
 
 		question.Category = categories[0]
 		question.Type = "Multiple"
-
 		question.RandomizeOptionOrder()
 	} else {
 		question = triviaQuestions[0]
 	}
-	var optionEmojis []string
+
 	if question.Type == "boolean" {
 		optionEmojis = []string{
 			"\U0001F1F9", // Regional ind. T
 			"\U0001F1EB", // Regional ind. F
-		}
-	} else {
-		optionEmojis = []string{
-			"\U0001F1E6", // Regional ind. A
-			"\U0001F1E7", // Regional ind. B
-			"\U0001F1E8", // Regional ind. C
-			"\U0001F1E9", // Regional ind. D
 		}
 	}
 
@@ -270,7 +275,7 @@ func (t *triviaSession) buildEmbed() *discordgo.MessageEmbed {
 
 	if t.localTrivia {
 		embed.Footer = &discordgo.MessageEmbedFooter{
-			Text:    "Powered by PAGSTDB in-built Trivia",
+			Text:    "Powered by " + common.ConfBotName.GetString() + " in-built Trivia",
 			IconURL: common.BotUser.AvatarURL("512"),
 		}
 	} else {
