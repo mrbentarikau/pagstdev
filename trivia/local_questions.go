@@ -680,7 +680,7 @@ var LocalQuestions = map[string][]TriviaQuestion{
 		},
 		{
 			Answer:   "Audrey Kathleen Ruston",
-			Question: "What was Audrey Hepburn's birth name",
+			Question: "What was Audrey Hepburn's birth name?",
 			Options:  []string{"Audrey Katelyn Hepburn", "Audrey Katelyn Ruston van Valle", "Katherine Audrey Hepburn"},
 		},
 		{
@@ -1269,7 +1269,7 @@ var LocalQuestions = map[string][]TriviaQuestion{
 		},
 		{
 			Answer:   "Uranus",
-			Question: "Which planet in our solar system is the seventh to the Sun?",
+			Question: "Which planet in our solar system is the seventh closest to the Sun?",
 			Options:  []string{"Neptune", "Saturn", "Jupiter"},
 		},
 		{
@@ -1284,7 +1284,7 @@ var LocalQuestions = map[string][]TriviaQuestion{
 		},
 		{
 			Answer:   "Hubble Space Telescope",
-			Question: "Which telescope. launched in 1990, has provided stunning images of distant galaxies and nebulas?",
+			Question: "Which telescope, launched in 1990, has provided stunning images of distant galaxies and nebulas?",
 			Options:  []string{"James Webb Space Telescope", "Chandra X-ray Observatory", "Spitzer Space Telescope"},
 		},
 		{
@@ -1336,6 +1336,531 @@ var LocalQuestions = map[string][]TriviaQuestion{
 			Answer:   "Galaxy Cluster",
 			Question: "What is the term for a massive concentration of matter in the universe, typically containing thousands of galaxies bound together by gravity?",
 			Options:  []string{"Dark Matter Halo", "Quasar", "Supermassive Black Hole"},
+		},
+		{
+			Answer:   "SpaceX",
+			Question: "Which company operates the Falcon series of launch vehicles and is developing the Starship?",
+			Options:  []string{"Orbital", "Blue Origin", "Virgin Galactic"},
+		},
+		{
+			Answer:   "Voyager 1",
+			Question: "Which spacecraft, launched by NASA 1977, became the first human-made object to reach interstellar space?",
+			Options:  []string{"Cassini", "New Horizons", "Pioneer 10"},
+		},
+		{
+			Answer:   "Earth",
+			Question: "Which planet in our solar system is the third closest to the Sun?",
+			Options:  []string{"Venus", "Uranus", "Mars"},
+		},
+		{
+			Answer:   "Black Hole",
+			Question: "Which astronomical phenomenon occurs when a massive star collapses under its own gravity, forming a point in space with infinite density?",
+			Options:  []string{"White Dwarf", "Supernova", "Neutron Star"},
+		},
+		{
+			Answer:   "Boomerang Nebula",
+			Question: "What is the name of the coldest space in the universe, a cloud of gas and dust where temperatures are close to absolute zero?",
+			Options:  []string{"Crab Nebula", "Horsehead Nebula", "Oort Cloud"},
+		},
+		{
+			Answer:   "About 12 Earth years",
+			Question: "Approximately how long is a year on Jupiter in Earth years?",
+			Options:  []string{"About 8 Earth years", "About same as one Earth year", "About 16 Earth years"},
+		},
+		{
+			Answer:   "A Massive Black Hole",
+			Question: "What is located at the centre of the Milky Way galaxy?",
+			Options:  []string{"Pulsar", "Quasar", "The Sun"},
+		},
+		{
+			Answer:   "Rosetta",
+			Question: "Which spacecraft, launched by the European Space Agency (ESA), successfully landed on a comet in 2014?",
+			Options:  []string{"Philae", "Churyumov-Gerasimenko", "Huygens"},
+		},
+		{
+			Answer:   "Mercury",
+			Question: "What is the name of the smallest planet in our solar system?",
+			Options:  []string{"Mars", "Venus", "Earth"},
+		},
+		{
+			Answer:   "Constellation",
+			Question: "What is the term for a group of stars that form a recognizable pattern and have a cultural or mythological significance?",
+			Options:  []string{"Galaxy", "Nebula", "Quasar"},
+		},
+		{
+			Answer:   "New Horizons",
+			Question: "Which spacecraft, launched by NASA, provided the first close-up images of Pluto in 2015?",
+			Options:  []string{"Cassini", "Voyager 1", "Galileo"},
+		},
+		{
+			Answer:   "Heliopause",
+			Question: "What is the name for the outermost region of the Sun's heliosphere, where the solar wind slows down and meets the interstellar medium?",
+			Options:  []string{"Heliotail", "Heliosheath", "Helioflare"},
+		},
+		{
+			Answer:   "Peggy Whitson",
+			Question: "Who is the first female commander of the International Space Station (ISS)?",
+			Options:  []string{"Valentina Tereshkova", "Eileen Collins", "Sunita Williams"},
+		},
+		{
+			Answer:   "Umbra",
+			Question: "What is the darkest part of an eclipse, where the light source is completely obscured?",
+			Options:  []string{"Penumbra", "Corona", "Antumbra"},
+		},
+		{
+			Answer:   "Rises in the East, Sets in the West",
+			Question: "What directions does the sun rise and set?",
+			Options:  []string{"Rises in the West, Sets in the South", "Rises in the North, Sets in the South", "Rises in the South, Sets in the North"},
+		},
+		{
+			Answer:   "Hunter's Moon",
+			Question: "What is the term for the first full moon that occurs after the Harvest Moon, usually in October?",
+			Options:  []string{"Supermoon", "Blue Moon", "Blood Moon"},
+		},
+		{
+			Answer:   "Andromeda",
+			Question: "Which galaxy is the Milky Way destined to collide with in the distant future?",
+			Options:  []string{"Sombrero Galaxy", "Messier 87", "Triangulum"},
+		},
+		{
+			Answer:   "Methane",
+			Question: "Which gas is responsible for the blue coloration of Uranus and Nepturen in our solar system?",
+			Options:  []string{"Hydrogen", "Ammonia", "Carbon Dioxide"},
+		},
+		{
+			Answer:   "Quasars",
+			Question: "What astronomical objects are extremely energetic and distant active galactic nuclei, often appearing star-like and having luminosities exceeding those of entire galaxies?",
+			Options:  []string{"Pulsars", "White Dwarfs", "Black Holes"},
+		},
+		{
+			Answer:   "Mars and Jupiter",
+			Question: "Between which two planets is the asteroid belt located in our solar system?",
+			Options:  []string{"Earth and Mars", "Venus and Earth", "Jupiter and Saturn"},
+		},
+		{
+			Answer:   "Solar Wind interacting with Earth's magnetic field and atmosphere",
+			Question: "What natural phenomenon causes the Northern Lights, also known as Aurora Borealis, in the Earth's polar regions?",
+			Options:  []string{"Meteor showers", "Tectonic plate movement", "Solar flares"},
+		},
+		{
+			Answer:   "Venus",
+			Question: "Which planet in our solar system is known as the hottest, with surface temperatures hot enough to melt lead?",
+			Options:  []string{"Mercury", "Mars", "Neptune"},
+		},
+		{
+			Answer:   "When the Earth passes directly between the Sun and the Moon, casting a shadow on the Moon",
+			Question: "What is a lunar eclipse?",
+			Options:  []string{"When the Moon is in its full phase", "When the Moon is in the Earth's shadow, but sunlight still reaches its surface", "When the Moon passes directly between the Sun and the Earth, blocking sunlight"},
+		},
+		{
+			Answer:   "A region of icy bodies at the outer edge of the solar system",
+			Question: "What is an Oort Cloud?",
+			Options:  []string{"A collection of dwarf planets beyond Pluto", "A dense region of star formation", "A cloud of interstellar dust and gas"},
+		},
+		{
+			Answer:   "About 8 minutes and 20 seconds",
+			Question: "How long does it take for light from the Sun to reach Earth, travelling at a speed of approximately 299,792 km/s (186,282 mi/s)?",
+			Options:  []string{"About 15 minutes 33 seconds", "Under a minute", "About 5 minutes 42 seconds"},
+		},
+		{
+			Answer:   "Cassini Division",
+			Question: "What is the name of the gap in Saturn's rings, primarily located between the A and B rings?",
+			Options:  []string{"Encke Gap", "Maxwell Gap", "Keeler Gap"},
+		},
+		{
+			Answer:   "Sun Dog",
+			Question: "What is the name of the phenomenon where a small fraction of sunlight is deflected in various directions, producing a luminous halo around the sun or moon?",
+			Options:  []string{"Aurora", "Rainbow", "Zodiacal Light"},
+		},
+		{
+			Answer:   "Protostar",
+			Question: "What is the term for a cloud of gas and dust gathering mass to develop a star?",
+			Options:  []string{"Red Giant", "White Dwarf", "Main Sequence Star"},
+		},
+		{
+			Answer:   "Uranus",
+			Question: "Which planet in our solar system is named after the Greek god of the sky?",
+			Options:  []string{"Jupiter", "Mars", "Neptune"},
+		},
+		{
+			Answer:   "Atmospheric Turbulence",
+			Question: "Why do stars appear to twinkle when observed from Earth's surface?",
+			Options:  []string{"Stellar Pulsation", "Atmospheric Refraction", "Stellar Rotation"},
+		},
+		{
+			Answer:   "Red dwarfs",
+			Question: "What is the most common type of star found in the Milky Way galaxy, accounting for about 70-80% if all stars?",
+			Options:  []string{"White dwarfs", "Supergiants", "G-type main-sequence stars"},
+		},
+		{
+			Answer:   "Accretion Disk",
+			Question: "What is the name of the disk of hot, glowing gas and dust that surrounds a black hole's event horizon?",
+			Options:  []string{"Dark Disk", "Event Horizon Disk", "Quantum Disk"},
+		},
+		{
+			Answer:   "Venus",
+			Question: "Which planet in our solar system is often considered to be Earth's twin due to its similar size and proximity to the Sun?",
+			Options:  []string{"Mars", "Uranus", "Mercury"},
+		},
+		{
+			Answer:   "Earth",
+			Question: "Which planet in our solar system is the densest?",
+			Options:  []string{"Jupiter", "Saturn", "Mercury"},
+		},
+		{
+			Answer:   "Mercury",
+			Question: "Which planet in our solar system is closest to the Sun?",
+			Options:  []string{"Earth", "Venus", "Mars"},
+		},
+		{
+			Answer:   "Saturn",
+			Question: "As of 2023, which planet has the most moons in our solar system?",
+			Options:  []string{"Jupiter", "Neptune", "Uranus"},
+		},
+		{
+			Answer:   "Neil Armstrong",
+			Question: "Who was the first person to walk on the Moon?",
+			Options:  []string{"Louis Armstrong", "Buzz Aldrin", "Yuri Gagarin"},
+		},
+		{
+			Answer:   "OSIRIS-REx",
+			Question: "What is the name of the mission where NASA successfully collected samples from an asteroid?",
+			Options:  []string{"Gemini", "Mercury", "Artemis"},
+		},
+		{
+			Answer:   "Nuclear Fusion",
+			Question: "What is the name of the process by which a star transforms lighter elements into heavier elements through nuclear reactions in its core?",
+			Options:  []string{"Nuclear Fission", "Radioactive Decay", "Stellar Collapse"},
+		},
+		{
+			Answer:   "Ceres",
+			Question: "What is the largest object in the asteroid belt between Mars and Jupiter?",
+			Options:  []string{"Pallas", "Juno", "Vesta"},
+		},
+		{
+			Answer:   "Albert Einstein",
+			Question: "Who is the scientist famous for formulating the General Theory of Relativity which revolutionized our understanding of gravity and space-time?",
+			Options:  []string{"Stephen Hawking", "Isaac Newton", "Neil deGrasse Tyson"},
+		},
+		{
+			Answer:   "Proxima Centauri b",
+			Question: "What is the nearest planet outside our solar system?",
+			Options:  []string{"Wolf 1061 c", "Ross 128 b", "Pluto"},
+		},
+		{
+			Answer:   "Big Bang Theory",
+			Question: "What is the name of the theory that suggests the universe began as an extremely hot and dense state and has been expanding ever since?",
+			Options:  []string{"Multiverse Theory", "String Theory", "Vorlon Shadow Theory"},
+		},
+		{
+			Answer:   "Alpha Ursae Minoris",
+			Question: "Which star is known as Polaris, the North Star?",
+			Options:  []string{"Sirius", "Betelgeuse", "Vega"},
+		},
+		{
+			Answer:   "Van Allen Radiation Belt",
+			Question: "What is the name of the belt surrounding Earth, where charged particles are trapped by Earth's magnetic field?",
+			Options:  []string{"Aurora Belt", "Cosmic Ray Belt", "Flat Earth Dome"},
+		},
+		{
+			Answer:   "Saturn",
+			Question: "What planet is sometimes referred to as the 'Jewel of the solar system'?",
+			Options:  []string{"Venus", "Mars", "Earth"},
+		},
+		{
+			Answer:   "Kuiper Belt",
+			Question: "What is the name of the region in our solar system beyond Neptune that is home to many icy bodies and dwarf planets, including Pluto?",
+			Options:  []string{"Scattered Disc", "Asteroid Belt", "Oort Cloud"},
+		},
+		{
+			Answer:   "Apollo 13",
+			Question: "Which Apollo mission had an accident that caused difficulties for re-entry, but the crew safely returned to Earth?",
+			Options:  []string{"Apollo 11", "Apollo 8", "Apollo 17"},
+		},
+		{
+			Answer:   "A Year",
+			Question: "How long does it take for the Earth to complete one lap around the Sun?",
+			Options:  []string{"A Decade", "10 Months", "42 Weeks"},
+		},
+		{
+			Answer:   "Crux",
+			Question: "What is the name of the smallest constellation in the night sky?",
+			Options:  []string{"Lyra", "Hydra", "Sagittarius"},
+		},
+		{
+			Answer:   "Equinox",
+			Question: "What is the name of the event that occurs twice a year when the Sun is directly above the equator, creating a day and night of equal length?",
+			Options:  []string{"Solstice", "Perihelion", "Aphelion"},
+		},
+		{
+			Answer:   "Andromeda",
+			Question: "Which of the following is not a Zodiac constellation?",
+			Options:  []string{"Pisces", "Taurus", "Virgo"},
+		},
+		{
+			Answer:   "Earth",
+			Question: "Which planet is often referred to as the 'Blue Planet' due to its abundant water and its distinctive appearance from space?",
+			Options:  []string{"Neptune", "Venus", "Mars"},
+		},
+		{
+			Answer:   "Astronomy",
+			Question: "What is the name of the study of celestial bodies, including stars, planets, galaxies, and the universe as a whole?",
+			Options:  []string{"Astrology", "Cosmology", "Astrophysics"},
+		},
+		{
+			Answer:   "Mars",
+			Question: "Which planet in our solar system is the fourth closest to the Sun?",
+			Options:  []string{"Earth", "Venus", "Jupiter"},
+		},
+		{
+			Answer:   "Thermosphere",
+			Question: "What is the name of the hottest layer of an atmosphere, where temperatures increase with altitude?",
+			Options:  []string{"Troposphere", "Stratosphere", "Mesosphere"},
+		},
+		{
+			Answer:   "Mars",
+			Question: "Which planet do the moons Phobos and Deimos orbit?",
+			Options:  []string{"Venus", "Neptune", "Uranus"},
+		},
+		{
+			Answer:   "12",
+			Question: "How many Zodiacal Constellations are there?",
+			Options:  []string{"24", "88", "10"},
+		},
+		{
+			Answer:   "Ganymede",
+			Question: "What is the name of the largest moon in our solar system, which orbits Jupiter?",
+			Options:  []string{"Europa", "Titan", "Io"},
+		},
+		{
+			Answer:   "About 4.5 billion years",
+			Question: "Approximately how old is the Earth, based on scientific estimates?",
+			Options:  []string{"About 3.3 billion years", "About 1 billion years", "About 6000 years"},
+		},
+		{
+			Answer:   "Solstice",
+			Question: "What is the name of the event that occurs when the Sun reaches its most northerly or southerly points relative to the equator?",
+			Options:  []string{"Equinox", "Aphelion", "Perihelion"},
+		},
+		{
+			Answer:   "Iron oxide",
+			Question: "What gives Mars the red colour it is famous for?",
+			Options:  []string{"Carbon dioxide", "Sulphur compounds", "Copper oxide"},
+		},
+		{
+			Answer:   "Great Red Spot",
+			Question: "What is the name of the large, oval storm on Jupiter that has been raging for at least 350 years and is larger than the Earth?",
+			Options:  []string{"White Oval", "Dark Spot", "Hexagonal Super-storm"},
+		},
+		{
+			Answer:   "Hydra",
+			Question: "What is the name of the largest constellation in the night sky?",
+			Options:  []string{"Crux", "Orion", "Ursa Major"},
+		},
+		{
+			Answer:   "Mars",
+			Question: "Which planet is referred to as the 'Red Planet'?",
+			Options:  []string{"Venus", "Jupiter", "Uranus"},
+		},
+		{
+			Answer:   "Halley's Comet",
+			Question: "What is the name of the famous comet that orbits the Sun approximately once every 76 years and was last visible in 1986?",
+			Options:  []string{"Comet Hale-Bopp", "Comet ISON", "Comet McNaught"},
+		},
+		{
+			Answer:   "Mars",
+			Question: "Which planet in our solar system has had the most missions sent to study and explore it?",
+			Options:  []string{"Jupiter", "Venus", "Saturn"},
+		},
+		{
+			Answer:   "Neptune",
+			Question: "Which planet in our solar system is named after the Roman god of the sea?",
+			Options:  []string{"Jupiter", "Mercury", "Uranus"},
+		},
+		{
+			Answer:   "2021",
+			Question: "In what year did the James Webb Telescope launch into orbit?",
+			Options:  []string{"2023", "2020", "2016"},
+		},
+		{
+			Answer:   "Ursa Minor",
+			Question: "Of what larger constellation is the Little Dipper a part?",
+			Options:  []string{"Lyra", "Crux", "Draco"},
+		},
+		{
+			Answer:   "Ursa Minor",
+			Question: "Of what larger constellation is the Little Dipper a part?",
+			Options:  []string{"Lyra", "Crux", "Draco"},
+		},
+		{
+			Answer:   "Dark Matter",
+			Question: "What is the name of a hypothetical form of matter that appears not to interact with light or the electromagnetic field, making it invisible and nearly undetectable?",
+			Options:  []string{"Neutrinos", "Antimatter", "Exo-Dust"},
+		},
+		{
+			Answer:   "Russia",
+			Question: "In August 2023, the Luna 25 lunar lander crashed into the surface of the moon. Which country was the lander from?",
+			Options:  []string{"United Kingdom", "China", "India"},
+		},
+		{
+			Answer:   "Harvest Moon",
+			Question: "What is the name of the full moon that rises closest to the Fall equinox, typically occurring in September?",
+			Options:  []string{"Blood Moon", "Blue Moon", "Red Moon"},
+		},
+		{
+			Answer:   "When the Moon passes directly between the Sun and the Earth, blocking sunlight",
+			Question: "What is a solar eclipse?",
+			Options:  []string{"When the Sun is in its full phase", "When the Earth passes directly between the Sun and the Moon, casting a shadow on the Moon", "When the Moon is in the Earth's shadow, but sunlight still reaches its surface"},
+		},
+		{
+			Answer:   "Valentina Tereshkova",
+			Question: "Who was the first woman to fly in space?",
+			Options:  []string{"Mae Jemison", "Sally Ride", "Christa McAuliffe"},
+		},
+		{
+			Answer:   "Uranus",
+			Question: "Which planet was the first to be discovered using a telescope?",
+			Options:  []string{"Jupiter", "Neptune", "Saturn"},
+		},
+		{
+			Answer:   "Gravity",
+			Question: "What is the name of the phenomenon that keeps planets in orbit around the Sun?",
+			Options:  []string{"Centrifugal Force", "Solar G-Wind", "Magnetic Attraction"},
+		},
+		{
+			Answer:   "Mars",
+			Question: "Which planet in our solar system is named after the Roman god of war?",
+			Options:  []string{"Jupiter", "Mercury", "Neptune"},
+		},
+		{
+			Answer:   "Stellar Parallax",
+			Question: "What is the name of the effect where it appears a star is moving as the Earth moves, resulting from the change in the observer's perspective?",
+			Options:  []string{"Stellar Precession", "Stellar Aberration", "Stellar Proper Motion"},
+		},
+		{
+			Answer:   "Pulsar",
+			Question: "What is the name for a highly magnetized rotating neutron star, often the result of a supernova explosion?",
+			Options:  []string{"Quasar", "Black Hole", "White Dwarf"},
+		},
+		{
+			Answer:   "88",
+			Question: "How many constellations are officially recognized in the night sky?",
+			Options:  []string{"12", "50", "100"},
+		},
+		{
+			Answer:   "Venus",
+			Question: "What is the name of the bright, star-like object that is a actually a planet and often referred to as the 'Evening Star' or 'Morning Star' depending on its appearance?",
+			Options:  []string{"Mars", "Jupiter", "Saturn"},
+		},
+		{
+			Answer:   "About 5.88 trillion miles",
+			Question: "Approximately how many miles are in a light year, the distance that light travels in one year?",
+			Options:  []string{"About 10.88 million miles", "About 1.88 billion miles", "About 1.88 trillion miles"},
+		},
+		{
+			Answer:   "Jupiter",
+			Question: "Which planet in our solar system is named after the king of the Roman gods?",
+			Options:  []string{"Venus", "Mars", "Mercury"},
+		},
+		{
+			Answer:   "Christmas Tree Cluster",
+			Question: "In 2023, NASA discovered NGC 2264, a cluster of young stars. What unique shape was the cluster named after?",
+			Options:  []string{"Cat Face Cluster", "Cookie Cluster", "Boxtruck Cluster"},
+		},
+		{
+			Answer:   "Jupiter",
+			Question: "What planet in our solar system is the fifth closest to the Sun?",
+			Options:  []string{"Mars", "Saturn", "Uranus"},
+		},
+		{
+			Answer:   "Titan",
+			Question: "Which moon of Saturn is known for its dense atmosphere and orange coloration due to complex organic compounds?",
+			Options:  []string{"Mars", "Mimas", "Dione"},
+		},
+		{
+			Answer:   "Jupiter",
+			Question: "Which planet in our solar system has the strongest magnetic field?",
+			Options:  []string{"Saturn", "Earth", "Neptune"},
+		},
+		{
+			Answer:   "About 27.3 days",
+			Question: "How long does it take for the Moon to complete one orbit around the Earth?",
+			Options:  []string{"About 30 days", "About 365 days", "About 90 days"},
+		},
+		{
+			Answer:   "Venus",
+			Question: "Which planet in our solar system spins in the opposite direction compared to most other planets?",
+			Options:  []string{"Mars", "Saturn", "Earth"},
+		},
+		{
+			Answer:   "Huygens Probe",
+			Question: "Which spacecraft, launched by NASA in 2004, successfully landed on Saturn's moon Titan and sent back valuable data about its surface?",
+			Options:  []string{"Galileo", "Voyager 2", "Cassini"},
+		},
+		{
+			Answer:   "Pluto",
+			Question: "Which planet in our solar system was reclassified as a dwarf planet in 2006?",
+			Options:  []string{"Neptune", "Mercury", "Uranus"},
+		},
+		{
+			Answer:   "Orbiting Astronomical Observatory",
+			Question: "Between 1966 and 1972 NASA launched 4 space observatories that were led to the development of the Hubble Space Telescope, what were these called?",
+			Options:  []string{"Spitzer Space Telescope", "Kepler Space Telescope", "Chandra X-ray Observatory"},
+		},
+		{
+			Answer:   "Triton",
+			Question: "What is the name of the largest moon of Neptune, known for its irregular shape and unique retrograde orbit?",
+			Options:  []string{"Proteus", "Nereid", "Larissa"},
+		},
+		{
+			Answer:   "Perihelion",
+			Question: "What is the term for the point in an object's orbit where it is closest to the Sun?",
+			Options:  []string{"Aphelion", "Equinox", "Solstice"},
+		},
+		{
+			Answer:   "Aphelion",
+			Question: "What is the term for the point in an object's orbit where it is most distant from the Sun?",
+			Options:  []string{"Perihelion", "Equinox", "Solstice"},
+		},
+		{
+			Answer:   "Mercury",
+			Question: "Which of these planets is known to have a tail?",
+			Options:  []string{"Venus", "Mars", "Jupiter"},
+		},
+		{
+			Answer:   "Ursa Major",
+			Question: "Of what constellation is the Big Dipper a part?",
+			Options:  []string{"Leo", "Orion", "Cassiopeia"},
+		},
+		{
+			Answer:   "Uranus",
+			Question: "Which planet in our solar system rotates on its side, giving it a unique appearance and extreme seasons?",
+			Options:  []string{"Venus", "Neptune", "Mars"},
+		},
+		{
+			Answer:   "Corona",
+			Question: "What is the name of the Sun's outermost atmosphere, visible during a solar eclipse as a halo of plasma?",
+			Options:  []string{"Photosphere", "Chromosphere", "Prominence"},
+		},
+		{
+			Answer:   "Prominence",
+			Question: "What is a large, bright feature, known as a filament, extending outward from the Sun's surface?",
+			Options:  []string{"Corona", "Solar Flare", "Sunspot Eruption"},
+		},
+		{
+			Answer:   "Charles Duke",
+			Question: "Which astronaut is famous for having written his daughter's initials on the moon during the Apollo 17 mission?",
+			Options:  []string{"John Young", "Eugene Cernan", "Buzz Aldrin"},
+		},
+		{
+			Answer:   "Coronal Mass Ejection",
+			Question: "What is the name of a mass ejection of plasma from the Sun, often resulting in solar flares and geomagnetic storms?",
+			Options:  []string{"Solar Flare", "Solar Wind Burst", "Sunspot Eruption"},
+		},
+		{
+			Answer:   "New Horizons",
+			Question: "Which spacecraft, launched by NASA, provided the first close-up images of Pluto in 2015?",
+			Options:  []string{"Voyager 1", "Cassini", "Voyager 2"},
 		},
 	},
 }
