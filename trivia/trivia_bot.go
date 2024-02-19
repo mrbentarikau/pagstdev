@@ -84,6 +84,12 @@ func (tm *triviaSessionManager) NewTrivia(guildID, channelID int64, localQuestio
 		if err != nil {
 			localQuestions = true
 		}
+
+		if len(triviaQuestions) > 0 {
+			question = triviaQuestions[0]
+		} else {
+			localQuestions = true
+		}
 	}
 
 	if localQuestions {
@@ -91,18 +97,21 @@ func (tm *triviaSessionManager) NewTrivia(guildID, channelID int64, localQuestio
 		for cat := range LocalQuestions {
 			categories = append(categories, cat)
 		}
+
+		if len(categories) == 0 {
+			return fmt.Errorf("no local Trivia questions")
+		}
+
 		rand.Shuffle(len(categories), func(i, j int) { categories[i], categories[j] = categories[j], categories[i] })
 
-		insideLocalQuestions := LocalQuestions[categories[0]]
-		questionBuff := insideLocalQuestions[rand.Intn(len(insideLocalQuestions))]
-		question = &questionBuff
+		// making a copy because of a pointer for var 'question'
+		insideLocalQuestions := make([]TriviaQuestion, len(LocalQuestions[categories[0]]))
+		copy(insideLocalQuestions, LocalQuestions[categories[0]])
 
+		question = &insideLocalQuestions[rand.Intn(len(insideLocalQuestions))]
 		question.Category = categories[0]
 		question.Type = "Multiple"
 		question.RandomizeOptionOrder()
-	} else if len(triviaQuestions) > 0 {
-		question = triviaQuestions[0]
-
 	}
 
 	if question.Type == "boolean" {

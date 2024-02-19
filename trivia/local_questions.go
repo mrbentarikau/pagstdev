@@ -1967,7 +1967,7 @@ var LocalQuestions = map[string][]TriviaQuestion{
 		{
 			Answer:   "Frida Kahlo",
 			Question: "Who is known for her vibrant and chaotic paintings, often portraying the human condition and political issues, such as 'The Two Fridas' and 'Self-Portrait with Thorn Necklace and Hummingbird'?",
-			Options:  []string{"Jose Clemente Orozco", "Diego Rivera", "David Alfaro Sigueiros"},
+			Options:  []string{"José Clemente Orozco", "Diego Rivera", "David Alfaro Sigueiros"},
 		},
 		{
 			Answer:   "The British Museum",
@@ -1988,6 +1988,131 @@ var LocalQuestions = map[string][]TriviaQuestion{
 			Answer:   "Katsushika Hokusai",
 			Question: "Who is known for his intricate woodcuts and prints, particularly 'The Great Wave off Kanagawa'?",
 			Options:  []string{"Utagawa Hiroshige", "Takashi Murakami", "Yayoi Kusama"},
+		},
+		{
+			Answer:   "Jason Pollock",
+			Question: "Who is famous for his 'Drip Paintings' in the Abstract Expressionist movement?",
+			Options:  []string{"Pablo Picasso", "Salvador Dalí", "Vincent van Gogh"},
+		},
+		{
+			Answer:   "Yayoi Kusama",
+			Question: "Who is famous for her large-scale, immersive artworks with polka dots and mirror rooms, like 'Infinity Mirrors'?",
+			Options:  []string{"Georgia O'Keeffe", "Cindy Sherman", "Frida Kahlo"},
+		},
+		{
+			Answer:   "Thomas Gainsborough",
+			Question: "Which English portrait and landscape painter is known for his refined depictions of British society, including 'The Blue Boy' and 'Mr. and Mrs. Andrews'?",
+			Options:  []string{"J.M.W. Turner", "William Blake", "John Constable"},
+		},
+		{
+			Answer:   "Neoclassicism",
+			Question: "Which art movement, prevalent in the late 18th and early 19th centuries, drew inspiration from classical antiquity and emphasized order, simplicity, and rationality in its works?",
+			Options:  []string{"Rococo", "Romanticism", "Baroque"},
+		},
+		{
+			Answer:   "Jan van Eyck",
+			Question: "Which Flemish painter is known for his detailed and realistic oil paintings, including the 'Ghent Altarpiece' and 'Arnolfini Portrait'?",
+			Options:  []string{"Pieter Bruegel the Elder", "Rembrandt van Rijn", "Hieronymus Bosch"},
+		},
+		{
+			Answer:   "Peter Paul Rubens",
+			Question: "Which Flemish Baroque artist is known for his extravagant and dynamic paintings, often featuring mythological and religious themes, like 'The Descent from the Cross' and 'The Garden of Love'?",
+			Options:  []string{"Jan van Eyck", "Rembrandt van Rijn", "Hieronymus Bosch"},
+		},
+		{
+			Answer:   "Marcel Duchamp",
+			Question: "Who is known for his 'readymades' ordinary objects that he selected and presented as art, such as 'Fountain' and 'Bicycle Wheel'?",
+			Options:  []string{"Kazimir Malevich", "Man Ray", "Salvador Dalí"},
+		},
+		{
+			Answer:   "Kazimir Malevich",
+			Question: "Who is known for founding the Suprematist movement and creating the iconic painting 'Black Square' emphasizing geometric forms and limited colour palette?",
+			Options:  []string{"Joan Miró", "Wassily Kandinsky", "Piet Mondrian"},
+		},
+		{
+			Answer:   "Diego Rivera",
+			Question: "Which Mexican muralist and artist is renowned for his large-scale murals depicting social and political themes, such as 'Man at the Crossroads' and 'The Flower Carrier'?",
+			Options:  []string{"Frida Kahlo", "David Alfaro Siqueiros", "José Celente Orozco"},
+		},
+		{
+			Answer:   "Camille Pissarro",
+			Question: "Which artist was a key figure in the Impressionist movement, known for his rural and urban landscapes like 'Boulevard Montmartre, Spring' and 'The Artist's Garden at Eragny'?",
+			Options:  []string{"Edgar Degas", "Berhe Morisot", "Pierre-Auguste Renoir"},
+		},
+		{
+			Answer:   "Constantin Brâncusi",
+			Question: "Who is known for his abstract and surreal sculptures. such as 'Bird is Space' and 'Endless Column'?",
+			Options:  []string{"Barbara Hepworth", "Henry Moore", "Alexander Calder"},
+		},
+		{
+			Answer:   "Salvador Dalí",
+			Question: "Who painted the surrealist artwork 'Geopoliticus Child Watching the Birth of the New Man'?",
+			Options:  []string{"Pablo Picasso", "Frida Kahlo", "René Magritte"},
+		},
+		{
+			Answer:   "Sandro Botticelli",
+			Question: "Who painted the 'Birth of Venus' depicting the goddess Venus standing on a shell?",
+			Options:  []string{"Michelangelo", "Pierre-Auguste Renoir", "Leonardo da Vinci"},
+		},
+		{
+			Answer:   "Amadeo Modigliani",
+			Question: "Which Italian artist is known for his elongated and stylized portraits, characterized by almond-shaped eyes and long necks, seen in works like 'Portrait of Jeanne Hébuterne' and 'Reclining Nude'?",
+			Options:  []string{"Henri Matisse", "Gustav Klimt", "Egon Shiele"},
+		},
+		{
+			Answer:   "Jean-Michel Basquiat",
+			Question: "Which American artist gained prominence in the 1980s for his graffiti-inspired works and social commentary, creating pieces like 'Untitled' and 'Boy and Dog in a Johnnypump'?",
+			Options:  []string{"Banksy", "Keith Haring", "Kaws"},
+		},
+		{
+			Answer:   "Kurt Schwitters",
+			Question: "Which artist, associated with the Merz movement and known for his collages made from found materials, created 'Merzbau' a multimedia artwork and environment?",
+			Options:  []string{"Man Ray", "Francis Picabia", "Marcel Duchamp"},
+		},
+		{
+			Answer:   "Edvard Munch",
+			Question: "Who is renowned for his powerful and emotive paintings, particularly 'The Scream' and 'Madonna'?",
+			Options:  []string{"Amadeo Modigliani", "Egon Schiele", "Gustav Klimt"},
+		},
+		{
+			Answer:   "Joan Miró",
+			Question: "Which Spanish artist is known for his playful and imaginative abstract paintings, often featuring biomorphic shapes and symbols, as seen in works like 'The Harlequin's Carnival' and 'Blue I, Blue II, Blue III'?",
+			Options:  []string{"Lee Krasner", "Frida Kahlo", "Pablo Picasso"},
+		},
+		{
+			Answer:   "Uffizi Gallery",
+			Question: "Which prominent art museum is renowned for its exceptional collection of Italian Renaissance artworks, including Botticelli's 'The Birth of Venus' and da Vinci's 'Annunciation'?",
+			Options:  []string{"Thr Prado Museum", "The Louvre Museum", "The Rijksmuseum"},
+		},
+		{
+			Answer:   "Pop Art",
+			Question: "Which art movement emerged in the 1950s in Britain and the United States, known for using mass media and popular culture imagery?",
+			Options:  []string{"Minimalism", "Surrealism", "Abstract Expressionism"},
+		},
+		{
+			Answer:   "Everything is correct",
+			Question: "In addition to being famous as an artist, what else was Leonardo da Vinci famous for?",
+			Options:  []string{"Architect", "Sculptor", "Engineer"},
+		},
+		{
+			Answer:   "The Rijksmuseum",
+			Question: "Which prominent museum is known for its extensive collection of Dutch Golden Age art, housing works such as 'The Night Watch' by Rembrandt and 'The Milkmaid' by Vermeer?",
+			Options:  []string{"The Tate Museum", "The Prado Museum", "The Van Gogh Museum"},
+		},
+		{
+			Answer:   "Johannes Vermeer",
+			Question: "Who painted the 'Girl with a Pearl Earring' also knwon as the 'Mona Lisa of the North'?",
+			Options:  []string{"Vincent van Gogh", "Pablo Picasso", "Rembrandt van Rijn"},
+		},
+		{
+			Answer:   "Tamara de Lempicka",
+			Question: "Which Polish Art Deco artist and portraitist is best known for her stylized and glamorous paintings, often depicting wealthy and fashionable women, such as 'Tamara in the Green Bugatti' and 'La Belle Rafaela'?",
+			Options:  []string{"Amadeo Modigliani", "Gustav Klimt", "Edward Hopper"},
+		},
+		{
+			Answer:   "Abstract Expressionism",
+			Question: "Which art movement emphasized spontaneous, automatic, or subconscious creation of art, often using 'dripping' techniques?",
+			Options:  []string{"Surrealism", "Cubism", "Pop Art"},
 		},
 	},
 }

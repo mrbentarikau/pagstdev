@@ -28,7 +28,7 @@ func (p *Plugin) AddCommands() {
 					logger.WithError(err).Error("Failed to create new trivia")
 					return "There's already a trivia session in this channel", nil
 				}
-				return "Failed Running Trivia, unknown error", err
+				return "Failed Running Trivia, error: " + err.Error(), err
 			}
 			return nil, nil
 		},
