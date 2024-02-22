@@ -202,7 +202,7 @@ var cmdWhois = &commands.YAGCommand{
 				fmt.Println((fmt.Errorf("failed retrieving bot state")).Error())
 			}
 
-			err = common.RedisPool.Do(radix.Cmd(&memberStatus, "GET", "status_name"))
+			err = common.RedisPool.Do(radix.Cmd(&memberStatus, "GET", "status_text"))
 			if err != nil {
 				fmt.Println((fmt.Errorf("failed retrieving bot status name")).Error())
 			}
