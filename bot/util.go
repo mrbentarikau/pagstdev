@@ -118,9 +118,12 @@ func SnowflakeToTime(i int64) time.Time {
 }
 
 func SetStatus(activityType, statusType, statusText, stateText, streamingUrl string) {
-	if statusText == "" {
-		statusText = common.VERSION + " :)"
+	statusTextBuf := common.VERSION + " :)"
+	if statusText == "" && stateText == "" {
+		statusText = statusTextBuf
 		stateText = statusText
+	} else if statusText == "" {
+		statusText = statusTextBuf
 	}
 
 	err1 := common.RedisPool.Do(radix.Cmd(nil, "SET", "status_activity_type", activityType))
