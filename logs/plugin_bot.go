@@ -223,7 +223,7 @@ var cmdWhois = &commands.YAGCommand{
 			} else {
 				memberStatus = cases.Title(language.Und).String(botActivity)
 			}
-			memberStatus += fmt.Sprintf(" %s", botStatusText)
+			memberStatus += fmt.Sprintf(": %s", botStatusText)
 		}
 
 		if onlineStatus != "" {
