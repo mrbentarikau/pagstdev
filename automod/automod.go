@@ -8,10 +8,10 @@ import (
 	"unicode"
 
 	"emperror.dev/errors"
-	"github.com/botlabs-gg/yagpdb/automod/models"
-	"github.com/botlabs-gg/yagpdb/common"
-	"github.com/botlabs-gg/yagpdb/common/featureflags"
-	"github.com/botlabs-gg/yagpdb/premium"
+	"github.com/mrbentarikau/pagst/automod/models"
+	"github.com/mrbentarikau/pagst/common"
+	"github.com/mrbentarikau/pagst/common/featureflags"
+	"github.com/mrbentarikau/pagst/premium"
 	"github.com/karlseguin/ccache"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )

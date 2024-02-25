@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/botlabs-gg/yagpdb/common"
+	"github.com/mrbentarikau/pagst/common"
 )
 
 func TestMain(m *testing.M) {

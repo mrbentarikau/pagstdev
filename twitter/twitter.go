@@ -5,13 +5,13 @@ package twitter
 import (
 	"sync"
 
-	"github.com/botlabs-gg/yagpdb/common"
-	"github.com/botlabs-gg/yagpdb/common/config"
-	"github.com/botlabs-gg/yagpdb/common/mqueue"
-	"github.com/botlabs-gg/yagpdb/twitter/models"
+	"github.com/mrbentarikau/pagst/common"
+	"github.com/mrbentarikau/pagst/common/config"
+	"github.com/mrbentarikau/pagst/common/mqueue"
+	"github.com/mrbentarikau/pagst/twitter/models"
 
 	twitterscraper "github.com/n0madic/twitter-scraper"
-	//twitterscraper "github.com/botlabs-gg/yagpdb/lib/twitter-scraper"
+	//twitterscraper "github.com/mrbentarikau/pagst/lib/twitter-scraper"
 )
 
 var (

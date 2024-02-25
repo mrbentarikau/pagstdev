@@ -10,9 +10,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/botlabs-gg/yagpdb/commands"
-	"github.com/botlabs-gg/yagpdb/common"
-	"github.com/botlabs-gg/yagpdb/lib/jarowinkler"
+	"github.com/mrbentarikau/pagst/commands"
+	"github.com/mrbentarikau/pagst/common"
+	"github.com/mrbentarikau/pagst/lib/jarowinkler"
 )
 
 func getGameData(searchTitle string) ([]byte, error) {

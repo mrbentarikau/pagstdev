@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/botlabs-gg/yagpdb/common"
-	"github.com/botlabs-gg/yagpdb/common/templates"
-	"github.com/botlabs-gg/yagpdb/logs"
+	"github.com/mrbentarikau/pagst/common"
+	"github.com/mrbentarikau/pagst/common/templates"
+	"github.com/mrbentarikau/pagst/logs"
 	"github.com/jinzhu/gorm"
 )
 

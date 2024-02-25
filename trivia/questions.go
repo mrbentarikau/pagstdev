@@ -6,9 +6,9 @@ import (
 	"math/rand"
 	"strings"
 
-	"github.com/botlabs-gg/yagpdb/commands"
-	"github.com/botlabs-gg/yagpdb/common"
-	"github.com/botlabs-gg/yagpdb/stdcommands/util"
+	"github.com/mrbentarikau/pagst/commands"
+	"github.com/mrbentarikau/pagst/common"
+	"github.com/mrbentarikau/pagst/stdcommands/util"
 )
 
 type TriviaQuestion struct {

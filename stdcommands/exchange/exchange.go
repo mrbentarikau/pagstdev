@@ -12,11 +12,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/botlabs-gg/yagpdb/bot/paginatedmessages"
-	"github.com/botlabs-gg/yagpdb/commands"
-	"github.com/botlabs-gg/yagpdb/lib/dcmd"
-	"github.com/botlabs-gg/yagpdb/lib/discordgo"
-	"github.com/botlabs-gg/yagpdb/stdcommands/util"
+	"github.com/mrbentarikau/pagst/bot/paginatedmessages"
+	"github.com/mrbentarikau/pagst/commands"
+	"github.com/mrbentarikau/pagst/lib/dcmd"
+	"github.com/mrbentarikau/pagst/lib/discordgo"
+	"github.com/mrbentarikau/pagst/stdcommands/util"
 
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"

@@ -1,6 +1,6 @@
 package reminders
 
-import "github.com/botlabs-gg/yagpdb/lib/discordgo"
+import "github.com/mrbentarikau/pagst/lib/discordgo"
 
 var (
 	remindmeLocalizations = map[string]*map[discordgo.Locale]string{

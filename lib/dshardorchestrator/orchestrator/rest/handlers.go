@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/botlabs-gg/yagpdb/lib/dshardorchestrator/orchestrator"
+	"github.com/mrbentarikau/pagst/lib/dshardorchestrator/orchestrator"
 	"github.com/pkg/errors"
 )
 

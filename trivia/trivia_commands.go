@@ -1,8 +1,8 @@
 package trivia
 
 import (
-	"github.com/botlabs-gg/yagpdb/commands"
-	"github.com/botlabs-gg/yagpdb/lib/dcmd"
+	"github.com/mrbentarikau/pagst/commands"
+	"github.com/mrbentarikau/pagst/lib/dcmd"
 )
 
 func (p *Plugin) AddCommands() {

@@ -6,8 +6,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/botlabs-gg/yagpdb/lib/dstate"
-	"github.com/botlabs-gg/yagpdb/lib/discordgo"
+	"github.com/mrbentarikau/pagst/lib/dstate"
+	"github.com/mrbentarikau/pagst/lib/discordgo"
 )
 
 type TrackerConfig struct {

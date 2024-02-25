@@ -4,12 +4,12 @@ import (
 	"context"
 	"time"
 
-	"github.com/botlabs-gg/yagpdb/common"
-	"github.com/botlabs-gg/yagpdb/common/scheduledevents2"
-	schEvtsModels "github.com/botlabs-gg/yagpdb/common/scheduledevents2/models"
-	"github.com/botlabs-gg/yagpdb/lib/discordgo"
-	"github.com/botlabs-gg/yagpdb/lib/dstate"
-	"github.com/botlabs-gg/yagpdb/rolecommands/models"
+	"github.com/mrbentarikau/pagst/common"
+	"github.com/mrbentarikau/pagst/common/scheduledevents2"
+	schEvtsModels "github.com/mrbentarikau/pagst/common/scheduledevents2/models"
+	"github.com/mrbentarikau/pagst/lib/discordgo"
+	"github.com/mrbentarikau/pagst/lib/dstate"
+	"github.com/mrbentarikau/pagst/rolecommands/models"
 	"github.com/tidwall/buntdb"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )

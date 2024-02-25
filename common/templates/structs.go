@@ -3,8 +3,8 @@ package templates
 import (
 	"errors"
 
-	"github.com/botlabs-gg/yagpdb/lib/discordgo"
-	"github.com/botlabs-gg/yagpdb/lib/dstate"
+	"github.com/mrbentarikau/pagst/lib/discordgo"
+	"github.com/mrbentarikau/pagst/lib/dstate"
 )
 
 // CtxChannel is almost a 1:1 copy of dstate.ChannelState, its needed because we cant expose all those state methods

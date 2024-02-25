@@ -10,7 +10,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/botlabs-gg/yagpdb/lib/template"
+	"github.com/mrbentarikau/pagst/lib/template"
 )
 
 // templateFile defines the contents of a template to be stored in a file, for testing.

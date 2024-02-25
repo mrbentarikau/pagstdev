@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"sync"
 
-	"github.com/botlabs-gg/yagpdb/lib/template/parse"
+	"github.com/mrbentarikau/pagst/lib/template/parse"
 )
 
 // common holds the information shared by related templates.

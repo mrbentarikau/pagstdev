@@ -14,14 +14,14 @@ import (
 	"unicode/utf8"
 
 	"emperror.dev/errors"
-	"github.com/botlabs-gg/yagpdb/bot"
-	"github.com/botlabs-gg/yagpdb/common"
-	"github.com/botlabs-gg/yagpdb/common/prefix"
-	"github.com/botlabs-gg/yagpdb/common/scheduledevents2"
-	"github.com/botlabs-gg/yagpdb/lib/discordgo"
-	"github.com/botlabs-gg/yagpdb/lib/dstate"
-	"github.com/botlabs-gg/yagpdb/lib/template"
-	"github.com/botlabs-gg/yagpdb/web/discorddata"
+	"github.com/mrbentarikau/pagst/bot"
+	"github.com/mrbentarikau/pagst/common"
+	"github.com/mrbentarikau/pagst/common/prefix"
+	"github.com/mrbentarikau/pagst/common/scheduledevents2"
+	"github.com/mrbentarikau/pagst/lib/discordgo"
+	"github.com/mrbentarikau/pagst/lib/dstate"
+	"github.com/mrbentarikau/pagst/lib/template"
+	"github.com/mrbentarikau/pagst/web/discorddata"
 
 	"github.com/sirupsen/logrus"
 	"github.com/vmihailenco/msgpack"
@@ -213,7 +213,7 @@ type Context struct {
 	ExecutedFrom ExecutedFromType
 
 	// See DelayedRunCCData.CallChain.
-	ExecCallChain          []time.Time // https://github.com/botlabs-gg/yagpdb/pull/1336
+	ExecCallChain          []time.Time // https://github.com/mrbentarikau/pagst/pull/1336
 	IsExecedByEvalCC       bool
 	IsExecedByJoinMessage  bool
 	IsExecedByLeaveMessage bool

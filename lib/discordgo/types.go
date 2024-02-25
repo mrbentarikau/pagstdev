@@ -18,7 +18,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/botlabs-gg/yagpdb/lib/gojay"
+	"github.com/mrbentarikau/pagst/lib/gojay"
 )
 
 // Timestamp stores a timestamp, as sent by the Discord API.

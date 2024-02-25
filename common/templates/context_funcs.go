@@ -12,13 +12,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/botlabs-gg/yagpdb/bot"
-	"github.com/botlabs-gg/yagpdb/common"
-	"github.com/botlabs-gg/yagpdb/common/scheduledevents2"
-	"github.com/botlabs-gg/yagpdb/lib/discordgo"
-	"github.com/botlabs-gg/yagpdb/lib/dstate"
-	tzModels "github.com/botlabs-gg/yagpdb/timezonecompanion/models"
-	"github.com/botlabs-gg/yagpdb/web/discorddata"
+	"github.com/mrbentarikau/pagst/bot"
+	"github.com/mrbentarikau/pagst/common"
+	"github.com/mrbentarikau/pagst/common/scheduledevents2"
+	"github.com/mrbentarikau/pagst/lib/discordgo"
+	"github.com/mrbentarikau/pagst/lib/dstate"
+	tzModels "github.com/mrbentarikau/pagst/timezonecompanion/models"
+	"github.com/mrbentarikau/pagst/web/discorddata"
 
 	"golang.org/x/exp/slices"
 )

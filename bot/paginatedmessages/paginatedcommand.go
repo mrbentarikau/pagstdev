@@ -1,7 +1,7 @@
 package paginatedmessages
 
 import (
-	"github.com/botlabs-gg/yagpdb/lib/dcmd"
+	"github.com/mrbentarikau/pagst/lib/dcmd"
 )
 
 type CtxKey int

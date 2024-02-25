@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/botlabs-gg/yagpdb/common/testutils"
+	"github.com/mrbentarikau/pagst/common/testutils"
 )
 
 func TestDailyStatsMessages(t *testing.T) {

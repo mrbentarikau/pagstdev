@@ -8,19 +8,19 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/botlabs-gg/yagpdb/analytics"
-	"github.com/botlabs-gg/yagpdb/bot/paginatedmessages"
-	"github.com/botlabs-gg/yagpdb/lib/dstate"
-	"github.com/botlabs-gg/yagpdb/reputation/models"
+	"github.com/mrbentarikau/pagst/analytics"
+	"github.com/mrbentarikau/pagst/bot/paginatedmessages"
+	"github.com/mrbentarikau/pagst/lib/dstate"
+	"github.com/mrbentarikau/pagst/reputation/models"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
-	"github.com/botlabs-gg/yagpdb/bot"
-	"github.com/botlabs-gg/yagpdb/bot/eventsystem"
-	"github.com/botlabs-gg/yagpdb/commands"
-	"github.com/botlabs-gg/yagpdb/common"
-	"github.com/botlabs-gg/yagpdb/lib/dcmd"
-	"github.com/botlabs-gg/yagpdb/lib/discordgo"
-	"github.com/botlabs-gg/yagpdb/web"
+	"github.com/mrbentarikau/pagst/bot"
+	"github.com/mrbentarikau/pagst/bot/eventsystem"
+	"github.com/mrbentarikau/pagst/commands"
+	"github.com/mrbentarikau/pagst/common"
+	"github.com/mrbentarikau/pagst/lib/dcmd"
+	"github.com/mrbentarikau/pagst/lib/discordgo"
+	"github.com/mrbentarikau/pagst/web"
 )
 
 var _ bot.BotInitHandler = (*Plugin)(nil)

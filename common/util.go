@@ -16,9 +16,9 @@ import (
 
 	"emperror.dev/errors"
 
-	"github.com/botlabs-gg/yagpdb/lib/dcmd"
-	"github.com/botlabs-gg/yagpdb/lib/discordgo"
-	"github.com/botlabs-gg/yagpdb/lib/dstate"
+	"github.com/mrbentarikau/pagst/lib/dcmd"
+	"github.com/mrbentarikau/pagst/lib/discordgo"
+	"github.com/mrbentarikau/pagst/lib/dstate"
 	"github.com/forPelevin/gomoji"
 	"github.com/lib/pq"
 	"github.com/mediocregopher/radix/v3"

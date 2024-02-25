@@ -3,8 +3,8 @@ package analytics
 import (
 	"sync"
 
-	"github.com/botlabs-gg/yagpdb/common"
-	"github.com/botlabs-gg/yagpdb/common/config"
+	"github.com/mrbentarikau/pagst/common"
+	"github.com/mrbentarikau/pagst/common/config"
 	"github.com/mediocregopher/radix/v3"
 )
 

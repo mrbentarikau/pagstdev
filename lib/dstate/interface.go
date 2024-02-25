@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/botlabs-gg/yagpdb/lib/discordgo"
+	"github.com/mrbentarikau/pagst/lib/discordgo"
 )
 
 // The state system for pagst

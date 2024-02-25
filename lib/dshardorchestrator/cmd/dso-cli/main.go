@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/jedib0t/go-pretty/table"
-	"github.com/botlabs-gg/yagpdb/lib/dshardorchestrator/orchestrator/rest"
+	"github.com/mrbentarikau/pagst/lib/dshardorchestrator/orchestrator/rest"
 	"github.com/mitchellh/cli"
 )
 

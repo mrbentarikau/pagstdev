@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/botlabs-gg/yagpdb/common"
+	"github.com/mrbentarikau/pagst/common"
 	"github.com/mediocregopher/radix/v3"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )

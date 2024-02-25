@@ -4,9 +4,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/botlabs-gg/yagpdb/commands"
-	"github.com/botlabs-gg/yagpdb/lib/dcmd"
-	"github.com/botlabs-gg/yagpdb/timezonecompanion"
+	"github.com/mrbentarikau/pagst/commands"
+	"github.com/mrbentarikau/pagst/lib/dcmd"
+	"github.com/mrbentarikau/pagst/timezonecompanion"
 	"github.com/tkuchiki/go-timezone"
 )
 

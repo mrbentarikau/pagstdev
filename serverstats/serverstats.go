@@ -10,10 +10,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/botlabs-gg/yagpdb/common"
-	"github.com/botlabs-gg/yagpdb/common/config"
-	"github.com/botlabs-gg/yagpdb/premium"
-	"github.com/botlabs-gg/yagpdb/serverstats/models"
+	"github.com/mrbentarikau/pagst/common"
+	"github.com/mrbentarikau/pagst/common/config"
+	"github.com/mrbentarikau/pagst/premium"
+	"github.com/mrbentarikau/pagst/serverstats/models"
 )
 
 var confDeprecated = config.RegisterOption("yagpdb.serverstats.deprecated", "Wether to mark server stats as disabled or not, this will disable recording of new stats", false)

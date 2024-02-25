@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/botlabs-gg/yagpdb/common"
-	"github.com/botlabs-gg/yagpdb/common/config"
-	"github.com/botlabs-gg/yagpdb/premium"
-	"github.com/botlabs-gg/yagpdb/soundboard/models"
+	"github.com/mrbentarikau/pagst/common"
+	"github.com/mrbentarikau/pagst/common/config"
+	"github.com/mrbentarikau/pagst/premium"
+	"github.com/mrbentarikau/pagst/soundboard/models"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"golang.org/x/net/context"
 )

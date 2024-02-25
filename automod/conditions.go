@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/botlabs-gg/yagpdb/bot"
-	"github.com/botlabs-gg/yagpdb/common"
+	"github.com/mrbentarikau/pagst/bot"
+	"github.com/mrbentarikau/pagst/common"
 )
 
 type Condition interface {

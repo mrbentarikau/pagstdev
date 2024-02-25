@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/botlabs-gg/yagpdb/lib/discordgo"
+	"github.com/mrbentarikau/pagst/lib/discordgo"
 	"github.com/pkg/errors"
 )
 

@@ -1,7 +1,7 @@
 package node
 
 import (
-	"github.com/botlabs-gg/yagpdb/lib/dshardorchestrator"
+	"github.com/mrbentarikau/pagst/lib/dshardorchestrator"
 )
 
 type SessionInfo struct {

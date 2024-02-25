@@ -5,12 +5,12 @@ package rsvp
 import (
 	"sync"
 
-	"github.com/botlabs-gg/yagpdb/common"
-	"github.com/botlabs-gg/yagpdb/lib/when"
-	"github.com/botlabs-gg/yagpdb/lib/when/rules"
-	wcommon "github.com/botlabs-gg/yagpdb/lib/when/rules/common"
-	"github.com/botlabs-gg/yagpdb/lib/when/rules/en"
-	"github.com/botlabs-gg/yagpdb/timezonecompanion/trules"
+	"github.com/mrbentarikau/pagst/common"
+	"github.com/mrbentarikau/pagst/lib/when"
+	"github.com/mrbentarikau/pagst/lib/when/rules"
+	wcommon "github.com/mrbentarikau/pagst/lib/when/rules/common"
+	"github.com/mrbentarikau/pagst/lib/when/rules/en"
+	"github.com/mrbentarikau/pagst/timezonecompanion/trules"
 )
 
 var (

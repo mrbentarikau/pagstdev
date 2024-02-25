@@ -4,8 +4,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/botlabs-gg/yagpdb/bot"
-	"github.com/botlabs-gg/yagpdb/common/config"
+	"github.com/mrbentarikau/pagst/bot"
+	"github.com/mrbentarikau/pagst/common/config"
 )
 
 var confMaxConcurrentSends = config.RegisterOption("yagpdb.mqueue.max_concurrent_sends", "Max number of concurrent sends that mqueue will do", 3)

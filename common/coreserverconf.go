@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/botlabs-gg/yagpdb/common/models"
+	"github.com/mrbentarikau/pagst/common/models"
 	"github.com/karlseguin/rcache"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )

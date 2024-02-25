@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"emperror.dev/errors"
-	"github.com/botlabs-gg/yagpdb/common"
-	"github.com/botlabs-gg/yagpdb/common/backgroundworkers"
-	"github.com/botlabs-gg/yagpdb/premium/models"
+	"github.com/mrbentarikau/pagst/common"
+	"github.com/mrbentarikau/pagst/common/backgroundworkers"
+	"github.com/mrbentarikau/pagst/premium/models"
 	"github.com/mediocregopher/radix/v3"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )

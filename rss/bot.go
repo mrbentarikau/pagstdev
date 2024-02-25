@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/botlabs-gg/yagpdb/rss/models"
+	"github.com/mrbentarikau/pagst/rss/models"
 )
 
 func (p *Plugin) Status() (string, string) {

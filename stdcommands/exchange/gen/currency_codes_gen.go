@@ -16,7 +16,7 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/botlabs-gg/yagpdb/stdcommands/util"
+	"github.com/mrbentarikau/pagst/stdcommands/util"
 )
 
 var cTime = time.Now().UTC()

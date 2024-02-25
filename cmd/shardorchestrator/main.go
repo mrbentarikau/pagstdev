@@ -8,14 +8,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/botlabs-gg/yagpdb/common"
-	"github.com/botlabs-gg/yagpdb/lib/dshardorchestrator"
-	"github.com/botlabs-gg/yagpdb/lib/dshardorchestrator/orchestrator"
-	"github.com/botlabs-gg/yagpdb/lib/dshardorchestrator/orchestrator/rest"
+	"github.com/mrbentarikau/pagst/common"
+	"github.com/mrbentarikau/pagst/lib/dshardorchestrator"
+	"github.com/mrbentarikau/pagst/lib/dshardorchestrator/orchestrator"
+	"github.com/mrbentarikau/pagst/lib/dshardorchestrator/orchestrator/rest"
 	"github.com/mediocregopher/radix/v3"
 	"github.com/sirupsen/logrus"
 
-	_ "github.com/botlabs-gg/yagpdb/bot" // register the custom orchestrator events
+	_ "github.com/mrbentarikau/pagst/bot" // register the custom orchestrator events
 )
 
 var ()

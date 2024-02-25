@@ -8,10 +8,10 @@ import (
 	"net/url"
 	"sync"
 
-	"github.com/botlabs-gg/yagpdb/common"
-	"github.com/botlabs-gg/yagpdb/common/mqueue"
-	"github.com/botlabs-gg/yagpdb/premium"
-	"github.com/botlabs-gg/yagpdb/rss/models"
+	"github.com/mrbentarikau/pagst/common"
+	"github.com/mrbentarikau/pagst/common/mqueue"
+	"github.com/mrbentarikau/pagst/premium"
+	"github.com/mrbentarikau/pagst/rss/models"
 	"github.com/mmcdole/gofeed"
 )
 

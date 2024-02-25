@@ -1,7 +1,7 @@
 package admin
 
 import (
-	"github.com/botlabs-gg/yagpdb/common"
+	"github.com/mrbentarikau/pagst/common"
 )
 
 var logger = common.GetPluginLogger(&Plugin{})

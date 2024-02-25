@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/botlabs-gg/yagpdb/lib/gojay"
+	"github.com/mrbentarikau/pagst/lib/gojay"
 )
 
 // UserFlags is the flags of "user" (see UserFlags* consts)

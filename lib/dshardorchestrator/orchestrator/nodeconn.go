@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/botlabs-gg/yagpdb/lib/dshardorchestrator"
+	"github.com/mrbentarikau/pagst/lib/dshardorchestrator"
 )
 
 // NodeConn represents a connection from a master server to a slave

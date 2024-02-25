@@ -12,9 +12,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/botlabs-gg/yagpdb/common"
-	"github.com/botlabs-gg/yagpdb/premium/models"
-	"github.com/botlabs-gg/yagpdb/web"
+	"github.com/mrbentarikau/pagst/common"
+	"github.com/mrbentarikau/pagst/premium/models"
+	"github.com/mrbentarikau/pagst/web"
 	"github.com/didip/tollbooth"
 	"github.com/didip/tollbooth/limiter"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
