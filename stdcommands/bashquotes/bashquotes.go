@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/botlabs-gg/yagpdb/commands"
-	"github.com/botlabs-gg/yagpdb/lib/dcmd"
-	"github.com/botlabs-gg/yagpdb/stdcommands/util"
+	"github.com/mrbentarikau/pagst/commands"
+	"github.com/mrbentarikau/pagst/lib/dcmd"
+	"github.com/mrbentarikau/pagst/stdcommands/util"
 )
 
 func ShouldRegister() bool {

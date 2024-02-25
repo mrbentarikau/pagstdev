@@ -6,10 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/botlabs-gg/yagpdb/bot/eventsystem"
-	"github.com/botlabs-gg/yagpdb/commands"
-	"github.com/botlabs-gg/yagpdb/common"
-	"github.com/botlabs-gg/yagpdb/lib/dcmd"
+	"github.com/mrbentarikau/pagst/bot/eventsystem"
+	"github.com/mrbentarikau/pagst/commands"
+	"github.com/mrbentarikau/pagst/common"
+	"github.com/mrbentarikau/pagst/lib/dcmd"
 )
 
 var Command = &commands.YAGCommand{

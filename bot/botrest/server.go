@@ -7,11 +7,11 @@ import (
 	"time"
 
 	"emperror.dev/errors"
-	"github.com/botlabs-gg/yagpdb/bot"
-	"github.com/botlabs-gg/yagpdb/common"
-	"github.com/botlabs-gg/yagpdb/common/internalapi"
-	"github.com/botlabs-gg/yagpdb/lib/discordgo"
-	"github.com/botlabs-gg/yagpdb/lib/dstate"
+	"github.com/mrbentarikau/pagst/bot"
+	"github.com/mrbentarikau/pagst/common"
+	"github.com/mrbentarikau/pagst/common/internalapi"
+	"github.com/mrbentarikau/pagst/lib/discordgo"
+	"github.com/mrbentarikau/pagst/lib/dstate"
 	"goji.io"
 	"goji.io/pat"
 )

@@ -4,8 +4,8 @@ import (
 	"runtime/debug"
 	"time"
 
-	"github.com/botlabs-gg/yagpdb/common"
-	"github.com/botlabs-gg/yagpdb/common/config"
+	"github.com/mrbentarikau/pagst/common"
+	"github.com/mrbentarikau/pagst/common/config"
 
 	"github.com/shirou/gopsutil/mem"
 )

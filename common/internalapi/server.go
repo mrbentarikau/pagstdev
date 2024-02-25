@@ -12,8 +12,8 @@ import (
 	"time"
 
 	"emperror.dev/errors"
-	"github.com/botlabs-gg/yagpdb/common"
-	"github.com/botlabs-gg/yagpdb/common/config"
+	"github.com/mrbentarikau/pagst/common"
+	"github.com/mrbentarikau/pagst/common/config"
 	"goji.io"
 	"goji.io/pat"
 )

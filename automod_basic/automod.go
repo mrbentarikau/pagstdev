@@ -2,10 +2,10 @@ package automod_basic
 
 import (
 	"emperror.dev/errors"
-	"github.com/botlabs-gg/yagpdb/common"
-	"github.com/botlabs-gg/yagpdb/common/featureflags"
-	"github.com/botlabs-gg/yagpdb/lib/discordgo"
-	"github.com/botlabs-gg/yagpdb/web"
+	"github.com/mrbentarikau/pagst/common"
+	"github.com/mrbentarikau/pagst/common/featureflags"
+	"github.com/mrbentarikau/pagst/lib/discordgo"
+	"github.com/mrbentarikau/pagst/web"
 )
 
 var logger = common.GetPluginLogger(&Plugin{})

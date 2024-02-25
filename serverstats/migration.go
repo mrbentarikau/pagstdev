@@ -4,8 +4,8 @@ import (
 	"time"
 
 	"emperror.dev/errors"
-	"github.com/botlabs-gg/yagpdb/common"
-	"github.com/botlabs-gg/yagpdb/premium"
+	"github.com/mrbentarikau/pagst/common"
+	"github.com/mrbentarikau/pagst/premium"
 )
 
 func StartMigrationToV2Format() error {

@@ -6,10 +6,10 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/botlabs-gg/yagpdb/common"
-	"github.com/botlabs-gg/yagpdb/common/configstore"
-	"github.com/botlabs-gg/yagpdb/common/featureflags"
-	"github.com/botlabs-gg/yagpdb/common/pubsub"
+	"github.com/mrbentarikau/pagst/common"
+	"github.com/mrbentarikau/pagst/common/configstore"
+	"github.com/mrbentarikau/pagst/common/featureflags"
+	"github.com/mrbentarikau/pagst/common/pubsub"
 	"github.com/lib/pq"
 )
 

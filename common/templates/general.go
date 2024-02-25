@@ -15,9 +15,9 @@ import (
 	"time"
 
 	"emperror.dev/errors"
-	"github.com/botlabs-gg/yagpdb/bot"
-	"github.com/botlabs-gg/yagpdb/common"
-	"github.com/botlabs-gg/yagpdb/lib/discordgo"
+	"github.com/mrbentarikau/pagst/bot"
+	"github.com/mrbentarikau/pagst/common"
+	"github.com/mrbentarikau/pagst/lib/discordgo"
 )
 
 // dictionary creates a map[string]interface{} from the given parameters by

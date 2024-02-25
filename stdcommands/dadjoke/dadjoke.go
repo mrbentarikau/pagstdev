@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 
-	"github.com/botlabs-gg/yagpdb/commands"
-	"github.com/botlabs-gg/yagpdb/lib/dcmd"
-	"github.com/botlabs-gg/yagpdb/stdcommands/util"
+	"github.com/mrbentarikau/pagst/commands"
+	"github.com/mrbentarikau/pagst/lib/dcmd"
+	"github.com/mrbentarikau/pagst/stdcommands/util"
 )
 
 // Create the struct that we will serialize the API response into.

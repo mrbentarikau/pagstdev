@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/AlekSi/pointer"
-	"github.com/botlabs-gg/yagpdb/lib/when/rules"
+	"github.com/mrbentarikau/pagst/lib/when/rules"
 )
 
 func CasualDate(s rules.Strategy) rules.Rule {

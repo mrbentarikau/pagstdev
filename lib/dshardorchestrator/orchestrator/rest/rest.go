@@ -2,7 +2,7 @@ package rest
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/botlabs-gg/yagpdb/lib/dshardorchestrator/orchestrator"
+	"github.com/mrbentarikau/pagst/lib/dshardorchestrator/orchestrator"
 )
 
 type RESTAPI struct {

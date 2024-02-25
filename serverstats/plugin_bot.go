@@ -7,14 +7,14 @@ import (
 	"time"
 
 	"emperror.dev/errors"
-	"github.com/botlabs-gg/yagpdb/bot"
-	"github.com/botlabs-gg/yagpdb/bot/eventsystem"
-	"github.com/botlabs-gg/yagpdb/commands"
-	"github.com/botlabs-gg/yagpdb/common"
-	"github.com/botlabs-gg/yagpdb/lib/dcmd"
-	"github.com/botlabs-gg/yagpdb/lib/discordgo"
-	"github.com/botlabs-gg/yagpdb/serverstats/messagestatscollector"
-	"github.com/botlabs-gg/yagpdb/web"
+	"github.com/mrbentarikau/pagst/bot"
+	"github.com/mrbentarikau/pagst/bot/eventsystem"
+	"github.com/mrbentarikau/pagst/commands"
+	"github.com/mrbentarikau/pagst/common"
+	"github.com/mrbentarikau/pagst/lib/dcmd"
+	"github.com/mrbentarikau/pagst/lib/discordgo"
+	"github.com/mrbentarikau/pagst/serverstats/messagestatscollector"
+	"github.com/mrbentarikau/pagst/web"
 	"github.com/mediocregopher/radix/v3"
 )
 

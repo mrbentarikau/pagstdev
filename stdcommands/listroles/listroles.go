@@ -5,14 +5,14 @@ import (
 	"math"
 	"strings"
 
-	"github.com/botlabs-gg/yagpdb/commands"
-	"github.com/botlabs-gg/yagpdb/lib/dcmd"
-	"github.com/botlabs-gg/yagpdb/lib/discordgo"
-	"github.com/botlabs-gg/yagpdb/lib/dstate"
+	"github.com/mrbentarikau/pagst/commands"
+	"github.com/mrbentarikau/pagst/lib/dcmd"
+	"github.com/mrbentarikau/pagst/lib/discordgo"
+	"github.com/mrbentarikau/pagst/lib/dstate"
 
-	"github.com/botlabs-gg/yagpdb/bot/paginatedmessages"
+	"github.com/mrbentarikau/pagst/bot/paginatedmessages"
 
-	"github.com/botlabs-gg/yagpdb/common"
+	"github.com/mrbentarikau/pagst/common"
 )
 
 var Command = &commands.YAGCommand{

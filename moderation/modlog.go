@@ -5,8 +5,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/botlabs-gg/yagpdb/common"
-	"github.com/botlabs-gg/yagpdb/lib/discordgo"
+	"github.com/mrbentarikau/pagst/common"
+	"github.com/mrbentarikau/pagst/lib/discordgo"
 )
 
 type ModlogAction struct {

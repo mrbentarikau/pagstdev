@@ -9,15 +9,15 @@ import (
 
 	"emperror.dev/errors"
 
-	"github.com/botlabs-gg/yagpdb/analytics"
-	"github.com/botlabs-gg/yagpdb/bot"
-	"github.com/botlabs-gg/yagpdb/bot/eventsystem"
-	"github.com/botlabs-gg/yagpdb/common"
-	"github.com/botlabs-gg/yagpdb/common/featureflags"
-	"github.com/botlabs-gg/yagpdb/common/pubsub"
-	"github.com/botlabs-gg/yagpdb/common/templates"
-	"github.com/botlabs-gg/yagpdb/lib/discordgo"
-	"github.com/botlabs-gg/yagpdb/lib/dstate"
+	"github.com/mrbentarikau/pagst/analytics"
+	"github.com/mrbentarikau/pagst/bot"
+	"github.com/mrbentarikau/pagst/bot/eventsystem"
+	"github.com/mrbentarikau/pagst/common"
+	"github.com/mrbentarikau/pagst/common/featureflags"
+	"github.com/mrbentarikau/pagst/common/pubsub"
+	"github.com/mrbentarikau/pagst/common/templates"
+	"github.com/mrbentarikau/pagst/lib/discordgo"
+	"github.com/mrbentarikau/pagst/lib/dstate"
 	"github.com/mediocregopher/radix/v3"
 )
 

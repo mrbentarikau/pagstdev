@@ -9,10 +9,10 @@ import (
 	"net/url"
 	"sync"
 
-	"github.com/botlabs-gg/yagpdb/common"
-	"github.com/botlabs-gg/yagpdb/common/config"
-	"github.com/botlabs-gg/yagpdb/common/mqueue"
-	"github.com/botlabs-gg/yagpdb/premium"
+	"github.com/mrbentarikau/pagst/common"
+	"github.com/mrbentarikau/pagst/common/config"
+	"github.com/mrbentarikau/pagst/common/mqueue"
+	"github.com/mrbentarikau/pagst/premium"
 	"google.golang.org/api/youtube/v3"
 )
 

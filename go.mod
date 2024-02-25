@@ -1,4 +1,4 @@
-module github.com/botlabs-gg/yagpdb
+module github.com/mrbentarikau/pagst
 
 go 1.20
 

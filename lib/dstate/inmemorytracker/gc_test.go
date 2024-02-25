@@ -4,8 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/botlabs-gg/yagpdb/lib/dstate"
-	"github.com/botlabs-gg/yagpdb/lib/discordgo"
+	"github.com/mrbentarikau/pagst/lib/dstate"
+	"github.com/mrbentarikau/pagst/lib/discordgo"
 )
 
 func createTestMessage(id int64, ts time.Time) *discordgo.Message {

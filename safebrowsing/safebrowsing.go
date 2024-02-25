@@ -1,8 +1,8 @@
 package safebrowsing
 
 import (
-	"github.com/botlabs-gg/yagpdb/common"
-	"github.com/botlabs-gg/yagpdb/common/backgroundworkers"
+	"github.com/mrbentarikau/pagst/common"
+	"github.com/mrbentarikau/pagst/common/backgroundworkers"
 	"goji.io/pat"
 	"net/http"
 	"sync"

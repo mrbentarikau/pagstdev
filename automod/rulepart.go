@@ -4,9 +4,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/botlabs-gg/yagpdb/automod/models"
-	"github.com/botlabs-gg/yagpdb/lib/discordgo"
-	"github.com/botlabs-gg/yagpdb/lib/dstate"
+	"github.com/mrbentarikau/pagst/automod/models"
+	"github.com/mrbentarikau/pagst/lib/discordgo"
+	"github.com/mrbentarikau/pagst/lib/dstate"
 )
 
 // maps rule part indentifiers to actual condition types

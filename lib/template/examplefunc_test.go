@@ -5,7 +5,7 @@
 package template_test
 
 import (
-	"github.com/botlabs-gg/yagpdb/lib/template"
+	"github.com/mrbentarikau/pagst/lib/template"
 	"log"
 	"os"
 	"strings"

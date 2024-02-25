@@ -6,8 +6,8 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/botlabs-gg/yagpdb/common"
-	"github.com/botlabs-gg/yagpdb/common/config"
+	"github.com/mrbentarikau/pagst/common"
+	"github.com/mrbentarikau/pagst/common/config"
 	"github.com/google/safebrowsing"
 	"github.com/sirupsen/logrus"
 )

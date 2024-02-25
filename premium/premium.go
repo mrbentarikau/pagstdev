@@ -4,12 +4,12 @@ import (
 	"time"
 
 	"emperror.dev/errors"
-	"github.com/botlabs-gg/yagpdb/common"
-	"github.com/botlabs-gg/yagpdb/common/config"
-	"github.com/botlabs-gg/yagpdb/common/featureflags"
-	"github.com/botlabs-gg/yagpdb/common/scheduledevents2"
-	schEventsModels "github.com/botlabs-gg/yagpdb/common/scheduledevents2/models"
-	"github.com/botlabs-gg/yagpdb/common/templates"
+	"github.com/mrbentarikau/pagst/common"
+	"github.com/mrbentarikau/pagst/common/config"
+	"github.com/mrbentarikau/pagst/common/featureflags"
+	"github.com/mrbentarikau/pagst/common/scheduledevents2"
+	schEventsModels "github.com/mrbentarikau/pagst/common/scheduledevents2/models"
+	"github.com/mrbentarikau/pagst/common/templates"
 	"github.com/mediocregopher/radix/v3"
 )
 

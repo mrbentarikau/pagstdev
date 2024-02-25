@@ -20,10 +20,10 @@ import (
 	"github.com/volatiletech/null/v8"
 
 	"emperror.dev/errors"
-	"github.com/botlabs-gg/yagpdb/bot"
-	"github.com/botlabs-gg/yagpdb/common"
-	"github.com/botlabs-gg/yagpdb/common/scheduledevents2/models"
-	"github.com/botlabs-gg/yagpdb/lib/discordgo"
+	"github.com/mrbentarikau/pagst/bot"
+	"github.com/mrbentarikau/pagst/common"
+	"github.com/mrbentarikau/pagst/common/scheduledevents2/models"
+	"github.com/mrbentarikau/pagst/lib/discordgo"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 

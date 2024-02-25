@@ -10,15 +10,15 @@ import (
 	"sync"
 	"time"
 
-	"github.com/botlabs-gg/yagpdb/analytics"
-	"github.com/botlabs-gg/yagpdb/common"
-	"github.com/botlabs-gg/yagpdb/common/mqueue"
-	"github.com/botlabs-gg/yagpdb/feeds"
-	"github.com/botlabs-gg/yagpdb/lib/discordgo"
+	"github.com/mrbentarikau/pagst/analytics"
+	"github.com/mrbentarikau/pagst/common"
+	"github.com/mrbentarikau/pagst/common/mqueue"
+	"github.com/mrbentarikau/pagst/feeds"
+	"github.com/mrbentarikau/pagst/lib/discordgo"
 
-	//twitterscraper "github.com/botlabs-gg/yagpdb/lib/twitter-scraper"
-	"github.com/botlabs-gg/yagpdb/premium"
-	"github.com/botlabs-gg/yagpdb/twitter/models"
+	//twitterscraper "github.com/mrbentarikau/pagst/lib/twitter-scraper"
+	"github.com/mrbentarikau/pagst/premium"
+	"github.com/mrbentarikau/pagst/twitter/models"
 	"github.com/mediocregopher/radix/v3"
 
 	twitterscraper "github.com/n0madic/twitter-scraper"

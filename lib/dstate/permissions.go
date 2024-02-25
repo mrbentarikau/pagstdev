@@ -1,6 +1,6 @@
 package dstate
 
-import "github.com/botlabs-gg/yagpdb/lib/discordgo"
+import "github.com/mrbentarikau/pagst/lib/discordgo"
 
 const AllPermissions int64 = discordgo.PermissionAll
 

@@ -3,14 +3,14 @@ package cah
 import (
 	"fmt"
 
-	"github.com/botlabs-gg/yagpdb/bot"
-	"github.com/botlabs-gg/yagpdb/bot/eventsystem"
-	"github.com/botlabs-gg/yagpdb/commands"
-	"github.com/botlabs-gg/yagpdb/common"
-	"github.com/botlabs-gg/yagpdb/common/pubsub"
-	"github.com/botlabs-gg/yagpdb/lib/cardsagainstdiscord"
-	"github.com/botlabs-gg/yagpdb/lib/discordgo"
-	"github.com/botlabs-gg/yagpdb/lib/dshardorchestrator"
+	"github.com/mrbentarikau/pagst/bot"
+	"github.com/mrbentarikau/pagst/bot/eventsystem"
+	"github.com/mrbentarikau/pagst/commands"
+	"github.com/mrbentarikau/pagst/common"
+	"github.com/mrbentarikau/pagst/common/pubsub"
+	"github.com/mrbentarikau/pagst/lib/cardsagainstdiscord"
+	"github.com/mrbentarikau/pagst/lib/discordgo"
+	"github.com/mrbentarikau/pagst/lib/dshardorchestrator"
 )
 
 const ShardMigrationEvtGame = 110

@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/botlabs-gg/yagpdb/commands"
-	"github.com/botlabs-gg/yagpdb/common"
+	"github.com/mrbentarikau/pagst/commands"
+	"github.com/mrbentarikau/pagst/common"
 )
 
 var logger = common.GetFixedPrefixLogger("stdcommands_util")

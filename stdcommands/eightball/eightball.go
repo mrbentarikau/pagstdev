@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"math/rand"
 
-	"github.com/botlabs-gg/yagpdb/commands"
-	"github.com/botlabs-gg/yagpdb/lib/dcmd"
+	"github.com/mrbentarikau/pagst/commands"
+	"github.com/mrbentarikau/pagst/lib/dcmd"
 )
 
 var magicAnswers = [...]string{

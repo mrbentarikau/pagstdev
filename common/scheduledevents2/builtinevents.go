@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/botlabs-gg/yagpdb/bot"
-	"github.com/botlabs-gg/yagpdb/common"
-	"github.com/botlabs-gg/yagpdb/common/scheduledevents2/models"
+	"github.com/mrbentarikau/pagst/bot"
+	"github.com/mrbentarikau/pagst/common"
+	"github.com/mrbentarikau/pagst/common/scheduledevents2/models"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 

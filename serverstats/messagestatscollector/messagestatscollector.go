@@ -4,8 +4,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/botlabs-gg/yagpdb/common"
-	"github.com/botlabs-gg/yagpdb/lib/discordgo"
+	"github.com/mrbentarikau/pagst/common"
+	"github.com/mrbentarikau/pagst/lib/discordgo"
 	"github.com/mediocregopher/radix/v3"
 	"github.com/sirupsen/logrus"
 )

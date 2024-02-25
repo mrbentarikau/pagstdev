@@ -1,9 +1,9 @@
 package bot
 
 import (
-	"github.com/botlabs-gg/yagpdb/bot/shardmemberfetcher"
-	"github.com/botlabs-gg/yagpdb/common"
-	"github.com/botlabs-gg/yagpdb/lib/dstate"
+	"github.com/mrbentarikau/pagst/bot/shardmemberfetcher"
+	"github.com/mrbentarikau/pagst/common"
+	"github.com/mrbentarikau/pagst/lib/dstate"
 )
 
 var (

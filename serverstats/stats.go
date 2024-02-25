@@ -7,9 +7,9 @@ import (
 
 	"emperror.dev/errors"
 
-	"github.com/botlabs-gg/yagpdb/bot/botrest"
-	"github.com/botlabs-gg/yagpdb/common"
-	"github.com/botlabs-gg/yagpdb/serverstats/messagestatscollector"
+	"github.com/mrbentarikau/pagst/bot/botrest"
+	"github.com/mrbentarikau/pagst/common"
+	"github.com/mrbentarikau/pagst/serverstats/messagestatscollector"
 	"github.com/mediocregopher/radix/v3"
 )
 
