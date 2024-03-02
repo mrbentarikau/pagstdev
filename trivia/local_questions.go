@@ -2115,4 +2115,256 @@ var LocalQuestions = map[string][]TriviaQuestion{
 			Options:  []string{"Surrealism", "Cubism", "Pop Art"},
 		},
 	},
+	"Sports": {
+		{
+			Answer:   "Philadelphia Eagles and Pittsburgh Steelers",
+			Question: "Due to World War II, 2 NFL teams merged temporarily in 1943. Which teams were they?",
+			Options:  []string{"New York Giants and Brooklyn Dodgers", "Cleveland Rams and Detroit Lions", "Chicago Bears and Chicago Cardinals"},
+		},
+		{
+			Answer:   "University of Connecticut",
+			Question: "Which school has their men's and women's teams win the NCAA basketball tournament in the same year?",
+			Options:  []string{"Purdue University", "Duke University", "University of South Carolina"},
+		},
+		{
+			Answer:   "Hendrick Motorsports",
+			Question: "Which NASCAR team has the most championship wins?",
+			Options:  []string{"Stewart-Haas Racing", "Richard Childress Racing", "Team Penske"},
+		},
+		{
+			Answer:   "27",
+			Question: "The New York Yankees franchise has the most World Series wins. How many have they won as of 2024?",
+			Options:  []string{"15", "22", "11"},
+		},
+		{
+			Answer:   "Pirelli",
+			Question: "Through 2027, who is the official tire supplier to Formula 1?",
+			Options:  []string{"Goodyear", "Bridgestone", "Hoosier"},
+		},
+		{
+			Answer:   "Hart Memorial Trophy",
+			Question: "Which trophy is awarded for the regular season MVP in the NHL?",
+			Options:  []string{"Art Ross Trophy", "Calder Memorial Trophy", "Lady Byng Memorial Trophy"},
+		},
+		{
+			Answer:   "2008",
+			Question: "In what year did the NHL start hosting the Winter Classic?",
+			Options:  []string{"1995", "2000", "2012"},
+		},
+		{
+			Answer:   "Oscar Shawn",
+			Question: "Who was the oldest athlete to ever compete in the modern Olympics?",
+			Options:  []string{"Andrew Hoy", "Lorna Johnstone", "Mary Hanna"},
+		},
+		{
+			Answer:   "Argentina",
+			Question: "Which nation won the 2021 Copa América?",
+			Options:  []string{"Chile", "Brazil", "Mexico"},
+		},
+		{
+			Answer:   "Augusta National Golf Club",
+			Question: "Which golf course hosts the Masters Tournament?",
+			Options:  []string{"Pebble Beach Golf Links", "Oakmont", "Pine Valley"},
+		},
+		{
+			Answer:   "Juventus",
+			Question: "Which club has the most championships in soccer Serie A history?",
+			Options:  []string{"Bologna", "Inter Milan", "AC Milan"},
+		},
+		{
+			Answer:   "Muggsy Bogues",
+			Question: "Who was the shortest NBA player of all-time at 5 ft. 3 in (ca. 1.6m)?",
+			Options:  []string{"Greg Grant", "Earl Boykins", "Mel Hirsch"},
+		},
+		{
+			Answer:   "Mark Edmondson",
+			Question: "Who was the first unseeded player to win a Grand Slam in tennis?",
+			Options:  []string{"Mats Wilander", "Guillermo Vilas", "John Newcombe"},
+		},
+		{
+			Answer:   "St. Louis",
+			Question: "Prior to returning to L.A., where were the Rams located?",
+			Options:  []string{"San Antonio", "Raleigh", "Las Vegas"},
+		},
+		{
+			Answer:   "Cleveland Barons",
+			Question: "After some financial difficulties which NHL team merged with the Minnesota North Stars?",
+			Options:  []string{"Brooklyn Americans", "Kansas City Scouts", "St. Louis Eagles"},
+		},
+		{
+			Answer:   "Montreal Expos",
+			Question: "Prior to playing in the NFL, which MLB franchise drafted Tom Brady?",
+			Options:  []string{"Atlanta Braves", "New York Yankees", "Boston Red Sox"},
+		},
+		{
+			Answer:   "Vince Lombardi",
+			Question: "Who is the namesake of the trophy given out to the Super Bowl winner?",
+			Options:  []string{"John Heisman", "Pop Warner", "Hank Stram"},
+		},
+		{
+			Answer:   "Roger Clemens",
+			Question: "Who has the most Cy Young Awards in MLB history?",
+			Options:  []string{"Randy Johnson", "Max Scherzer", "Steve Carlton"},
+		},
+		{
+			Answer:   "China",
+			Question: "Which country has the most medals in badminton's BWF World Championships in history?",
+			Options:  []string{"Indonesia", "Denmark", "United States of America"},
+		},
+		{
+			Answer:   "Italy",
+			Question: "Which nation won the 2020 UEFA European Championship?",
+			Options:  []string{"Spain", "France", "Portugal"},
+		},
+		{
+			Answer:   "Joe Nuxhall",
+			Question: "At just 15  years old, who is the youngest player to ever make their MLB debut?",
+			Options:  []string{"Carl Schieb", "Rogers Hornsby", "Granny Hammer"},
+		},
+		{
+			Answer:   "Caitlin Clark",
+			Question: "Who holds the record for most points in a women's NCAA basketball career?",
+			Options:  []string{"Maya Moore", "Kelsey Mitchell", "Kelsey Plum"},
+		},
+		{
+			Answer:   "Julius Erving",
+			Question: "Which NBA player was nicknamed 'Dr. J'?",
+			Options:  []string{"LeBron James", "Jerry West", "Joe Johnson"},
+		},
+		{
+			Answer:   "Green Bay Packers",
+			Question: "With what franchise did Hall of Fame quarterback Bart Starr spend his career?",
+			Options:  []string{"Detroit Lions", "New York Jets", "Chicago Bears"},
+		},
+		{
+			Answer:   "Tom Brady",
+			Question: "Which NFL quarterback has the most passing yards in a Super Bowl as of 2024?",
+			Options:  []string{"Nick Foles", "Kurt Warner", "Patrick Mahomes"},
+		},
+		{
+			Answer:   "Japan",
+			Question: "Prior to Indonesia becoming the first Asian country to compete in the World Cup in 1938, which country qualified in 1930 but chose to withdraw?",
+			Options:  []string{"China", "Vietnam", "South Korea"},
+		},
+		{
+			Answer:   "Lionel Messi",
+			Question: "Who left Paris Saint-Germain in 2023 to join the MLS club Inter Miami?",
+			Options:  []string{"Hany Mukhtar", "Sébastien Le Toux", "Kylian Mbappé"},
+		},
+		{
+			Answer:   "Cricket",
+			Question: "Prior to earning the name 'Father of Baseball', what sport did Hendry Chadwick play?",
+			Options:  []string{"Tennis", "Rugby", "Basketball"},
+		},
+		{
+			Answer:   "Clarence Seedorf",
+			Question: "Who is the only player to win the Champions League with three different clubs?",
+			Options:  []string{"Sergio Ramos", "Cristiano Ronaldo", "Lionel Messi"},
+		},
+		{
+			Answer:   "Ryan Blaney",
+			Question: "Who won the 2023 NASCAR Cup Series?",
+			Options:  []string{"Kyle Larson", "Brad Keselowski", "Martin Truex Jr."},
+		},
+		{
+			Answer:   "England",
+			Question: "Which of these nations does not compete in The Rugby Championship?",
+			Options:  []string{"Argentina", "New Zealand", "Australia"},
+		},
+		{
+			Answer:   "Australia",
+			Question: "Which country has won the most Cricket World Cups?",
+			Options:  []string{"India", "Sri Lanka", "England"},
+		},
+		{
+			Answer:   "Royce Gracie",
+			Question: "Who won UFC 1 back in 1993?",
+			Options:  []string{"Patrick Smith", "Ken Shamrock", "Gerard Gordeau"},
+		},
+		{
+			Answer:   "Pasadena, California",
+			Question: "Where does the Rose Bowl take place?",
+			Options:  []string{"San Antonio, Texas", "Philadelphia, Pennsylvania", "Phoenix, Arizona"},
+		},
+		{
+			Answer:   "Dirk Nowitzki",
+			Question: "Who was the first European player to win the NBA regular season MVP?",
+			Options:  []string{"Paul Gasol", "Giannis Antetokounmpo", "Tony Parker"},
+		},
+		{
+			Answer:   "Penrith Panthers",
+			Question: "Which team won the National Rugby League title from 2021-2023?",
+			Options:  []string{"Sydney Roosters", "Melbourne Storm", "Cronulla-Sutherland Sharks"},
+		},
+		{
+			Answer:   "Spencer Gore",
+			Question: "Who won the first ever Wimbledon Championship in 1877?",
+			Options:  []string{"Frank Hadow", "Charles Gilbert Heathcote", "William Marshall"},
+		},
+		{
+			Answer:   "Jack Nicklaus",
+			Question: "As of 2024, which golfer has won the most majors?",
+			Options:  []string{"Tiger Woods", "Ben Hogan", "Bobby Jones"},
+		},
+		{
+			Answer:   "Fenway Park",
+			Question: "Which is the oldest actively used MLB stadium?",
+			Options:  []string{"Dodger Stadium", "Wrigley Field", " Memorial Stadium"},
+		},
+		{
+			Answer:   "Dubai",
+			Question: "As of 2024, where is the headquarters for the International Cricket Council located?",
+			Options:  []string{"Mumbai", "Johannesburg", "London"},
+		},
+		{
+			Answer:   "Indiana Pacers",
+			Question: "Larry Bird played his entire career for the Celtics, but what team did he coach?",
+			Options:  []string{"Phoenix Suns", "Utah Jazz", "Cleveland Cavaliers"},
+		},
+		{
+			Answer:   "Frank Thomas",
+			Question: "Which MLB players is known as 'The Big Hurt'?",
+			Options:  []string{"Barry Bonds", "Jim Thome", "José Canseco"},
+		},
+		{
+			Answer:   "Terry Crews",
+			Question: "Which of these famous actors was initially an NFL player?",
+			Options:  []string{"Randy Couture", "Chuck Liddell", "Quinton Jackson"},
+		},
+		{
+			Answer:   "All England Open Badminton Championships",
+			Question: "What is the oldest badminton tournament?",
+			Options:  []string{"China Open", "Malaysia Open", "Indonesia Open"},
+		},
+		{
+			Answer:   "Visor",
+			Question: "What piece of equipment became mandated by the NHL in 2013?",
+			Options:  []string{"Helmet", "Neck Protector", "Mouthguard"},
+		},
+		{
+			Answer:   "Muhammad Ali",
+			Question: "Which athlete was originally known as Cassius Clay?",
+			Options:  []string{"Sugar Ray Robinson", "Chad Ochocinco", "Kareem Abdul-Jabbar"},
+		},
+		{
+			Answer:   "Roberto Clemente",
+			Question: "Who is the only MLB player to hit a inside-the-park walk-off grand slam?",
+			Options:  []string{"Pete Rose", "Nap Lajoie", "Honus Wagner"},
+		},
+		{
+			Answer:   "Bobby Thomson",
+			Question: "Which MLB player hit the famous 'Shot Heard 'Round the World'?",
+			Options:  []string{"Ted Williams", "Stan Musial", "Ernie Banks"},
+		},
+		{
+			Answer:   "Michael Phelps",
+			Question: "Who has the most Olympic gold medals over their career?",
+			Options:  []string{"Paavo Nurmi", "Usain Bolt", "Larisa Latynina"},
+		},
+		{
+			Answer:   "Spain",
+			Question: "Who won the 2023 FIFA Women's World Cup?",
+			Options:  []string{"England", "Sweden", "Brazil"},
+		},
+	},
 }
