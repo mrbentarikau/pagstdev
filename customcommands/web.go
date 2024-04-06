@@ -397,7 +397,6 @@ func handleUpdateCommand(w http.ResponseWriter, r *http.Request) (web.TemplateDa
 	cmd := ctx.Value(common.ContextKeyParsedForm).(*CustomCommand)
 	//cmdEdit := ctx.Value(common.ContextKeyParsedForm).(*CustomCommand)
 	cmdSaved, err := models.FindCustomCommandG(context.Background(), activeGuild.ID, int64(cmd.ID))
-	if cmdSaved.Disabled == true && cmd.ToDBModel().Disabled == false {
 	if err != nil {
 		logrus.WithError(err).WithFields(logrus.Fields{
 			"guild_id": activeGuild.ID,
