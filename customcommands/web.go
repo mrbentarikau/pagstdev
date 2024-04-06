@@ -31,6 +31,8 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"goji.io"
 	"goji.io/pat"
+
+	"github.com/sirupsen/logrus"
 )
 
 //go:embed assets/customcommands-editcmd.html
@@ -396,6 +398,14 @@ func handleUpdateCommand(w http.ResponseWriter, r *http.Request) (web.TemplateDa
 	//cmdEdit := ctx.Value(common.ContextKeyParsedForm).(*CustomCommand)
 	cmdSaved, err := models.FindCustomCommandG(context.Background(), activeGuild.ID, int64(cmd.ID))
 	if cmdSaved.Disabled == true && cmd.ToDBModel().Disabled == false {
+	if err != nil {
+		logrus.WithError(err).WithFields(logrus.Fields{
+			"guild_id": activeGuild.ID,
+			"cmd_id":   cmd.ID,
+		}).Error("Error in fetching command")
+		return templateData, err
+	}
+	if cmdSaved.Disabled && !cmd.ToDBModel().Disabled {
 		c, err := models.CustomCommands(qm.Where("guild_id = ? and disabled = false", activeGuild.ID)).CountG(ctx)
 		if err != nil {
 			return templateData, err
