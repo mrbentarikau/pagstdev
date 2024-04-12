@@ -499,7 +499,7 @@ func UnbanUser(config *Config, guildID int64, author *discordgo.User, reason str
 	return false, err
 }
 
-func fullReason(fullReason string, author *discordgo.User) (fullReason string) {
+func fullReason(reason string, author *discordgo.User) (fullReason string) {
 	fullReason = reason
 	if author.ID != common.BotUser.ID {
 		fullReason = author.String() + ": " + reason
