@@ -98,7 +98,7 @@ func punish(config *Config, p Punishment, guildID int64, channel *dstate.Channel
 		logLink = CreateLogs(guildID, channelID, author)
 	}
 
-	fullReason := fullReason(reason, author)
+	fullReason := authorToReason(reason, author)
 
 	switch p {
 	case PunishmentKick:
@@ -480,7 +480,7 @@ func UnbanUser(config *Config, guildID int64, author *discordgo.User, reason str
 
 	var unbanReason discordgo.RequestOption
 	if reason != "" {
-		reason = fullReason(reason, author)
+		reason = authorToReason(reason, author)
 		unbanReason = discordgo.WithAuditLogReason(reason)
 	}
 
@@ -499,7 +499,8 @@ func UnbanUser(config *Config, guildID int64, author *discordgo.User, reason str
 	return false, err
 }
 
-func fullReason(reason string, author *discordgo.User) (fullReason string) {
+// prepends author to punishment reason
+func authorToReason(reason string, author *discordgo.User) (fullReason string) {
 	fullReason = reason
 	if author.ID != common.BotUser.ID {
 		fullReason = author.String() + ": " + reason
@@ -523,7 +524,7 @@ func RemoveTimeout(config *Config, guildID int64, author *discordgo.User, reason
 	}
 	action := MATimeOutRemoved
 
-	err = common.BotSession.GuildMemberTimeoutWithReason(guildID, user.ID, nil, fullReason(reason, author))
+	err = common.BotSession.GuildMemberTimeoutWithReason(guildID, user.ID, nil, authorToReason(reason, author))
 	if err != nil {
 		return err
 	}
