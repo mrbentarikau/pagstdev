@@ -13,6 +13,8 @@ import (
 	"unicode/utf8"
 
 	"emperror.dev/errors"
+	"github.com/karlseguin/ccache"
+	"github.com/mediocregopher/radix/v3"
 	"github.com/mrbentarikau/pagst/bot"
 	"github.com/mrbentarikau/pagst/common"
 	"github.com/mrbentarikau/pagst/common/featureflags"
@@ -21,8 +23,6 @@ import (
 	"github.com/mrbentarikau/pagst/lib/dstate"
 	"github.com/mrbentarikau/pagst/premium"
 	"github.com/mrbentarikau/pagst/web"
-	"github.com/karlseguin/ccache"
-	"github.com/mediocregopher/radix/v3"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
@@ -142,6 +142,9 @@ type CustomCommand struct {
 	Note               string   `json:"note" schema:"note" valid:",0,256"`
 	Disabled           bool     `json:"disabled" schema:"disabled"`
 
+	Public   bool   `json:"public" schema:"public"`
+	PublicID string `json:"public_id" schema:"public_id"`
+
 	ContextChannel int64 `schema:"context_channel" valid:"channel,true"`
 
 	TimeTriggerInterval       int     `schema:"time_trigger_interval"`
@@ -235,6 +238,9 @@ func (cc *CustomCommand) ToDBModel() *models.CustomCommand {
 		RegexTriggerCaseSensitive: cc.RegexCaseSensitive,
 		TextTrigger:               cc.Trigger,
 		TextTriggerCaseSensitive:  cc.CaseSensitive,
+
+		Public:   cc.Public,
+		PublicID: cc.PublicID,
 
 		Categories:              cc.Categories,
 		CategoriesWhitelistMode: cc.RequireCategories,
