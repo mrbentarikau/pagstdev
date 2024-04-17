@@ -494,8 +494,10 @@ func embedCreator(ccs models.CustomCommandSlice, i, ml int, title string, gMap m
 
 		if v.TriggerType == 0 {
 			finalTrigger = textTrigger
-		} else {
+		} else if v.TriggerType >= 1 && v.TriggerType <= 4 {
 			finalTrigger = regexTrigger
+		} else {
+			finalTrigger = ""
 		}
 
 		if v.Disabled {
