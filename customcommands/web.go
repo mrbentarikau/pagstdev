@@ -374,6 +374,7 @@ func serveGroupSelected(r *http.Request, templateData web.TemplateData, groupID 
 	templateData["GetCCIntervalType"] = tmplGetCCIntervalTriggerType
 	templateData["GetCCInterval"] = tmplGetCCInterval
 	templateData["GetChannelName"] = tmplGetChannelName
+	templateData["GetPublicLink"] = getPublicLink
 
 	_, ok := templateData["CustomCommands"]
 	if !ok {
@@ -433,7 +434,7 @@ func handleNewCommand(w http.ResponseWriter, r *http.Request) (web.TemplateData,
 	}
 
 	if int(c) >= MaxCommandsForContext(ctx) {
-		return templateData, web.NewPublicError(fmt.Sprintf("Max %d custom commands allowed (or %d for premium servers)", MaxCommands, MaxCommandsPremium))
+		return templateData.AddAlerts(web.ErrorAlert(fmt.Sprintf("Max %d custom commands allowed (or %d for premium servers)", MaxCommands, MaxCommandsPremium))), nil
 	}
 
 	localID, err := common.GenLocalIncrID(activeGuild.ID, "custom_command")
@@ -468,8 +469,13 @@ func handleNewCommand(w http.ResponseWriter, r *http.Request) (web.TemplateData,
 		importCC, err = models.CustomCommands(
 			models.CustomCommandWhere.PublicID.EQ(importID)).OneG(r.Context())
 		if err != nil {
-			http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
-			return templateData, err
+			http.Redirect(w, r, fmt.Sprintf("/manage/%d/customcommands?import_failed=true", activeGuild.ID), http.StatusSeeOther)
+			return templateData, nil
+		}
+		isValidCCLength := validateCCResponseLength(importCC.Responses, activeGuild.ID)
+		if !isValidCCLength {
+			http.Redirect(w, r, fmt.Sprintf("/manage/%d/customcommands?import_failed=true", activeGuild.ID), http.StatusSeeOther)
+			return templateData, nil
 		}
 
 		dbModel.ReactionTriggerMode = importCC.ReactionTriggerMode

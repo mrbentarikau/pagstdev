@@ -171,6 +171,21 @@ type CustomCommand struct {
 
 var _ web.CustomValidator = (*CustomCommand)(nil)
 
+func validateCCResponseLength(responses []string, guild_id int64) bool {
+	combinedSize := 0
+	for _, v := range responses {
+		combinedSize += utf8.RuneCountInString(v)
+	}
+
+	ccMaxLength := MaxCCResponsesLength
+	isGuildPremium, _ := premium.IsGuildPremium(guild_id)
+	if isGuildPremium {
+		ccMaxLength = MaxCCResponsesLengthPremium
+	}
+
+	return combinedSize <= ccMaxLength
+}
+
 func (cc *CustomCommand) Validate(tmpl web.TemplateData, guild_id int64) (ok bool) {
 	/*if len(cc.Responses) > MaxUserMessages {
 		tmpl.AddAlerts(web.ErrorAlert(fmt.Sprintf("Too many responses, max %d", MaxUserMessages)))
@@ -190,18 +205,9 @@ func (cc *CustomCommand) Validate(tmpl web.TemplateData, guild_id int64) (ok boo
 		return false
 	}
 
-	combinedSize := 0
-	for _, v := range cc.Responses {
-		combinedSize += utf8.RuneCountInString(v)
-	}
+	isValidCCLength := validateCCResponseLength(cc.Responses, guild_id)
 
-	ccMaxLength := MaxCCResponsesLength
-	isGuildPremium, _ := premium.IsGuildPremium(guild_id)
-	if isGuildPremium {
-		ccMaxLength = MaxCCResponsesLengthPremium
-	}
-
-	if !cc.Disabled && combinedSize > ccMaxLength {
+	if !cc.Disabled && isValidCCLength {
 		tmpl.AddAlerts(web.ErrorAlert("Max combined command size can be 10k for free servers, and 20k for premium servers"))
 		return false
 	}
