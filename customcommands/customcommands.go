@@ -207,7 +207,7 @@ func (cc *CustomCommand) Validate(tmpl web.TemplateData, guild_id int64) (ok boo
 
 	isValidCCLength := validateCCResponseLength(cc.Responses, guild_id)
 
-	if !cc.Disabled && isValidCCLength {
+	if !cc.Disabled && !isValidCCLength {
 		tmpl.AddAlerts(web.ErrorAlert("Max combined command size can be 10k for free servers, and 20k for premium servers"))
 		return false
 	}
