@@ -62,10 +62,18 @@ func tmplUserArg(tmplCtx *templates.Context) interface{} {
 					// Found member
 					return &member.User, nil
 				}
-
 			}
 
 			// No more cases we can handle
+			return nil, nil
+		}
+
+		if user, ok := v.(*discordgo.User); ok {
+			member, _ := bot.GetMember(tmplCtx.GS.ID, user.ID, true)
+			if member != nil {
+				return &member.User, nil
+			}
+
 			return nil, nil
 		}
 
