@@ -566,7 +566,7 @@ func HandleGetManagedGuilds(w http.ResponseWriter, r *http.Request) (TemplateDat
 
 	// retrieve guilds this user is part of
 	// i really wish there was a easy to to invalidate this cache, but since there's not it just expires after 10 seconds
-	managedGuilds, err := GetUserManagedGuilds(ctx)
+	managedGuilds, err := GetUserAccessibleGuilds(ctx, false)
 	if err != nil {
 		return templateData, err
 	}
@@ -592,7 +592,7 @@ func basicRoleProvider(guildID, userID int64) []int64 {
 	return members[0].Roles
 }
 
-func GetUserManagedGuilds(ctx context.Context) ([]*common.GuildWithConnected, error) {
+func GetUserAccessibleGuilds(ctx context.Context, writeOnly bool) ([]*common.GuildWithConnected, error) {
 	guilds, err := GetUserGuilds(ctx)
 	if err != nil {
 		return nil, err
@@ -606,7 +606,7 @@ func GetUserManagedGuilds(ctx context.Context) ([]*common.GuildWithConnected, er
 	for i, g := range guilds {
 		go func(j int, gwc *common.GuildWithConnected) {
 			conf := common.GetCoreServerConfCached(gwc.ID)
-			if HasAccesstoGuildSettings(user.ID, gwc, conf, basicRoleProvider, false) {
+			if HasAccesstoGuildSettings(user.ID, gwc, conf, basicRoleProvider, writeOnly) {
 				nilled[j] = gwc
 			}
 			wg.Done()

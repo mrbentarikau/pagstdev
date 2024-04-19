@@ -323,7 +323,7 @@
                                         <span style="margin-left:5px">Auto-close brackets:<i style="position: relative; top: -0.5em; font-size: 75%;"class="fas fa-question-circle" title="If CodeMirror enabled"></i> &nbsp;<select onchange="selectBrackets()" id=bracketsSelect style="background-color: #282828;color:#a1a1a1;border-color:#a1a1a1;"><option selected>disabled</option><option>enabled</option></select></span><span style="margin-left:5px"><i>(alt+shift+s is quicksave, alt+shift+c is colour picker, F11/ESC for fullscreen on/off)</i></span>
                                     </div>
                                     <label for="responses">Response (<span class="cc-length-counter">
-                                    {{- with .CC.Responses}}{{- index . 0|toRune|len -}}</span>/20000)</label>{{else}}x/20000{{- end -}}
+                                    {{- with .CC.Responses}}{{- index . 0|toRune|len -}}</span>/{{$.MaxCCLength}})</label>{{else}}x/{{$.MaxCCLength}}{{- end -}}
                                     {{if .CC.Public}}
                                     <a class="mb-1 mt-1 mr-1 modal-basic btn btn-info btn-sm"
                                         href="#cc-share-modal">Share</a>
@@ -974,7 +974,7 @@
         var display = textArea.parentElement.parentElement.parentElement.querySelector(".cc-length-counter");
         display.textContent = combinedLength;
 
-        if (combinedLength > 20000) {
+        if (combinedLength > {{.MaxCCLength}}) {
             display.classList.add("text-danger");
         } else {
             display.classList.remove("text-danger");

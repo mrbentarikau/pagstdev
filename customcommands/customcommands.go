@@ -7,14 +7,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
-	"sort"
 	"strings"
 	"time"
 	"unicode/utf8"
 
 	"emperror.dev/errors"
 	"github.com/karlseguin/ccache"
-	"github.com/mediocregopher/radix/v3"
 	"github.com/mrbentarikau/pagst/bot"
 	"github.com/mrbentarikau/pagst/common"
 	"github.com/mrbentarikau/pagst/common/featureflags"
@@ -74,9 +72,8 @@ const (
 	CommandTriggerContains   CommandTriggerType = 2
 	CommandTriggerRegex      CommandTriggerType = 3
 	CommandTriggerExact      CommandTriggerType = 4
+	CommandTriggerInterval   CommandTriggerType = 5
 	CommandTriggerReaction   CommandTriggerType = 6
-
-	CommandTriggerInterval CommandTriggerType = 5
 )
 
 var (
@@ -129,18 +126,16 @@ func (t CommandTriggerType) EmbedString() string {
 }
 
 type CustomCommand struct {
-	TriggerType     CommandTriggerType `json:"trigger_type"`
-	TriggerTypeForm string             `json:"-" schema:"type"`
-	Trigger         string             `json:"trigger" schema:"trigger" valid:",0,256"`
-	RegexTrigger    string             `json:"regex_trigger" schema:"regex_trigger" valid:",0,256"`
-	// TODO: Retire the legacy Response field.
-	Response           string   `json:"response,omitempty" schema:"response" valid:"template,20000"`
-	Responses          []string `json:"responses" schema:"responses" valid:"template,20000"`
-	CaseSensitive      bool     `json:"case_sensitive" schema:"case_sensitive"`
-	RegexCaseSensitive bool     `json:"regex_case_sensitive" schema:"regex_case_sensitive"`
-	ID                 int64    `json:"id"`
-	Note               string   `json:"note" schema:"note" valid:",0,256"`
-	Disabled           bool     `json:"disabled" schema:"disabled"`
+	TriggerType        CommandTriggerType `json:"trigger_type"`
+	TriggerTypeForm    string             `json:"-" schema:"type"`
+	Trigger            string             `json:"trigger" schema:"trigger" valid:",0,256"`
+	RegexTrigger       string             `json:"regex_trigger" schema:"regex_trigger" valid:",0,256"`
+	Responses          []string           `json:"responses" schema:"responses" valid:"template,20000"`
+	CaseSensitive      bool               `json:"case_sensitive" schema:"case_sensitive"`
+	RegexCaseSensitive bool               `json:"regex_case_sensitive" schema:"regex_case_sensitive"`
+	ID                 int64              `json:"id"`
+	Note               string             `json:"note" schema:"note" valid:",0,256"`
+	Disabled           bool               `json:"disabled" schema:"disabled"`
 
 	Public   bool   `json:"public" schema:"public"`
 	PublicID string `json:"public_id" schema:"public_id"`
@@ -176,7 +171,7 @@ type CustomCommand struct {
 
 var _ web.CustomValidator = (*CustomCommand)(nil)
 
-func (cc *CustomCommand) Validate(tmpl web.TemplateData) (ok bool) {
+func (cc *CustomCommand) Validate(tmpl web.TemplateData, guild_id int64) (ok bool) {
 	/*if len(cc.Responses) > MaxUserMessages {
 		tmpl.AddAlerts(web.ErrorAlert(fmt.Sprintf("Too many responses, max %d", MaxUserMessages)))
 		return false
@@ -200,8 +195,14 @@ func (cc *CustomCommand) Validate(tmpl web.TemplateData) (ok bool) {
 		combinedSize += utf8.RuneCountInString(v)
 	}
 
-	if combinedSize > 20000 {
-		tmpl.AddAlerts(web.ErrorAlert("Max combined command size can be 20k"))
+	ccMaxLength := MaxCCResponsesLength
+	isGuildPremium, _ := premium.IsGuildPremium(guild_id)
+	if isGuildPremium {
+		ccMaxLength = MaxCCResponsesLengthPremium
+	}
+
+	if !cc.Disabled && combinedSize > ccMaxLength {
+		tmpl.AddAlerts(web.ErrorAlert("Max combined command size can be 10k for free servers, and 20k for premium servers"))
 		return false
 	}
 
@@ -395,51 +396,6 @@ func CmdRunsForUser(cc *models.CustomCommand, ms *dstate.MemberState) bool {
 	return !cc.RolesWhitelistMode
 }
 
-// Migrate modifies a CustomCommand to remove legacy fields.
-func (cc *CustomCommand) Migrate() *CustomCommand {
-	cc.Responses = filterEmptyResponses(cc.Response, cc.Responses...)
-	cc.Response = ""
-	if len(cc.Responses) > MaxUserMessages {
-		cc.Responses = cc.Responses[:MaxUserMessages]
-	}
-
-	return cc
-}
-
-func LegacyGetCommands(guild int64) ([]*CustomCommand, int64, error) {
-	var hashMap map[string]string
-
-	err := common.RedisPool.Do(radix.Cmd(&hashMap, "HGETALL", KeyCommands(guild)))
-	if err != nil {
-		return nil, 0, err
-	}
-
-	highest := int64(0)
-	result := make([]*CustomCommand, len(hashMap))
-
-	// Decode the commands, and also calculate the highest id
-	i := 0
-	for k, raw := range hashMap {
-		var decoded *CustomCommand
-		err = json.Unmarshal([]byte(raw), &decoded)
-		if err != nil {
-			logger.WithError(err).WithField("guild", guild).WithField("custom_command", k).Error("Failed decoding custom command")
-			result[i] = &CustomCommand{}
-		} else {
-			result[i] = decoded.Migrate()
-			if decoded.ID > highest {
-				highest = decoded.ID
-			}
-		}
-		i++
-	}
-
-	// Sort by id
-	sort.Sort(CustomCommandSlice(result))
-
-	return result, highest, nil
-}
-
 type CustomCommandSlice []*CustomCommand
 
 // Len is the number of elements in the collection.
@@ -476,10 +432,12 @@ func filterEmptyResponses(s string, ss ...string) []string {
 }
 
 const (
-	MaxCommands        = 100
-	MaxCommandsPremium = 250
-	MaxUserMessages    = 20
-	MaxGroups          = 50
+	MaxCCResponsesLength        = 10000
+	MaxCCResponsesLengthPremium = 20000
+	MaxCommands                 = 100
+	MaxCommandsPremium          = 250
+	MaxGroups                   = 50
+	MaxUserMessages             = 20
 )
 
 func MaxCommandsForContext(ctx context.Context) int {
