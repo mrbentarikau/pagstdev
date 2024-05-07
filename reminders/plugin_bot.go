@@ -80,7 +80,7 @@ var cmds = []*commands.YAGCommand{
 			var reminderMessage string
 			currentReminders, _ := GetUserReminders(parsed.Author.ID)
 			if len(currentReminders) >= 25 {
-				return "You can have a maximum of 25 active reminders, list your reminders with the `reminders` command", nil
+				return "You can have a maximum of 25 active reminders, list all your reminders with the `reminders` command in DM, doing it in a server will only show reminders set in the server", nil
 			}
 
 			if parsed.Author.Bot {
@@ -160,10 +160,11 @@ var cmds = []*commands.YAGCommand{
 	{
 		CmdCategory:               commands.CategoryTool,
 		Name:                      "Reminders",
-		Description:               "Lists your active reminders",
+		Description:               "Lists your active reminders in the server, use in DM to see all your reminders",
 		ApplicationCommandEnabled: true,
 		IsResponseEphemeral:       true,
 		DefaultEnabled:            true,
+		RunInDM:                   true,
 		ArgSwitches: []*dcmd.ArgDef{
 			{Name: "raw", Help: "Raw, legacy output"},
 		},
@@ -175,15 +176,26 @@ var cmds = []*commands.YAGCommand{
 				pagination = false
 			}
 
-			currentReminders, err := GetUserReminders(parsed.Author.ID)
+			var currentReminders []*Reminder
+			var inServerString string
+			var err error
+
+			//command was used in DM
+			if parsed.GuildData == nil {
+				currentReminders, err = GetUserReminders(parsed.Author.ID)
+			} else {
+				inServerString = " in this server"
+				currentReminders, err = GetGuildUserReminder(parsed.Author.ID, parsed.GuildData.GS.ID)
+			}
+
 			if err != nil {
 				return nil, err
 			}
 
-			out := "You have no reminders. Create reminders with the `Remindme` command."
+			out := fmt.Sprintf("You have no reminders%s. Create reminders with the `Remindme` command.", inServerString)
 			if !pagination {
 				if len(currentReminders) > 0 {
-					out = "Your reminders:\n"
+					out := fmt.Sprintf("Your reminders%s:\n", inServerString)
 					out += stringReminders(currentReminders, false)
 					out += "\nRemove a reminder with `delreminder/rmreminder (id)` where id is the first number for each reminder above.\nTo clear all reminders, use `delreminder` with the `-a` switch."
 				}
@@ -284,6 +296,7 @@ var cmds = []*commands.YAGCommand{
 		ApplicationCommandEnabled: true,
 		IsResponseEphemeral:       true,
 		DefaultEnabled:            true,
+		RunInDM:                   true,
 		RunFunc: func(parsed *dcmd.Data) (interface{}, error) {
 			var reminder Reminder
 
