@@ -38,7 +38,9 @@ const (
 
 func (p *Plugin) StartFeed() {
 	p.Stop = make(chan *sync.WaitGroup)
-	p.runWebsubChecker()
+	go p.runWebsubChecker()
+	go p.autoSyncWebsubs()
+	go p.deleteOldVideos()
 }
 
 func (p *Plugin) StopFeed(wg *sync.WaitGroup) {
@@ -47,6 +49,34 @@ func (p *Plugin) StopFeed(wg *sync.WaitGroup) {
 		p.Stop <- wg
 	} else {
 		wg.Done()
+	}
+}
+
+func (p *Plugin) deleteOldVideos() {
+	ticker := time.NewTicker(time.Minute * 1)
+	// Remove videos older than 24 hours
+	for {
+		select {
+		case <-ticker.C:
+			var expiring int64
+			videoCacheDays := confYoutubeVideoCacheDays.GetInt()
+			if videoCacheDays < 1 {
+				videoCacheDays = 1
+			}
+			common.RedisPool.Do(radix.FlatCmd(&expiring, "ZREMRANGEBYSCORE", RedisKeyPublishedVideoList, "-inf", time.Now().AddDate(0, 0, -1*videoCacheDays).Unix()))
+			logger.Infof("Removed %d old videos", expiring)
+		}
+	}
+}
+
+func (p *Plugin) autoSyncWebsubs() {
+	// force syncs all websubs from db every 24 hours in case of outages or missed updates
+	ticker := time.NewTicker(time.Hour * 24)
+	for {
+		select {
+		case <-ticker.C:
+			go p.syncWebSubs()
+		}
 	}
 }
 
@@ -559,6 +589,10 @@ func (p *Plugin) CheckVideo(parsedVideo XMLFeed) error {
 	videoID := parsedVideo.VideoId
 	channelID := parsedVideo.ChannelID
 
+	if videoID == "" || channelID == "" {
+		return nil
+	}
+
 	parsedPublishedTime, err := time.Parse(time.RFC3339, parsedVideo.Published)
 	if err != nil {
 		return errors.New("Failed parsing YouTube timestamp: " + err.Error() + ": " + parsedVideo.Published)
@@ -573,18 +607,21 @@ func (p *Plugin) CheckVideo(parsedVideo XMLFeed) error {
 		return err
 	}
 
-	lastVid, lastVidTime, err := p.getLastVidTimes(channelID)
-	if err != nil {
-		return err
+	videoCacheDays := confYoutubeVideoCacheDays.GetInt()
+	if videoCacheDays < 1 {
+		videoCacheDays = 1
 	}
-
-	if lastVidTime.After(parsedPublishedTime) {
-		// wasn't a new vid
+	if time.Since(parsedPublishedTime) > time.Hour*24*time.Duration(videoCacheDays) {
+		// don't post videos older than videoCacheDays
+		logger.Infof("Skipped Stale video for YouTube channel %s: video_id: %s", channelID, videoID)
 		return nil
 	}
 
-	if lastVid == videoID {
-		// the video was already posted and was probably just edited
+	mn := radix.MaybeNil{}
+	common.RedisPool.Do(radix.Cmd(&mn, "ZSCORE", RedisKeyPublishedVideoList, videoID))
+	if !mn.Nil {
+		// video was already published, maybe just an update on it?
+		logger.Infof("Skipped Already Published video for YouTube channel %s: video_id: %s", channelID, videoID)
 		return nil
 	}
 
@@ -595,31 +632,13 @@ func (p *Plugin) CheckVideo(parsedVideo XMLFeed) error {
 
 	item := resp.Items[0]
 
-	parsedPublishedAt, err := time.Parse(time.RFC3339, item.Snippet.PublishedAt)
-	if err != nil {
-		return errors.New("Failed parsing youtube timestamp: " + err.Error() + ": " + item.Snippet.PublishedAt)
-	}
-
-	if time.Since(parsedPublishedAt) > time.Hour {
-		// just a safeguard against empty lastVidTime's
-		return nil
-	}
-
-	if lastVidTime.After(parsedPublishedAt) {
-		// wasn't a new vid
-		return nil
-
-	}
-
 	// This is a new video, post it
 	return p.postVideo(subs, parsedPublishedTime, item, channelID)
 }
 
 func (p *Plugin) postVideo(subs []*ChannelSubscription, publishedAt time.Time, video *youtube.Video, channelID string) error {
-	err := common.MultipleCmds(
-		radix.FlatCmd(nil, "SET", KeyLastVidTime(channelID), publishedAt.Unix()),
-		radix.FlatCmd(nil, "SET", KeyLastVidID(channelID), video.Id),
-	)
+	// add video to list of published videos
+	err := common.RedisPool.Do(radix.FlatCmd(nil, "ZADD", RedisKeyPublishedVideoList, publishedAt.Unix(), video.Id))
 	if err != nil {
 		return err
 	}
@@ -673,23 +692,6 @@ func (p *Plugin) getRemoveSubs(channelID string) ([]*ChannelSubscription, error)
 	}
 
 	return subs, nil
-}
-
-func (p *Plugin) getLastVidTimes(channelID string) (lastVid string, lastVidTime time.Time, err error) {
-	// Find the last video time for this channel
-	var unixSeconds int64
-	err = common.RedisPool.Do(radix.Cmd(&unixSeconds, "GET", KeyLastVidTime(channelID)))
-
-	var lastProcessedVidTime time.Time
-	if err != nil || unixSeconds == 0 {
-		lastProcessedVidTime = time.Time{}
-	} else {
-		lastProcessedVidTime = time.Unix(unixSeconds, 0)
-	}
-
-	var lastVidID string
-	err = common.RedisPool.Do(radix.Cmd(&lastVidID, "GET", KeyLastVidID(channelID)))
-	return lastVidID, lastProcessedVidTime, err
 }
 
 func (p *Plugin) isShortsVideo(video *youtube.Video) bool {
