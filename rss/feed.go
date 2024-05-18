@@ -27,8 +27,6 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
-const GoFeedQueryInterval = time.Minute * 5
-
 func (p *Plugin) StartFeed() {
 	p.Stop = make(chan *sync.WaitGroup)
 	p.runRSSFeedInit()
@@ -44,6 +42,7 @@ func (p *Plugin) StopFeed(wg *sync.WaitGroup) {
 
 // keeps the subscriptions up to date by updating the ones soon to be expiring
 func (p *Plugin) runRSSFeedInit() {
+	var GoFeedQueryInterval = time.Minute * time.Duration(confRSSQueryInterval.GetInt())
 	goFeedQueryTicker := time.NewTicker(GoFeedQueryInterval)
 	startDelay := time.After(time.Second * 2)
 

@@ -8,11 +8,12 @@ import (
 	"net/url"
 	"sync"
 
+	"github.com/mmcdole/gofeed"
 	"github.com/mrbentarikau/pagst/common"
+	"github.com/mrbentarikau/pagst/common/config"
 	"github.com/mrbentarikau/pagst/common/mqueue"
 	"github.com/mrbentarikau/pagst/premium"
 	"github.com/mrbentarikau/pagst/rss/models"
-	"github.com/mmcdole/gofeed"
 )
 
 const (
@@ -22,6 +23,8 @@ const (
 	RedisRSSAnnounceMessage = "rss_announce_message"
 	RedisRSSFeedLockKey     = "rss_feed_channel_lock"
 )
+
+var confRSSQueryInterval = config.RegisterOption("yagpdb.rss.query_interval", "Duration in minutes between each new RSS query", 10)
 
 var (
 	logger       = common.GetPluginLogger(&Plugin{})
