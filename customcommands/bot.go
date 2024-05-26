@@ -158,7 +158,7 @@ var cmdEvalCommand = &commands.YAGCommand{
 			}
 		}
 
-		adminOrPerms, err := bot.AdminOrPermMS(guildData.GS.ID, channel.ID, guildData.MS, discordgo.PermissionManageMessages)
+		adminOrPerms, err := bot.AdminOrPermMS(guildData.GS.ID, channel.ID, guildData.MS, discordgo.PermissionManageServer)
 		if err != nil {
 			return nil, err
 		}

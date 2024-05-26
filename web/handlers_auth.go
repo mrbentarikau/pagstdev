@@ -7,11 +7,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mediocregopher/radix/v3"
 	"github.com/mrbentarikau/pagst/common"
 	"github.com/mrbentarikau/pagst/common/models"
 	"github.com/mrbentarikau/pagst/lib/discordgo"
 	"github.com/mrbentarikau/pagst/web/discorddata"
-	"github.com/mediocregopher/radix/v3"
 	"golang.org/x/oauth2"
 )
 
@@ -222,7 +222,7 @@ func GetUserAccessLevel(userID int64, g *common.GuildWithConnected, config *mode
 		return true, true
 	}
 
-	if !config.ServerOwnerOnly && g.Permissions&discordgo.PermissionManageServer == discordgo.PermissionManageServer {
+	if !config.ServerOwnerOnly && g.Permissions&discordgo.PermissionManageGuild == discordgo.PermissionManageGuild {
 		return true, true
 	} else if !g.Connected {
 		// otherwise if the bot is not on the guild then there's no configuration so no extra access control settings

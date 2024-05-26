@@ -104,7 +104,7 @@ func AdminOrPermMS(guildID int64, channelID int64, ms *dstate.MemberState, neede
 		return true, nil
 	}
 
-	if perms&discordgo.PermissionManageServer != 0 || perms&discordgo.PermissionAdministrator != 0 {
+	if perms&discordgo.PermissionManageGuild != 0 || perms&discordgo.PermissionAdministrator != 0 {
 		return true, nil
 	}
 

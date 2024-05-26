@@ -310,41 +310,18 @@ func (c *Context) setupBaseData() {
 	c.Data["TimeSecond"] = time.Second
 	c.Data["UnixEpoch"] = time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC)
 
-	//Permissions
-	c.Data["Permissions"] = map[string]int64{
-
-		"AttachFiles":        discordgo.PermissionAttachFiles,
-		"EmbedLinks":         discordgo.PermissionEmbedLinks,
-		"ManageMessages":     discordgo.PermissionManageMessages,
-		"MentionEveryone":    discordgo.PermissionMentionEveryone,
-		"ReadMessages":       discordgo.PermissionViewChannel,
-		"ReadMessageHistory": discordgo.PermissionReadMessageHistory,
-		"SendMessages":       discordgo.PermissionSendMessages,
-		"SendTTSMessages":    discordgo.PermissionSendTTSMessages,
-		"UseExternalEmojis":  discordgo.PermissionUseExternalEmojis,
-
-		"VoiceConnect":       discordgo.PermissionVoiceConnect,
-		"VoiceDeafenMembers": discordgo.PermissionVoiceDeafenMembers,
-		"VoiceMoveMembers":   discordgo.PermissionVoiceMoveMembers,
-		"VoiceMuteMembers":   discordgo.PermissionVoiceMuteMembers,
-		"VoiceSpeak":         discordgo.PermissionVoiceSpeak,
-		"VoiceUseVAD":        discordgo.PermissionVoiceUseVAD,
-
-		"ChangeNickname":  discordgo.PermissionChangeNickname,
-		"ManageEmojis":    discordgo.PermissionManageEmojis,
-		"ManageNicknames": discordgo.PermissionManageNicknames,
-		"ManageRoles":     discordgo.PermissionManageRoles,
-		"ManageWebhooks":  discordgo.PermissionManageWebhooks,
-
-		"AddReactions":        discordgo.PermissionAddReactions,
-		"Administrator":       discordgo.PermissionAdministrator,
-		"BanMembers":          discordgo.PermissionBanMembers,
-		"CreateInstantInvite": discordgo.PermissionCreateInstantInvite,
-		"KickMembers":         discordgo.PermissionKickMembers,
-		"ManageChannels":      discordgo.PermissionManageChannels,
-		"ManageServer":        discordgo.PermissionManageServer,
-		"ViewAuditLogs":       discordgo.PermissionViewAuditLogs,
+	permNameToBit := make(map[string]int64)
+	for _, p := range discordgo.AllPermissions {
+		permNameToBit[discordgo.PermissionName(p)] = p
 	}
+
+	// for backward compatibility with previous versions
+	permNameToBit["ReadMessages"] = discordgo.PermissionViewChannel
+	permNameToBit["ManageEmojis"] = discordgo.PermissionManageEmojisAndStickers
+	permNameToBit["ManageServer"] = discordgo.PermissionManageGuild
+	permNameToBit["ViewAuditLogs"] = discordgo.PermissionViewAuditLog
+
+	c.Data["Permissions"] = permNameToBit
 }
 
 func (c *Context) Parse(source string) (*template.Template, error) {

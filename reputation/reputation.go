@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"emperror.dev/errors"
+	"github.com/mediocregopher/radix/v3"
 	"github.com/mrbentarikau/pagst/bot"
 	"github.com/mrbentarikau/pagst/bot/botrest"
 	"github.com/mrbentarikau/pagst/common"
@@ -17,7 +18,6 @@ import (
 	"github.com/mrbentarikau/pagst/lib/discordgo"
 	"github.com/mrbentarikau/pagst/lib/dstate"
 	"github.com/mrbentarikau/pagst/reputation/models"
-	"github.com/mediocregopher/radix/v3"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
@@ -310,7 +310,7 @@ func IsAdmin(gs *dstate.GuildSet, member *dstate.MemberState, config *models.Rep
 
 	memberPerms, _ := gs.GetMemberPermissions(0, member.User.ID, member.Member.Roles)
 
-	if memberPerms&discordgo.PermissionManageServer != 0 {
+	if memberPerms&discordgo.PermissionManageGuild != 0 {
 		return true
 	}
 

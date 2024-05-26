@@ -508,9 +508,9 @@ func (e *AutoModerationActionExecution) GetGuildID() int64 {
 }
 
 // AuditLogEntryCreate is the data for an AuditLogEntryCreate event.
-type AuditLogEntryCreate struct {
-	*AuditLogEntry
-}
+// type AuditLogEntryCreate struct {
+// 	*AuditLogEntry
+// }
 
 type IntegrationCreate struct {
 	*Integration
@@ -531,6 +531,7 @@ type InteractionCreate struct {
 // AuditLogEntryCreate is the data for an AuditLogEntryCreate event.
 type GuildAuditLogEntryCreate struct {
 	*AuditLogEntry
+	GuildID int64 `json:"guild_id,string"`
 }
 
 type GuildJoinRequestUpdate struct{}

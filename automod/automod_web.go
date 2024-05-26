@@ -19,6 +19,7 @@ import (
 	"github.com/mrbentarikau/pagst/common/cplogs"
 	"github.com/mrbentarikau/pagst/common/featureflags"
 	"github.com/mrbentarikau/pagst/common/pubsub"
+	"github.com/mrbentarikau/pagst/lib/discordgo"
 	"github.com/mrbentarikau/pagst/lib/dstate"
 	"github.com/mrbentarikau/pagst/moderation"
 	"github.com/mrbentarikau/pagst/web"
@@ -66,6 +67,11 @@ func (p *Plugin) InitWeb() {
 	web.CPMux.Handle(pat.New("/automod"), muxer)
 	web.CPMux.Handle(pat.New("/automod/*"), muxer)
 	web.CPMux.Use(web.NotFound())
+
+	// All handlers here require guild channels present
+	muxer.Use(web.RequireBotMemberMW)
+	muxer.Use(web.RequirePermMW(discordgo.PermissionManageRoles, discordgo.PermissionKickMembers, discordgo.PermissionBanMembers, discordgo.PermissionManageMessages, discordgo.PermissionManageGuild, discordgo.PermissionModerateMembers))
+
 	getIndexHandler := web.ControllerHandler(p.handleGetAutomodIndex, "automod_index")
 
 	muxer.Handle(pat.Get("/"), getIndexHandler)

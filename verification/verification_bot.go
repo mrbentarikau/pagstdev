@@ -12,6 +12,7 @@ import (
 	"unicode/utf8"
 
 	"emperror.dev/errors"
+	"github.com/mediocregopher/radix/v3"
 	"github.com/mrbentarikau/pagst/analytics"
 	"github.com/mrbentarikau/pagst/bot"
 	"github.com/mrbentarikau/pagst/bot/eventsystem"
@@ -24,12 +25,11 @@ import (
 	"github.com/mrbentarikau/pagst/moderation"
 	"github.com/mrbentarikau/pagst/verification/models"
 	"github.com/mrbentarikau/pagst/web"
-	"github.com/mediocregopher/radix/v3"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
-const InTicketPerms = discordgo.PermissionSendMessages | discordgo.PermissionReadMessages
+const InTicketPerms = discordgo.PermissionSendMessages | discordgo.PermissionViewChannel
 
 var _ bot.BotInitHandler = (*Plugin)(nil)
 
