@@ -2324,9 +2324,9 @@ func (c *Context) FindRole(role interface{}) *discordgo.Role {
 }
 
 func (c *Context) getRole(r interface{}) (*discordgo.Role, error) {
-	/*if c.IncreaseCheckGenericAPICall() {
+	if c.IncreaseCheckGenericAPICall() {
 		return nil, ErrTooManyAPICalls
-	}*/
+	}
 
 	return c.FindRole(r), nil
 }

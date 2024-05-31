@@ -47,7 +47,7 @@ import (
 )
 
 var (
-	CCExecLock        = keylock.NewKeyLock()
+	CCExecLock        = keylock.NewKeyLock[CCExecKey]()
 	DelayedCCRunLimit = multiratelimit.NewMultiRatelimiter(0.1, 10)
 	CCDataLimit       = 1048576
 )
@@ -171,7 +171,7 @@ var cmdEvalCommand = &commands.YAGCommand{
 		tmplCtx.ExecutedFrom = templates.ExecutedFromEvalCC
 		tmplCtx.Msg = data.TraditionalTriggerData.Message
 
-		// preapre message specific data
+		// prepare message specific data
 		m := tmplCtx.Msg
 
 		args := dcmd.SplitArgs(m.Content)

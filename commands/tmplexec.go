@@ -129,17 +129,6 @@ func TmplExecCmdFuncs(ctx *templates.Context, maxExec int, dryRun bool) (userCtx
 }
 
 func execCmd(tmplCtx *templates.Context, dryRun, execUser bool, m *discordgo.MessageCreate, cmd string, args ...interface{}) (interface{}, error) {
-	/* KRAAKA: IDEA LVL, NEEDS REMOVAL
-	if tmplCtx.IsExecedByEvalCC {
-		cmd := tmplCtx.Data["Cmd"].(string)
-		prefix := tmplCtx.Data["GuildPrefix"].(string)
-
-		if strings.ToLower(strings.TrimPrefix(cmd, prefix)) == "evalcc" {
-			return "can not use exec/execAdmin for evalcc", nil
-		}
-	}
-	*/
-
 	fakeMsg := *m.Message
 	fakeMsg.Mentions = make([]*discordgo.User, 0)
 
@@ -278,6 +267,8 @@ func execCmd(tmplCtx *templates.Context, dryRun, execUser bool, m *discordgo.Mes
 	case *discordgo.MessageEmbed:
 		return v, nil
 	case []*discordgo.MessageEmbed:
+		return v, nil
+	case *discordgo.MessageSend:
 		return v, nil
 	}
 
