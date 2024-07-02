@@ -212,7 +212,7 @@ var cmdEvalCommand = &commands.YAGCommand{
 		}
 
 		// check commands/yagcommand.go - disabled typing there so no need for such response
-		if out == "" {
+		if out == "" && !channel.Type.IsThread() {
 			out = fmt.Sprintf("evaluated response was %c\"\"%[1]c", 0x60)
 		}
 

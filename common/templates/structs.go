@@ -56,6 +56,10 @@ type CtxChannel struct {
 	// The initial RateLimitPerUser to set on newly created threads in a channel.
 	// This field is copied to the thread at creation time and does not live update.
 	DefaultThreadRateLimitPerUser int `json:"default_thread_rate_limit_per_user"`
+
+	Flags    discordgo.ChannelFlags `json:"flags"`
+	Archived bool                   `json:"archived"`
+	Locked   bool                   `json:"locked"`
 }
 
 // CtxThreadStart is almost a 1:1 copy of discordgo.ThreadStart but with some added fields
@@ -123,6 +127,10 @@ func CtxChannelFromCS(cs *dstate.ChannelState) *CtxChannel {
 		DefaultSortOrder:              cs.DefaultSortOrder,
 		DefaultReactionEmoji:          cs.DefaultReactionEmoji,
 		DefaultThreadRateLimitPerUser: cs.DefaultThreadRateLimitPerUser,
+
+		Flags:    cs.Flags,
+		Archived: cs.Archived,
+		Locked:   cs.Locked,
 	}
 
 	return ctxChannel

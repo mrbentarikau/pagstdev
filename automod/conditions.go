@@ -707,6 +707,100 @@ func (mc *MessageEditedCondition) MergeDuplicates(data []interface{}) interface{
 
 /////////////////////////////////////////////////////////////////
 
+var _ Condition = (*MessageAttachmentCondition)(nil)
+
+type MessageAttachmentCondition struct {
+	HasAttachments bool // If true we are only matching on messages with attachments
+}
+
+func (mc *MessageAttachmentCondition) Kind() RulePartType {
+	return RulePartCondition
+}
+
+func (mc *MessageAttachmentCondition) DataType() interface{} {
+	return nil
+}
+
+func (mc *MessageAttachmentCondition) Name() string {
+	if mc.HasAttachments {
+		return "Message with attachments"
+	}
+	return "Message without attachments"
+}
+
+func (mc *MessageAttachmentCondition) Description() string {
+	if mc.HasAttachments {
+		return "Only examine messages that have attachments"
+	}
+	return "Only examine messages that don't have attachments"
+}
+
+func (mc *MessageAttachmentCondition) UserSettings() []*SettingDef {
+	return []*SettingDef{}
+}
+
+func (mc *MessageAttachmentCondition) IsMet(data *TriggeredRuleData, settings interface{}) (bool, error) {
+	if data.Message == nil {
+		// pass the condition if no message is found
+		return true, nil
+	}
+
+	if contains := len(data.Message.Attachments) > 0; mc.HasAttachments {
+		return contains, nil
+	} else {
+		return !contains, nil
+	}
+}
+
+func (mc *MessageAttachmentCondition) MergeDuplicates(data []interface{}) interface{} {
+	return data[0]
+}
+
+/////////////////////////////////////////////////////////////////
+
+var _ Condition = (*ThreadCondition)(nil)
+
+type ThreadCondition struct {
+	Threads bool
+}
+
+func (bc *ThreadCondition) Kind() RulePartType {
+	return RulePartCondition
+}
+func (bc *ThreadCondition) DataType() interface{} {
+	return nil
+}
+func (bc *ThreadCondition) Name() string {
+	if !bc.Threads {
+		return "Ignore threads"
+	}
+	return "Active in threads"
+}
+func (bc *ThreadCondition) Description() string {
+	if !bc.Threads {
+		return "Ignores messages in threads"
+	}
+	return "Only match messages in threads"
+}
+func (bc *ThreadCondition) UserSettings() []*SettingDef {
+	return []*SettingDef{}
+}
+func (bc *ThreadCondition) IsMet(data *TriggeredRuleData, settings interface{}) (bool, error) {
+	//Channel won't be present in case the trigger is on member update event like nick update
+	if data.CS == nil {
+		return true, nil
+	}
+	if !bc.Threads {
+		return !data.CS.Type.IsThread(), nil
+	}
+	return data.CS.Type.IsThread(), nil
+}
+func (bc *ThreadCondition) MergeDuplicates(data []interface{}) interface{} {
+	return data[0]
+}
+
+/////////////////////////////////////////////////////////////////
+
 type DomainConditionData struct {
 	ListID int64
 }

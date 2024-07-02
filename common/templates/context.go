@@ -641,20 +641,28 @@ func (c *Context) addContextFunc(name string, f interface{}) {
 
 func baseContextFuncs(c *Context) {
 	// Channel functions
-	c.addContextFunc("addThreadMember", c.tmplThreadMemberAdd)
-	c.addContextFunc("createForumPost", c.tmplCreateForumPost)
-	c.addContextFunc("createThread", c.tmplCreateThread)
-	c.addContextFunc("deleteForumPost", c.tmplDeleteThread)
-	c.addContextFunc("deleteThread", c.tmplDeleteThread)
 	c.addContextFunc("editChannelName", c.tmplEditChannelName)
 	c.addContextFunc("editChannelTopic", c.tmplEditChannelTopic)
-	c.addContextFunc("editThread", c.tmplEditThread)
 	c.addContextFunc("getChannel", c.tmplGetChannel)
 	c.addContextFunc("getChannelPins", c.tmplGetChannelPins(false))
 	c.addContextFunc("getChannelOrThread", c.tmplGetChannelOrThread)
+
+	// Forum functions
+	c.addContextFunc("createForumPost", c.tmplCreateForumPost)
+	c.addContextFunc("deleteForumPost", c.tmplDeleteThread)
+	c.addContextFunc("pinForumPost", c.tmplPinForumPost(false))  // new
+	c.addContextFunc("unpinForumPost", c.tmplPinForumPost(true)) // new
+
+	// Thread functions
+	c.addContextFunc("addThreadMember", c.tmplThreadMemberAdd)
+	c.addContextFunc("closeThread", c.tmplCloseThread) // new
+	c.addContextFunc("createThread", c.tmplCreateThread)
+	c.addContextFunc("deleteThread", c.tmplDeleteThread)
+	c.addContextFunc("editThread", c.tmplEditThread)
 	c.addContextFunc("getThread", c.tmplGetThread)
 	c.addContextFunc("getThreadsActive", c.tmplGetGuildThreadsActive)
 	c.addContextFunc("getThreadsArchived", c.tmplGetThreadsArchived)
+	c.addContextFunc("openThread", c.tmplOpenThread) // new
 	c.addContextFunc("removeThreadMember", c.tmplThreadMemberRemove)
 
 	// Member & User

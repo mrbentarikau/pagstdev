@@ -211,9 +211,11 @@ func (yc *YAGCommand) Run(data *dcmd.Data) (interface{}, error) {
 		return nil, nil
 	}
 
+	channelType := data.GuildData.GS.GetChannelOrThread(data.ChannelID).Type
+
 	// Send typing to indicate the bot's working, disabled for Evalcc because of empty responses from Custom Commands
 	// for enabled approach, check Evalcc in customcommands/bot.go
-	if confSetTyping.GetBool() && data.TriggerType != dcmd.TriggerTypeSlashCommands { //&& data.Cmd.Trigger.Names[0] != "Evalcc" {
+	if confSetTyping.GetBool() && data.TriggerType != dcmd.TriggerTypeSlashCommands && !channelType.IsThread() { //&& data.Cmd.Trigger.Names[0] != "Evalcc" {
 		common.BotSession.ChannelTyping(data.ChannelID)
 	}
 

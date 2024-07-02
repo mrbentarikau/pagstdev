@@ -850,111 +850,8 @@
         handleRestrictionChange($("#require-category-mode").prop("checked"), $("#command-categories"), "require-no-categories-warning", requireNoCategoriesWarning);
         triggerTypeChanged();
     })
-    
-    var textAreaTheme = getCookie("codeMirror_textAreaTheme");
-    if (textAreaTheme == ""){
-        textAreaTheme = "no CodeMirror"
-    }
-    var themeSelectElement = document.getElementById("themeSelect");
-    themeSelect.value = textAreaTheme;
 
-    var bracketsEnabled = false;
-    var input = document.getElementById("themeSelect");
-    var bracketsInput = document.getElementById("bracketsSelect");
-
-    function getCookie(cname) {
-        let name = cname + "=";
-        let decodedCookie = decodeURIComponent(document.cookie);
-        let ca = decodedCookie.split(';');
-        for(let i = 0; i <ca.length; i++) {
-            let c = ca[i];
-            while (c.charAt(0) == ' ') {
-                c = c.substring(1);
-            }
-            if (c.indexOf(name) == 0) {
-                return c.substring(name.length, c.length);
-            }
-        }
-        return "";
-    }
-
-    function selectTheme() {
-        textAreaTheme = input.options[input.selectedIndex].textContent;
-        if (textAreaTheme == "no CodeMirror") {
-            location.hash = "";
-        } else {
-            location.hash = "#" + textAreaTheme;
-        }
-        document.cookie = "codeMirror_textAreaTheme=" + textAreaTheme + "; max-age=3153600000; path=/; Secure";
-        editorToTextArea();
-    }
-
-    function selectBrackets() {
-        editorToTextArea();
-        if (bracketsInput.options[bracketsInput.selectedIndex].textContent == "enabled") {
-            bracketsEnabled = true;
-            return
-        } 
-        bracketsEnabled = false;
-    }
-    
-    function editorToTextArea(){
-        if (typeof editor !== 'undefined' && editor){
-            editor.toTextArea();
-            return
-        }
-        console.log("no CodeMirror, yet");
-        return
-    }
-    var choice = (location.hash && location.hash.slice(1)) ||
-               (document.location.search &&
-                decodeURIComponent(document.location.search.slice(1)));
-    if (choice) {
-        input.value = choice;
-        textAreaTheme = choice;
-    }
-
-    function textAreaWrapper(textAreaWrapperValue){
-        if (textAreaTheme == "no CodeMirror") {
-            return
-    }
-
-    editor = CodeMirror.fromTextArea(textAreaWrapperValue,{
-        mode: "text/x-go",
-        //tabSize: 4,
-        autoCloseBrackets: bracketsEnabled,
-        matchBrackets: true,
-        electricChars: false,
-        colorpicker : {
-           mode: 'edit',
-           type: 'box',
-        },
-        foldGutter: true,
-        gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
-        lineNumbers:true,
-        lineWrapping:true,
-        showInvisibles:true,
-        viewportMargin: 10,
-        theme: textAreaTheme,
-        extraKeys: {
-            "F11": function(cm) {
-              cm.setOption("fullScreen", !cm.getOption("fullScreen"));
-            },
-            "Esc": function(cm) {
-              if (cm.getOption("fullScreen")) cm.setOption("fullScreen", false);
-            },
-            'Shift-Alt-C' : function (cm, event) {
-            cm.state.colorpicker.popup_color_picker();
-            },
-        },
-    });
-    editor.setSize("100%",null);
-    editor.on("focus",function() {onCCChanged(document.querySelector('.CodeMirror'),editor)});
-    editor.on("change",function() {editor.save(),onCCChanged(document.querySelector('.CodeMirror'),editor)});
-    // editor.on("blur",function() {editor.save(),editor.toTextArea()});
-    }
-
-    function lengthScan(scanThis){
+     function lengthScan(scanThis){
         var combinedLength = 0;
 
         scanThis.forEach(function (elem) {
@@ -1094,6 +991,111 @@
             // warning does not exist, so add it
             addAlert("warning", warningText, warningID);
         }
+    }
+
+
+    // CodeMirror section
+    var textAreaTheme = getCookie("codeMirror_textAreaTheme");
+    if (textAreaTheme == ""){
+        textAreaTheme = "no CodeMirror"
+    }
+    var themeSelectElement = document.getElementById("themeSelect");
+    themeSelect.value = textAreaTheme;
+
+    var bracketsEnabled = false;
+    var input = document.getElementById("themeSelect");
+    var bracketsInput = document.getElementById("bracketsSelect");
+
+    function getCookie(cname) {
+        let name = cname + "=";
+        let decodedCookie = decodeURIComponent(document.cookie);
+        let ca = decodedCookie.split(';');
+        for(let i = 0; i <ca.length; i++) {
+            let c = ca[i];
+            while (c.charAt(0) == ' ') {
+                c = c.substring(1);
+            }
+            if (c.indexOf(name) == 0) {
+                return c.substring(name.length, c.length);
+            }
+        }
+        return "";
+    }
+
+    function selectTheme() {
+        textAreaTheme = input.options[input.selectedIndex].textContent;
+        if (textAreaTheme == "no CodeMirror") {
+            location.hash = "";
+        } else {
+            location.hash = "#" + textAreaTheme;
+        }
+        document.cookie = "codeMirror_textAreaTheme=" + textAreaTheme + "; max-age=3153600000; path=/; Secure";
+        editorToTextArea();
+    }
+
+    function selectBrackets() {
+        editorToTextArea();
+        if (bracketsInput.options[bracketsInput.selectedIndex].textContent == "enabled") {
+            bracketsEnabled = true;
+            return
+        }
+        bracketsEnabled = false;
+    }
+
+    function editorToTextArea(){
+        if (typeof editor !== 'undefined' && editor){
+            editor.toTextArea();
+            return
+        }
+        console.log("no CodeMirror, yet");
+        return
+    }
+    var choice = (location.hash && location.hash.slice(1)) ||
+               (document.location.search &&
+                decodeURIComponent(document.location.search.slice(1)));
+    if (choice) {
+        input.value = choice;
+        textAreaTheme = choice;
+    }
+
+    function textAreaWrapper(textAreaWrapperValue){
+        if (textAreaTheme == "no CodeMirror") {
+            return
+    }
+
+    editor = CodeMirror.fromTextArea(textAreaWrapperValue,{
+        mode: "text/x-go",
+        //tabSize: 4,
+        autoCloseBrackets: bracketsEnabled,
+        matchBrackets: true,
+        electricChars: false,
+        colorpicker : {
+           mode: 'edit',
+           type: 'box',
+        },
+        foldGutter: true,
+        gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
+        lineNumbers:true,
+        lineWrapping:true,
+        showInvisibles:true,
+        viewportMargin: 10,
+        theme: textAreaTheme,
+        extraKeys: {
+            "F11": function(cm) {
+              cm.setOption("fullScreen", !cm.getOption("fullScreen"));
+            },
+            "Esc": function(cm) {
+              if (cm.getOption("fullScreen")) cm.setOption("fullScreen", false);
+            },
+            'Shift-Alt-C' : function (cm, event) {
+            cm.state.colorpicker.popup_color_picker();
+            },
+        },
+    });
+    editor.setSize("100%",null);
+    editor.on("focus",function() {onCCChanged(document.querySelector('.CodeMirror'),editor)});
+    editor.on("change",function() {editor.save(),onCCChanged(document.querySelector('.CodeMirror'),editor)});
+    // editor.on("blur",function() {editor.save(),editor.toTextArea()});
     }
 </script>
 

@@ -19,8 +19,9 @@ import (
 	"github.com/mrbentarikau/pagst/safebrowsing"
 )
 
-// var tChain = transform.Chain(norm.NFD, runes.Remove(runes.In(unicode.Mn)), norm.NFC)
 var forwardSlashReplacer = strings.NewReplacer("\\", "")
+
+//var SanitizeTextName = "Also match visually similar characters such as \"Ĥéĺĺó\""
 
 /////////////////////////////////////////////////////////////
 
@@ -1042,8 +1043,10 @@ func (r *MessageRegexTrigger) CheckMessage(triggerCtx *TriggerContext, cs *dstat
 /////////////////////////////////////////////////////////////
 
 type SpamTriggerData struct {
-	Threshold int
-	TimeLimit int
+	Threshold         int
+	TimeLimit         int
+	NormalizeUnicode  bool
+	CrossChannelMatch bool
 }
 
 var _ MessageTrigger = (*SpamTrigger)(nil)
@@ -1084,6 +1087,18 @@ func (spam *SpamTrigger) UserSettings() []*SettingDef {
 			Max:     10000,
 			Default: 30,
 		},
+		{
+			Name:    "Normalize Unicode accents & confusables",
+			Key:     "NormalizeUnicode",
+			Kind:    SettingTypeBool,
+			Default: false,
+		},
+		{
+			Name:    "Match duplicates across channels",
+			Key:     "CrossChannelMatch",
+			Kind:    SettingTypeBool,
+			Default: false,
+		},
 	}
 }
 
@@ -1097,7 +1112,12 @@ func (spam *SpamTrigger) CheckMessage(triggerCtx *TriggerContext, cs *dstate.Cha
 
 	timeLimit := time.Now().Add(-time.Second * time.Duration(settingsCast.TimeLimit))
 
-	messages := bot.State.GetMessages(cs.GuildID, cs.ID, &dstate.MessagesQuery{
+	var channelID int64 = 0
+	if !settingsCast.CrossChannelMatch {
+		channelID = cs.ID
+	}
+
+	messages := bot.State.GetMessages(cs.GuildID, channelID, &dstate.MessagesQuery{
 		Limit: 1000,
 	})
 
@@ -1119,11 +1139,28 @@ func (spam *SpamTrigger) CheckMessage(triggerCtx *TriggerContext, cs *dstate.Cha
 			break // treat any attachment as a different message, in the future i may download them and check hash or something? maybe too much
 		}
 
-		if strings.ToLower(strings.TrimSpace(v.Content)) == mToCheckAgainst {
+		contentStripped := strings.TrimSpace(v.Content)
+		contentLowered := strings.ToLower(contentStripped)
+		normalized := contentLowered
+
+		if contentLowered == mToCheckAgainst {
 			count++
-		} else {
-			break
+			continue
 		}
+
+		if !settingsCast.NormalizeUnicode {
+			continue
+		} else {
+			normalized = common.NormalizeAccents(normalized)
+			normalized = common.NormalizeConfusables(normalized)
+		}
+
+		if normalized == mToCheckAgainst {
+			count++
+			continue
+		}
+
+		break
 	}
 
 	if count >= settingsCast.Threshold {
