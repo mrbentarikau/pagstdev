@@ -69,6 +69,10 @@ ALTER TABLE custom_commands ADD COLUMN IF NOT EXISTS regex_trigger TEXT NOT NULL
 `, `
 ALTER TABLE custom_commands ADD COLUMN IF NOT EXISTS regex_trigger_case_sensitive BOOL NOT NULL DEFAULT false;
 `, `
+ALTER TABLE custom_commands ADD COLUMN IF NOT EXISTS interaction_trigger TEXT NOT NULL DEFAULT '';
+`, `
+ALTER TABLE custom_commands ADD COLUMN IF NOT EXISTS interaction_trigger_case_sensitive BOOL NOT NULL DEFAULT false;
+`, `
 ALTER TABLE custom_command_groups ADD COLUMN IF NOT EXISTS ignore_categories BIGINT[];
 `, `
 ALTER TABLE custom_command_groups ADD COLUMN IF NOT EXISTS whitelist_categories BIGINT[];

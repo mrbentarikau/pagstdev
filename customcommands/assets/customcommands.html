@@ -198,6 +198,8 @@
                                         </script></span>&nbsp;&nbsp;Channel: <span class="cc-text-interval-span">{{if .ContextChannel}}{{call $dot.GetChannelName .}}{{else}}None{{end}}</span>
                 {{else if eq .TriggerType 6}}
                      {{if eq .ReactionTriggerMode 1}} added{{else if eq .ReactionTriggerMode 2}} removed{{else}} added/removed{{end}}{{template "cc_restrictions" .}}
+                {{else if or (eq .TriggerType 7) (eq .TriggerType 8)}}:
+                     <span class="cc-text-trigger-span">{{or .InteractionTrigger .TextTrigger}}</span>{{template "cc_restrictions" .}}
                 {{end}}
                 {{if .TriggerOnEdit}}&nbsp;<sup><i title="Trigger on Edit" class="fa-solid fa-pen-nib"></i></sup>{{end}}
                 {{if .Note.String}}&nbsp;<sup><i title="Notes for #{{.LocalID}}: {{if gt (toRune ($notes := .Note.String)|len) 32}}{{slice (toRune $notes) 0 32|str}}...{{else}}{{$notes}}{{end}}" class="fa-solid fa-comment fa-sm"></i></sup>{{end}}
@@ -209,7 +211,7 @@
             <div class="card-body p-0 cc-panel">
                 {{if .Note.String}}<span style="color:#a1a1a1"><i>{{.Note.String}}</i></span><br/>{{end}}
                 
-                <pre class="m-0"><div class="code gotmplmd">{{with .Responses}}{{$rLenght := 512}}{{$response := index . 0}}{{if ge (len $response) $rLenght}}{{slice $response 0 $rLenght}}...<br/><br/><i>response length of {{len $response}} cut to {{$rLenght}}.</i>{{else}}{{$response}}{{end}}{{end}}</div></pre>
+                <pre class="m-0"><div class="code gotmplmd">{{with .Responses}}{{$rLenght := 1024}}{{$response := index . 0}}{{if ge (len $response) $rLenght}}{{slice $response 0 $rLenght}}...<br/><br/><i>response length of {{len $response}} cut to {{$rLenght}}.</i>{{else}}{{$response}}{{end}}{{end}}</div></pre>
                 
             </div>
         </div>
@@ -349,6 +351,8 @@
         {{$triggerStyleClasses = "cc-trigger-interval"}}
     {{else if eq .insideDot.TriggerType 6}}
         {{$triggerStyleClasses = "cc-trigger-reaction"}}
+    {{else if or (eq .insideDot.TriggerType 7) (eq .insideDot.TriggerType 8) }}
+        {{$triggerStyleClasses = "cc-trigger-interaction"}}
     {{end}}
    <a style="padding:15px 20px 13px 20px"{{if .insideDot.Disabled}}title="{{printf `Custom Command #%d disabled...` .insideDot.LocalID}}"{{end}} data-toggle="collapse" data-parent="#accordion" href="#collapse_cmd{{.insideDot.LocalID}}" aria-expanded="false" aria-controls="collapse_cmd{{.insideDot.LocalID}}" class="{{$triggerStyleClasses}} cc-collapsibleDown {{if .insideDot.Disabled}}cc-view-disabled{{end}}"><span title="Run count: {{humanizeThousands .insideDot.RunCount}}">#{{.insideDot.LocalID}} - {{index .dot.CCTriggerTypes .insideDot.TriggerType -}}</span>
 {{end}}

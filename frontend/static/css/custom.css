@@ -577,6 +577,7 @@ code,.sidebar-toggle:hover>i,li.nav-active>a.nav-link{color:#aa8900!important}
 .cc-trigger-command{border-left:3px solid #A3BE8C!important}
 .cc-trigger-interval{border-left:3px solid #b48ead!important}
 .cc-trigger-reaction{border-left:3px solid #D08770!important}
+.cc-trigger-interaction{border-left:3px solid #d06cae!important}
 .cc-trigger-none{border-left:3px solid #1f1f1f!important}
 
 /*general background colours*/
@@ -728,6 +729,12 @@ html:hover{scrollbar-width:thin!important;scrollbar-color:#aa8900 #1A1A1A!import
 
 /*ADMIN panel*/
 form>div>button[class*="btn btn-secondary dropdown-toggle"]{background-color:#aa8900!important; border-color:#aa8900!important;color:#1a1a1a!important}
+form>div>div>input[class="dropdown-item"]{color:#aa8900!important}
+form>div>div>input.dropdown-item:hover, form>div>div>input.dropdown-item:focus {
+  color: #16181b;
+  text-decoration: none;
+  background-color: #2f2f2f;
+}
 
 /*CUSTOM COMMANDS && EDIT*/
 div.accordion.accordion-primary>div.card>div.card-header.clearfix>form>div.pull-right>button:nth-child(1){color:#89aa00!important;background-color:#282828!important;border-color:#282828!important}

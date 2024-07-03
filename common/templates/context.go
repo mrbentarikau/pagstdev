@@ -32,7 +32,10 @@ import (
 var (
 	StandardFuncMap = map[string]interface{}{
 		// conversion functions
+		"decodeBase64":      tmplDecodeBase64,
 		"decodeStringToHex": DecodeStringToHex,
+		"encodeBase64":      tmplEncodeBase64,
+		"hash":              tmplSha256,
 		"hexToDecimal":      HexToDecimal,
 		"str":               ToString,
 		"toByte":            ToByte,
@@ -110,8 +113,11 @@ var (
 
 		// misc
 		"adjective":          common.RandomAdjective,
+		"cbutton":            CreateButton,
 		"adjectiveNoAPI":     common.RandomAdjectiveNoAPI,
 		"cembed":             CreateEmbed,
+		"cmenu":              CreateSelectMenu,
+		"cmodal":             CreateModal,
 		"complexMessage":     CreateMessageSend,
 		"complexMessageEdit": CreateMessageEdit,
 		"cslice":             CreateSlice,
@@ -169,6 +175,7 @@ func RegisterSetupFunc(f ContextSetupFunc) {
 
 func init() {
 	RegisterSetupFunc(baseContextFuncs)
+	RegisterSetupFunc(interactionContextFuncs)
 
 	msgpack.RegisterExt(1, (*SDict)(nil))
 	msgpack.RegisterExt(2, (*Dict)(nil))
@@ -228,8 +235,9 @@ type ContextFrame struct {
 	MentionHere     bool
 	MentionRoles    []int64
 
-	DelResponse     bool
-	PublishResponse bool
+	DelResponse       bool
+	PublishResponse   bool
+	EphemeralResponse bool
 
 	DelResponseDelay         int
 	EmbedsToSend             []*discordgo.MessageEmbed
@@ -239,6 +247,13 @@ type ContextFrame struct {
 	parsedTemplate   *template.Template
 
 	SendResponseInDM bool
+
+	Interaction *CustomCommandInteraction
+}
+
+type CustomCommandInteraction struct {
+	*discordgo.Interaction
+	RespondedTo bool
 }
 
 func NewContext(gs *dstate.GuildSet, cs *dstate.ChannelState, ms *dstate.MemberState) *Context {
@@ -478,10 +493,28 @@ func (c *Context) MessageSend(content string) *discordgo.MessageSend {
 }
 
 // SendResponse sends the response and handles reactions and the like
-func (c *Context) SendResponse(content string) (*discordgo.Message, error) {
+func (c *Context) SendResponse(content string) (m *discordgo.Message, err error) {
 	channelID := int64(0)
 
-	if !c.CurrentFrame.SendResponseInDM {
+	sendType := sendMessageGuildChannel
+	if c.CurrentFrame.Interaction != nil {
+		if c.CurrentFrame.Interaction.RespondedTo {
+			sendType = sendMessageInteractionFollowup
+		} else {
+			sendType = sendMessageInteractionResponse
+		}
+	} else if c.CurrentFrame.SendResponseInDM || (c.CurrentFrame.CS != nil && c.CurrentFrame.CS.IsDMChannel()) {
+		sendType = sendMessageDM
+		if c.CurrentFrame.CS != nil && c.CurrentFrame.CS.Type == discordgo.ChannelTypeDM {
+			channelID = c.CurrentFrame.CS.ID
+		} else {
+			privChannel, err := common.BotSession.UserChannelCreate(c.MS.User.ID)
+			if err != nil {
+				return nil, err
+			}
+			channelID = privChannel.ID
+		}
+	} else {
 		if c.CurrentFrame.CS == nil {
 			return nil, nil
 		}
@@ -492,19 +525,7 @@ func (c *Context) SendResponse(content string) (*discordgo.Message, error) {
 		}
 
 		channelID = c.CurrentFrame.CS.ID
-	} else {
-		if c.CurrentFrame.CS != nil && c.CurrentFrame.CS.Type == discordgo.ChannelTypeDM {
-			channelID = c.CurrentFrame.CS.ID
-		} else {
-			privChannel, err := common.BotSession.UserChannelCreate(c.MS.User.ID)
-			if err != nil {
-				return nil, err
-			}
-			channelID = privChannel.ID
-		}
 	}
-
-	isDM := c.CurrentFrame.SendResponseInDM || (c.CurrentFrame.CS != nil && c.CurrentFrame.CS.IsDMChannel())
 
 	var embeds []*discordgo.MessageEmbed
 	embeds = append(embeds, c.CurrentFrame.EmbedsToSend...)
@@ -517,7 +538,7 @@ func (c *Context) SendResponse(content string) (*discordgo.Message, error) {
 		return nil, nil
 	}
 
-	if isDM {
+	if sendType == sendMessageDM {
 		msgSend.Components = []discordgo.MessageComponent{
 			discordgo.ActionsRow{
 				Components: []discordgo.MessageComponent{
@@ -532,43 +553,53 @@ func (c *Context) SendResponse(content string) (*discordgo.Message, error) {
 		}
 	}
 
-	m, err := common.BotSession.ChannelMessageSendComplex(channelID, msgSend)
+	if c.CurrentFrame.EphemeralResponse {
+		msgSend.Flags |= discordgo.MessageFlagsEphemeral
+	}
+	var getErr error
+	switch sendType {
+	case sendMessageInteractionResponse:
+		err = common.BotSession.CreateInteractionResponse(c.CurrentFrame.Interaction.ID, c.CurrentFrame.Interaction.Token, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content:         msgSend.Content,
+				Embeds:          msgSend.Embeds,
+				AllowedMentions: &msgSend.AllowedMentions,
+				Flags:           msgSend.Flags,
+			},
+		})
+		if err == nil {
+			c.CurrentFrame.Interaction.RespondedTo = true
+			m, getErr = common.BotSession.GetOriginalInteractionResponse(common.BotApplication.ID, c.CurrentFrame.Interaction.Token)
+		}
+	case sendMessageInteractionFollowup:
+		m, err = common.BotSession.CreateFollowupMessage(common.BotApplication.ID, c.CurrentFrame.Interaction.Token, &discordgo.WebhookParams{
+			Content:         msgSend.Content,
+			Embeds:          msgSend.Embeds,
+			AllowedMentions: &msgSend.AllowedMentions,
+			Flags:           msgSend.Flags,
+		})
+	default:
+		m, err = common.BotSession.ChannelMessageSendComplex(channelID, msgSend)
+	}
 	if err != nil {
-		/* KRAAKA that error printout!!! */
 		logger.WithField("guild", c.GS.ID).WithError(err).Error("Error sending message: " + c.Name)
 		errOut := "\nA response-level error caused the execution of the custom command " + c.Name + " template to stop:\n"
 		errOut += "`" + err.Error() + "`"
 		common.BotSession.ChannelMessageSendComplex(channelID, c.MessageSend(fmt.Sprint(errOut)))
-	} else {
+	} else if getErr != nil {
+		logger.WithError(getErr).Error("Failed getting interaction response")
+	} else if !c.CurrentFrame.EphemeralResponse {
 		if c.CurrentFrame.DelResponse {
 			MaybeScheduledDeleteMessage(c.GS.ID, channelID, m.ID, c.CurrentFrame.DelResponseDelay)
 		}
 
 		if len(c.CurrentFrame.AddResponseReactionNames) > 0 {
-			//goErrs := make(chan error, 1)
 			go func(frame *ContextFrame) {
 				for _, v := range frame.AddResponseReactionNames {
 					common.BotSession.MessageReactionAdd(m.ChannelID, m.ID, v)
-					// failed response reacts err
-					//err = common.BotSession.MessageReactionAdd(m.ChannelID, m.ID, v)
-					/*if err != nil {
-						goErrs <- err
-
-						logger.WithField("guild", c.GS.ID).WithError(err).Error("Error executing template response: " + c.Name)
-
-						errOut := "\nAn error caused the execution of the custom command " + c.Name + " template to send response:\n"
-						errOut += "`" + err.Error() + "`"
-						common.BotSession.ChannelMessageSendComplex(channelID, c.MessageSend(errOut))
-						break
-					}*/
 				}
-				//close(goErrs)
 			}(c.CurrentFrame)
-
-			/*goErr:= <-goErrs
-			if goErr != nil {
-				return m, errors.New(fmt.Sprint(goErr))
-			}*/
 		}
 
 		if c.CurrentFrame.PublishResponse && c.CurrentFrame.CS.Type == discordgo.ChannelTypeGuildNews {
@@ -576,8 +607,17 @@ func (c *Context) SendResponse(content string) (*discordgo.Message, error) {
 		}
 	}
 
-	return m, nil
+	return
 }
+
+type sendMessageType uint
+
+const (
+	sendMessageGuildChannel        sendMessageType = 0
+	sendMessageDM                  sendMessageType = 1
+	sendMessageInteractionResponse sendMessageType = 2
+	sendMessageInteractionFollowup sendMessageType = 3
+)
 
 // IncreaseCheckCallCounter Returns true if key is above the limit
 func (c *Context) IncreaseCheckCallCounter(key string, limit int) bool {

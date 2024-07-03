@@ -25,6 +25,7 @@ import (
 	"github.com/mrbentarikau/pagst/bot/paginatedmessages"
 	"github.com/mrbentarikau/pagst/commands"
 	"github.com/mrbentarikau/pagst/common"
+	"github.com/mrbentarikau/pagst/common/featureflags"
 	"github.com/mrbentarikau/pagst/common/keylock"
 	"github.com/mrbentarikau/pagst/common/multiratelimit"
 	prfx "github.com/mrbentarikau/pagst/common/prefix"
@@ -73,6 +74,7 @@ func (p *Plugin) BotInit() {
 	eventsystem.AddHandlerAsyncLastLegacy(p, bot.ConcurrentEventHandler(HandleMessageCreate), eventsystem.EventMessageCreate)
 	eventsystem.AddHandlerAsyncLastLegacy(p, bot.ConcurrentEventHandler(handleMessageReactions), eventsystem.EventMessageReactionAdd, eventsystem.EventMessageReactionRemove)
 	eventsystem.AddHandlerAsyncLastLegacy(p, bot.ConcurrentEventHandler(HandleMessageUpdate), eventsystem.EventMessageUpdate)
+	eventsystem.AddHandlerAsyncLastLegacy(p, bot.ConcurrentEventHandler(handleInteractionCreate), eventsystem.EventInteractionCreate)
 
 	pubsub.AddHandler("custom_commands_run_now", handleCustomCommandsRunNow, models.CustomCommand{})
 	scheduledevents2.RegisterHandler("cc_next_run", NextRunScheduledEvent{}, handleNextRunScheduledEVent)
@@ -375,8 +377,8 @@ var cmdListCommands = &commands.YAGCommand{
 			restrictions = "\nRestrictions: " + restrictions + "\n"
 		}
 
-		// Every text-based custom command trigger has a numerical value less than 5, so this is quite safe to do
-		if cc.TriggerType < 5 {
+		// Every message content-based custom command trigger has a numerical value less than 5
+		if cc.TriggerType < 5 || cc.TriggerType == int(CommandTriggerComponent) || cc.TriggerType == int(CommandTriggerModal) {
 			if len(cc.TextTrigger) == 0 {
 				cc.TextTrigger = "None"
 			}
@@ -878,6 +880,89 @@ func HandleMessageCreate(evt *eventsystem.EventData) {
 	}
 }
 
+func handleInteractionCreate(evt *eventsystem.EventData) {
+	i := evt.EvtInterface.(*discordgo.InteractionCreate).Interaction
+	interaction := templates.CustomCommandInteraction{&i, false}
+
+	if interaction.GuildID == 0 {
+		// ignore dm interactions
+		return
+	}
+
+	evt.GS = bot.State.GetGuild(interaction.GuildID)
+	evt.GuildFeatureFlags, _ = featureflags.RetryGetGuildFlags(evt.GS.ID)
+
+	if !evt.HasFeatureFlag(featureFlagHasCommands) {
+		return
+	}
+
+	cState := evt.GS.GetChannelOrThread(interaction.ChannelID)
+	if cState == nil {
+		return
+	}
+
+	interaction.Member.GuildID = evt.GS.ID
+
+	switch interaction.Type {
+	case discordgo.InteractionMessageComponent:
+		cMessage, err := common.BotSession.ChannelMessage(cState.ID, interaction.Message.ID)
+		if err == nil {
+			cMessage.GuildID = cState.GuildID
+			interaction.Message = cMessage
+		}
+
+		cID := interaction.MessageComponentData().CustomID
+
+		// continue only if this component was created by a cc
+		cID, ok := strings.CutPrefix(cID, "templates-")
+		if !ok {
+			return
+		}
+
+		triggeredCmds, err := findComponentOrModalTriggerCustomCommands(evt.Context(), cState, interaction.Member, cID, false)
+		if err != nil {
+			logger.WithField("guild", evt.GS.ID).WithError(err).Error("failed finding component ccs")
+			return
+		}
+
+		if len(triggeredCmds) < 1 {
+			return
+		}
+
+		for _, matched := range triggeredCmds {
+			err = ExecuteCustomCommandFromComponent(matched.CC, evt.GS, cState, matched.Args, matched.Stripped, &interaction)
+			if err != nil {
+				logger.WithField("guild", cState.GuildID).WithField("cc_id", matched.CC.LocalID).WithError(err).Error("Error executing custom command")
+			}
+		}
+	case discordgo.InteractionModalSubmit:
+		cID := interaction.ModalSubmitData().CustomID
+
+		// continue only if this modal was created by a cc
+		cID, ok := strings.CutPrefix(cID, "templates-")
+		if !ok {
+			return
+		}
+
+		triggeredCmds, err := findComponentOrModalTriggerCustomCommands(evt.Context(), cState, interaction.Member, cID, true)
+		if err != nil {
+			logger.WithField("guild", evt.GS.ID).WithError(err).Error("failed finding component ccs")
+			return
+		}
+
+		if len(triggeredCmds) < 1 {
+			return
+		}
+
+		for _, matched := range triggeredCmds {
+			err = ExecuteCustomCommandFromModal(matched.CC, evt.GS, cState, matched.Args, matched.Stripped, &interaction)
+			if err != nil {
+				logger.WithField("guild", cState.GuildID).WithField("cc_id", matched.CC.LocalID).WithError(err).Error("Error executing custom command")
+			}
+		}
+	}
+}
+
 func HandleMessageUpdate(evt *eventsystem.EventData) {
 	mu := evt.MessageUpdate()
 	cs := evt.CSOrThread()
@@ -1027,6 +1112,77 @@ func findReactionTriggerCustomCommands(ctx context.Context, cs *dstate.ChannelSt
 	}
 
 	return ms, filtered, nil
+}
+
+func findComponentOrModalTriggerCustomCommands(ctx context.Context, cs *dstate.ChannelState, member *discordgo.Member, cID string, modal bool) (matches []*TriggeredCC, err error) {
+	cmds, err := BotCachedGetCommandsWithMessageTriggers(cs.GuildID, ctx)
+	if err != nil {
+		return nil, errors.WrapIf(err, "BotCachedGetCommandsWithComponentTriggers")
+	}
+
+	var matched []*TriggeredCC
+	for _, cmd := range cmds {
+		if cmd.Disabled || !CmdRunsInChannel(cmd, common.ChannelOrThreadParentID(cs)) {
+			continue
+		}
+
+		if modal {
+			if didMatch, stripped, args := CheckMatchModal(cmd, cID); didMatch {
+
+				matched = append(matched, &TriggeredCC{
+					CC:       cmd,
+					Stripped: stripped,
+					Args:     args,
+				})
+			}
+		} else {
+			if didMatch, stripped, args := CheckMatchComponent(cmd, cID); didMatch {
+
+				matched = append(matched, &TriggeredCC{
+					CC:       cmd,
+					Stripped: stripped,
+					Args:     args,
+				})
+			}
+		}
+	}
+
+	if len(matched) < 1 {
+		// no matches
+		return matched, nil
+	}
+
+	ms, err := bot.GetMember(cs.GuildID, member.User.ID)
+	if err != nil {
+		return nil, errors.WithStackIf(err)
+	}
+
+	if ms.User.Bot {
+		return nil, nil
+	}
+
+	// filter by roles
+	filtered := make([]*TriggeredCC, 0, len(matched))
+	for _, v := range matched {
+		if !CmdRunsForUser(v.CC, ms) {
+			continue
+		}
+
+		filtered = append(filtered, v)
+	}
+
+	sortTriggeredCCs(filtered)
+
+	limit := CCMessageExecLimitNormal
+	if isPremium, _ := premium.IsGuildPremium(cs.GuildID); isPremium {
+		limit = CCMessageExecLimitPremium
+	}
+
+	if len(filtered) > limit {
+		filtered = filtered[:limit]
+	}
+
+	return filtered, nil
 }
 
 func sortTriggeredCCs(ccs []*TriggeredCC) {
@@ -1228,6 +1384,90 @@ func ExecuteCustomCommand(cmd *models.CustomCommand, tmplCtx *templates.Context)
 	}
 
 	return nil
+}
+
+func ExecuteCustomCommandFromComponent(cc *models.CustomCommand, gs *dstate.GuildSet, cs *dstate.ChannelState, cmdArgs []string, stripped string, interaction *templates.CustomCommandInteraction) error {
+	ms := dstate.MemberStateFromMember(interaction.Member)
+	tmplCtx := templates.NewContext(gs, cs, ms)
+	tmplCtx.CurrentFrame.Interaction = interaction
+
+	tmplCtx.Data["Interaction"] = interaction
+	tmplCtx.Data["InteractionData"] = interaction.MessageComponentData()
+	cid := strings.TrimPrefix(interaction.MessageComponentData().CustomID, "templates-")
+	tmplCtx.Data["CustomID"] = cid
+	tmplCtx.Data["Cmd"] = cmdArgs[0]
+	if len(cmdArgs) > 1 {
+		tmplCtx.Data["CmdArgs"] = cmdArgs[1:]
+	} else {
+		tmplCtx.Data["CmdArgs"] = []string{}
+	}
+	tmplCtx.Data["StrippedID"] = stripped
+	tmplCtx.Data["StrippedMsg"] = stripped
+
+	switch interaction.MessageComponentData().ComponentType {
+	case discordgo.ButtonComponent:
+		tmplCtx.Data["IsButton"] = true
+	case discordgo.SelectMenuComponent, discordgo.UserSelectMenuComponent, discordgo.RoleSelectMenuComponent, discordgo.MentionableSelectMenuComponent, discordgo.ChannelSelectMenuComponent:
+		tmplCtx.Data["IsMenu"] = true
+		switch interaction.MessageComponentData().ComponentType {
+		case discordgo.SelectMenuComponent:
+			tmplCtx.Data["MenuType"] = "string"
+		case discordgo.UserSelectMenuComponent:
+			tmplCtx.Data["MenuType"] = "user"
+		case discordgo.RoleSelectMenuComponent:
+			tmplCtx.Data["MenuType"] = "role"
+		case discordgo.MentionableSelectMenuComponent:
+			tmplCtx.Data["MenuType"] = "mentionable"
+		case discordgo.ChannelSelectMenuComponent:
+			tmplCtx.Data["MenuType"] = "channel"
+		}
+		tmplCtx.Data["Values"] = interaction.MessageComponentData().Values
+	}
+
+	msg := interaction.Message
+	msg.Member = ms.DgoMember()
+	msg.Author = msg.Member.User
+	tmplCtx.Msg = msg
+
+	tmplCtx.Data["Message"] = msg
+
+	return ExecuteCustomCommand(cc, tmplCtx)
+}
+
+func ExecuteCustomCommandFromModal(cc *models.CustomCommand, gs *dstate.GuildSet, cs *dstate.ChannelState, cmdArgs []string, stripped string, interaction *templates.CustomCommandInteraction) error {
+	ms := dstate.MemberStateFromMember(interaction.Member)
+	tmplCtx := templates.NewContext(gs, cs, ms)
+	tmplCtx.CurrentFrame.Interaction = interaction
+
+	tmplCtx.Data["Interaction"] = interaction
+	tmplCtx.Data["InteractionData"] = interaction.ModalSubmitData()
+	cid := strings.TrimPrefix(interaction.ModalSubmitData().CustomID, "templates-")
+	tmplCtx.Data["CustomID"] = cid
+	tmplCtx.Data["Cmd"] = cmdArgs[0]
+	if len(cmdArgs) > 1 {
+		tmplCtx.Data["CmdArgs"] = cmdArgs[1:]
+	} else {
+		tmplCtx.Data["CmdArgs"] = []string{}
+	}
+	tmplCtx.Data["StrippedID"] = stripped
+	tmplCtx.Data["StrippedMsg"] = stripped
+	tmplCtx.Data["IsModal"] = true
+	cmdValues := []string{}
+	for i := 0; i < len(interaction.ModalSubmitData().Components); i++ {
+		row := interaction.ModalSubmitData().Components[i].(*discordgo.ActionsRow)
+		field := row.Components[0].(*discordgo.TextInput)
+		cmdValues = append(cmdValues, field.Value)
+	}
+	tmplCtx.Data["Values"] = cmdValues
+
+	msg := interaction.Message
+	msg.Member = ms.DgoMember()
+	msg.Author = msg.Member.User
+	tmplCtx.Msg = msg
+
+	tmplCtx.Data["Message"] = msg
+
+	return ExecuteCustomCommand(cc, tmplCtx)
 }
 
 func formatCustomCommandRunErr(src string, err error) string {
@@ -1443,41 +1683,7 @@ func CheckMatch(globalPrefix string, cmd *models.CustomCommand, msg string) (mat
 		return false, "", nil
 	}
 
-	item, err := RegexCache.Fetch(cmdMatch, time.Minute*10, func() (interface{}, error) {
-		re, err := regexp.Compile(cmdMatch)
-		if err != nil {
-			return nil, err
-		}
-
-		return re, nil
-	})
-
-	if err != nil {
-		return false, "", nil
-	}
-
-	re := item.Value().(*regexp.Regexp)
-
-	if cmd.TriggerType != 0 && cmd.NormalizeUnicode {
-		msg = common.NormalizeAccents(msg)
-		msg = common.NormalizeConfusables(msg)
-	}
-
-	idx := re.FindStringIndex(msg)
-	if idx == nil {
-		return false, "", nil
-	}
-
-	argsRaw := dcmd.SplitArgs(msg[idx[1]:])
-	args = make([]string, len(argsRaw)+1)
-	args[0] = strings.TrimSpace(msg[:idx[1]])
-	for i, v := range argsRaw {
-		args[i+1] = v.Str
-	}
-
-	stripped = msg[idx[1]:]
-	match = true
-	return
+	return matchRegexSplitArgs(cmdMatch, msg)
 }
 
 func CheckMatchReaction(cmd *models.CustomCommand, reaction *discordgo.MessageReaction, add bool) (match bool) {
@@ -1497,6 +1703,71 @@ func CheckMatchReaction(cmd *models.CustomCommand, reaction *discordgo.MessageRe
 	return false
 }
 
+func CheckMatchComponent(cmd *models.CustomCommand, cID string) (match bool, stripped string, args []string) {
+
+	if cmd.TriggerType != int(CommandTriggerComponent) {
+		return false, "", nil
+	}
+
+	cmdMatch := "(?m)"
+	if !cmd.TextTriggerCaseSensitive {
+		cmdMatch += "(?i)"
+	}
+	cmdMatch += cmd.TextTrigger
+
+	match, stripped, args = matchRegexSplitArgs(cmdMatch, cID)
+	return
+}
+
+func CheckMatchModal(cmd *models.CustomCommand, cID string) (match bool, stripped string, args []string) {
+
+	if cmd.TriggerType != int(CommandTriggerModal) {
+		return false, "", nil
+	}
+
+	cmdMatch := "(?m)"
+	if !cmd.TextTriggerCaseSensitive {
+		cmdMatch += "(?i)"
+	}
+	cmdMatch += cmd.TextTrigger
+
+	match, stripped, args = matchRegexSplitArgs(cmdMatch, cID)
+	return
+}
+
+func matchRegexSplitArgs(pattern, msg string) (match bool, stripped string, args []string) {
+	item, err := RegexCache.Fetch(pattern, time.Minute*10, func() (interface{}, error) {
+		re, err := regexp.Compile(pattern)
+		if err != nil {
+			return nil, err
+		}
+
+		return re, nil
+	})
+
+	if err != nil {
+		return false, "", nil
+	}
+
+	re := item.Value().(*regexp.Regexp)
+
+	idx := re.FindStringIndex(msg)
+	if idx == nil {
+		return false, "", nil
+	}
+
+	argsRaw := dcmd.SplitArgs(msg[idx[1]:])
+	args = make([]string, len(argsRaw)+1)
+	args[0] = strings.TrimSpace(msg[:idx[1]])
+	for i, v := range argsRaw {
+		args[i+1] = v.Str
+	}
+
+	stripped = msg[idx[1]:]
+	match = true
+	return
+}
+
 var cachedCommandsMessage = common.CacheSet.RegisterSlot("custom_commands_message_trigger", nil, int64(0))
 
 func BotCachedGetCommandsWithMessageTriggers(guildID int64, ctx context.Context) ([]*models.CustomCommand, error) {
@@ -1505,7 +1776,7 @@ func BotCachedGetCommandsWithMessageTriggers(guildID int64, ctx context.Context)
 		var err error
 
 		common.LogLongCallTime(time.Second, true, "Took longer than a second to fetch custom commands from db", logrus.Fields{"guild": guildID}, func() {
-			cmds, err = models.CustomCommands(qm.Where("guild_id = ? AND trigger_type IN (0,1,2,3,4,6)", guildID), qm.OrderBy("local_id desc"), qm.Load("Group")).AllG(ctx)
+			cmds, err = models.CustomCommands(qm.Where("guild_id = ? AND trigger_type IN (0,1,2,3,4,6,7,8)", guildID), qm.OrderBy("local_id desc"), qm.Load("Group")).AllG(ctx)
 		})
 
 		return cmds, err

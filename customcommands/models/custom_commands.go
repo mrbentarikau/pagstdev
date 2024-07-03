@@ -25,192 +25,207 @@ import (
 
 // CustomCommand is an object representing the database table.
 type CustomCommand struct {
-	LocalID                   int64             `boil:"local_id" json:"local_id" toml:"local_id" yaml:"local_id"`
-	GuildID                   int64             `boil:"guild_id" json:"guild_id" toml:"guild_id" yaml:"guild_id"`
-	GroupID                   null.Int64        `boil:"group_id" json:"group_id,omitempty" toml:"group_id" yaml:"group_id,omitempty"`
-	TriggerType               int               `boil:"trigger_type" json:"trigger_type" toml:"trigger_type" yaml:"trigger_type"`
-	TextTrigger               string            `boil:"text_trigger" json:"text_trigger" toml:"text_trigger" yaml:"text_trigger"`
-	TextTriggerCaseSensitive  bool              `boil:"text_trigger_case_sensitive" json:"text_trigger_case_sensitive" toml:"text_trigger_case_sensitive" yaml:"text_trigger_case_sensitive"`
-	TimeTriggerInterval       int               `boil:"time_trigger_interval" json:"time_trigger_interval" toml:"time_trigger_interval" yaml:"time_trigger_interval"`
-	TimeTriggerExcludingDays  types.Int64Array  `boil:"time_trigger_excluding_days" json:"time_trigger_excluding_days" toml:"time_trigger_excluding_days" yaml:"time_trigger_excluding_days"`
-	TimeTriggerExcludingHours types.Int64Array  `boil:"time_trigger_excluding_hours" json:"time_trigger_excluding_hours" toml:"time_trigger_excluding_hours" yaml:"time_trigger_excluding_hours"`
-	LastRun                   null.Time         `boil:"last_run" json:"last_run,omitempty" toml:"last_run" yaml:"last_run,omitempty"`
-	NextRun                   null.Time         `boil:"next_run" json:"next_run,omitempty" toml:"next_run" yaml:"next_run,omitempty"`
-	Responses                 types.StringArray `boil:"responses" json:"responses" toml:"responses" yaml:"responses"`
-	Channels                  types.Int64Array  `boil:"channels" json:"channels,omitempty" toml:"channels" yaml:"channels,omitempty"`
-	ChannelsWhitelistMode     bool              `boil:"channels_whitelist_mode" json:"channels_whitelist_mode" toml:"channels_whitelist_mode" yaml:"channels_whitelist_mode"`
-	Roles                     types.Int64Array  `boil:"roles" json:"roles,omitempty" toml:"roles" yaml:"roles,omitempty"`
-	RolesWhitelistMode        bool              `boil:"roles_whitelist_mode" json:"roles_whitelist_mode" toml:"roles_whitelist_mode" yaml:"roles_whitelist_mode"`
-	ContextChannel            int64             `boil:"context_channel" json:"context_channel" toml:"context_channel" yaml:"context_channel"`
-	ReactionTriggerMode       int16             `boil:"reaction_trigger_mode" json:"reaction_trigger_mode" toml:"reaction_trigger_mode" yaml:"reaction_trigger_mode"`
-	LastError                 string            `boil:"last_error" json:"last_error" toml:"last_error" yaml:"last_error"`
-	LastErrorTime             null.Time         `boil:"last_error_time" json:"last_error_time,omitempty" toml:"last_error_time" yaml:"last_error_time,omitempty"`
-	RunCount                  int               `boil:"run_count" json:"run_count" toml:"run_count" yaml:"run_count"`
-	ShowErrors                bool              `boil:"show_errors" json:"show_errors" toml:"show_errors" yaml:"show_errors"`
-	Disabled                  bool              `boil:"disabled" json:"disabled" toml:"disabled" yaml:"disabled"`
-	DateUpdated               null.Time         `boil:"date_updated" json:"date_updated,omitempty" toml:"date_updated" yaml:"date_updated,omitempty"`
-	Categories                types.Int64Array  `boil:"categories" json:"categories,omitempty" toml:"categories" yaml:"categories,omitempty"`
-	CategoriesWhitelistMode   bool              `boil:"categories_whitelist_mode" json:"categories_whitelist_mode" toml:"categories_whitelist_mode" yaml:"categories_whitelist_mode"`
-	RegexTrigger              string            `boil:"regex_trigger" json:"regex_trigger" toml:"regex_trigger" yaml:"regex_trigger"`
-	RegexTriggerCaseSensitive bool              `boil:"regex_trigger_case_sensitive" json:"regex_trigger_case_sensitive" toml:"regex_trigger_case_sensitive" yaml:"regex_trigger_case_sensitive"`
-	Note                      null.String       `boil:"note" json:"note,omitempty" toml:"note" yaml:"note,omitempty"`
-	ThreadsEnabled            bool              `boil:"threads_enabled" json:"threads_enabled" toml:"threads_enabled" yaml:"threads_enabled"`
-	NormalizeUnicode          bool              `boil:"normalize_unicode" json:"normalize_unicode" toml:"normalize_unicode" yaml:"normalize_unicode"`
-	TriggerOnEdit             bool              `boil:"trigger_on_edit" json:"trigger_on_edit" toml:"trigger_on_edit" yaml:"trigger_on_edit"`
-	PublicID                  string            `boil:"public_id" json:"public_id" toml:"public_id" yaml:"public_id"`
-	ImportCount               int               `boil:"import_count" json:"import_count" toml:"import_count" yaml:"import_count"`
-	Public                    bool              `boil:"public" json:"public" toml:"public" yaml:"public"`
+	LocalID                         int64             `boil:"local_id" json:"local_id" toml:"local_id" yaml:"local_id"`
+	GuildID                         int64             `boil:"guild_id" json:"guild_id" toml:"guild_id" yaml:"guild_id"`
+	GroupID                         null.Int64        `boil:"group_id" json:"group_id,omitempty" toml:"group_id" yaml:"group_id,omitempty"`
+	TriggerType                     int               `boil:"trigger_type" json:"trigger_type" toml:"trigger_type" yaml:"trigger_type"`
+	TextTrigger                     string            `boil:"text_trigger" json:"text_trigger" toml:"text_trigger" yaml:"text_trigger"`
+	TextTriggerCaseSensitive        bool              `boil:"text_trigger_case_sensitive" json:"text_trigger_case_sensitive" toml:"text_trigger_case_sensitive" yaml:"text_trigger_case_sensitive"`
+	TimeTriggerInterval             int               `boil:"time_trigger_interval" json:"time_trigger_interval" toml:"time_trigger_interval" yaml:"time_trigger_interval"`
+	TimeTriggerExcludingDays        types.Int64Array  `boil:"time_trigger_excluding_days" json:"time_trigger_excluding_days" toml:"time_trigger_excluding_days" yaml:"time_trigger_excluding_days"`
+	TimeTriggerExcludingHours       types.Int64Array  `boil:"time_trigger_excluding_hours" json:"time_trigger_excluding_hours" toml:"time_trigger_excluding_hours" yaml:"time_trigger_excluding_hours"`
+	LastRun                         null.Time         `boil:"last_run" json:"last_run,omitempty" toml:"last_run" yaml:"last_run,omitempty"`
+	NextRun                         null.Time         `boil:"next_run" json:"next_run,omitempty" toml:"next_run" yaml:"next_run,omitempty"`
+	Responses                       types.StringArray `boil:"responses" json:"responses" toml:"responses" yaml:"responses"`
+	Channels                        types.Int64Array  `boil:"channels" json:"channels,omitempty" toml:"channels" yaml:"channels,omitempty"`
+	ChannelsWhitelistMode           bool              `boil:"channels_whitelist_mode" json:"channels_whitelist_mode" toml:"channels_whitelist_mode" yaml:"channels_whitelist_mode"`
+	Roles                           types.Int64Array  `boil:"roles" json:"roles,omitempty" toml:"roles" yaml:"roles,omitempty"`
+	RolesWhitelistMode              bool              `boil:"roles_whitelist_mode" json:"roles_whitelist_mode" toml:"roles_whitelist_mode" yaml:"roles_whitelist_mode"`
+	ContextChannel                  int64             `boil:"context_channel" json:"context_channel" toml:"context_channel" yaml:"context_channel"`
+	ReactionTriggerMode             int16             `boil:"reaction_trigger_mode" json:"reaction_trigger_mode" toml:"reaction_trigger_mode" yaml:"reaction_trigger_mode"`
+	LastError                       string            `boil:"last_error" json:"last_error" toml:"last_error" yaml:"last_error"`
+	LastErrorTime                   null.Time         `boil:"last_error_time" json:"last_error_time,omitempty" toml:"last_error_time" yaml:"last_error_time,omitempty"`
+	RunCount                        int               `boil:"run_count" json:"run_count" toml:"run_count" yaml:"run_count"`
+	ShowErrors                      bool              `boil:"show_errors" json:"show_errors" toml:"show_errors" yaml:"show_errors"`
+	Disabled                        bool              `boil:"disabled" json:"disabled" toml:"disabled" yaml:"disabled"`
+	DateUpdated                     null.Time         `boil:"date_updated" json:"date_updated,omitempty" toml:"date_updated" yaml:"date_updated,omitempty"`
+	Categories                      types.Int64Array  `boil:"categories" json:"categories,omitempty" toml:"categories" yaml:"categories,omitempty"`
+	CategoriesWhitelistMode         bool              `boil:"categories_whitelist_mode" json:"categories_whitelist_mode" toml:"categories_whitelist_mode" yaml:"categories_whitelist_mode"`
+	RegexTrigger                    string            `boil:"regex_trigger" json:"regex_trigger" toml:"regex_trigger" yaml:"regex_trigger"`
+	RegexTriggerCaseSensitive       bool              `boil:"regex_trigger_case_sensitive" json:"regex_trigger_case_sensitive" toml:"regex_trigger_case_sensitive" yaml:"regex_trigger_case_sensitive"`
+	Note                            null.String       `boil:"note" json:"note,omitempty" toml:"note" yaml:"note,omitempty"`
+	ThreadsEnabled                  bool              `boil:"threads_enabled" json:"threads_enabled" toml:"threads_enabled" yaml:"threads_enabled"`
+	NormalizeUnicode                bool              `boil:"normalize_unicode" json:"normalize_unicode" toml:"normalize_unicode" yaml:"normalize_unicode"`
+	TriggerOnEdit                   bool              `boil:"trigger_on_edit" json:"trigger_on_edit" toml:"trigger_on_edit" yaml:"trigger_on_edit"`
+	PublicID                        string            `boil:"public_id" json:"public_id" toml:"public_id" yaml:"public_id"`
+	ImportCount                     int               `boil:"import_count" json:"import_count" toml:"import_count" yaml:"import_count"`
+	Public                          bool              `boil:"public" json:"public" toml:"public" yaml:"public"`
+	Response                        string            `boil:"response" json:"response" toml:"response" yaml:"response"`
+	InteractionTrigger              string            `boil:"interaction_trigger" json:"interaction_trigger" toml:"interaction_trigger" yaml:"interaction_trigger"`
+	InteractionTriggerCaseSensitive bool              `boil:"interaction_trigger_case_sensitive" json:"interaction_trigger_case_sensitive" toml:"interaction_trigger_case_sensitive" yaml:"interaction_trigger_case_sensitive"`
 
 	R *customCommandR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L customCommandL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var CustomCommandColumns = struct {
-	LocalID                   string
-	GuildID                   string
-	GroupID                   string
-	TriggerType               string
-	TextTrigger               string
-	TextTriggerCaseSensitive  string
-	TimeTriggerInterval       string
-	TimeTriggerExcludingDays  string
-	TimeTriggerExcludingHours string
-	LastRun                   string
-	NextRun                   string
-	Responses                 string
-	Channels                  string
-	ChannelsWhitelistMode     string
-	Roles                     string
-	RolesWhitelistMode        string
-	ContextChannel            string
-	ReactionTriggerMode       string
-	LastError                 string
-	LastErrorTime             string
-	RunCount                  string
-	ShowErrors                string
-	Disabled                  string
-	DateUpdated               string
-	Categories                string
-	CategoriesWhitelistMode   string
-	RegexTrigger              string
-	RegexTriggerCaseSensitive string
-	Note                      string
-	ThreadsEnabled            string
-	NormalizeUnicode          string
-	TriggerOnEdit             string
-	PublicID                  string
-	ImportCount               string
-	Public                    string
+	LocalID                         string
+	GuildID                         string
+	GroupID                         string
+	TriggerType                     string
+	TextTrigger                     string
+	TextTriggerCaseSensitive        string
+	TimeTriggerInterval             string
+	TimeTriggerExcludingDays        string
+	TimeTriggerExcludingHours       string
+	LastRun                         string
+	NextRun                         string
+	Responses                       string
+	Channels                        string
+	ChannelsWhitelistMode           string
+	Roles                           string
+	RolesWhitelistMode              string
+	ContextChannel                  string
+	ReactionTriggerMode             string
+	LastError                       string
+	LastErrorTime                   string
+	RunCount                        string
+	ShowErrors                      string
+	Disabled                        string
+	DateUpdated                     string
+	Categories                      string
+	CategoriesWhitelistMode         string
+	RegexTrigger                    string
+	RegexTriggerCaseSensitive       string
+	Note                            string
+	ThreadsEnabled                  string
+	NormalizeUnicode                string
+	TriggerOnEdit                   string
+	PublicID                        string
+	ImportCount                     string
+	Public                          string
+	Response                        string
+	InteractionTrigger              string
+	InteractionTriggerCaseSensitive string
 }{
-	LocalID:                   "local_id",
-	GuildID:                   "guild_id",
-	GroupID:                   "group_id",
-	TriggerType:               "trigger_type",
-	TextTrigger:               "text_trigger",
-	TextTriggerCaseSensitive:  "text_trigger_case_sensitive",
-	TimeTriggerInterval:       "time_trigger_interval",
-	TimeTriggerExcludingDays:  "time_trigger_excluding_days",
-	TimeTriggerExcludingHours: "time_trigger_excluding_hours",
-	LastRun:                   "last_run",
-	NextRun:                   "next_run",
-	Responses:                 "responses",
-	Channels:                  "channels",
-	ChannelsWhitelistMode:     "channels_whitelist_mode",
-	Roles:                     "roles",
-	RolesWhitelistMode:        "roles_whitelist_mode",
-	ContextChannel:            "context_channel",
-	ReactionTriggerMode:       "reaction_trigger_mode",
-	LastError:                 "last_error",
-	LastErrorTime:             "last_error_time",
-	RunCount:                  "run_count",
-	ShowErrors:                "show_errors",
-	Disabled:                  "disabled",
-	DateUpdated:               "date_updated",
-	Categories:                "categories",
-	CategoriesWhitelistMode:   "categories_whitelist_mode",
-	RegexTrigger:              "regex_trigger",
-	RegexTriggerCaseSensitive: "regex_trigger_case_sensitive",
-	Note:                      "note",
-	ThreadsEnabled:            "threads_enabled",
-	NormalizeUnicode:          "normalize_unicode",
-	TriggerOnEdit:             "trigger_on_edit",
-	PublicID:                  "public_id",
-	ImportCount:               "import_count",
-	Public:                    "public",
+	LocalID:                         "local_id",
+	GuildID:                         "guild_id",
+	GroupID:                         "group_id",
+	TriggerType:                     "trigger_type",
+	TextTrigger:                     "text_trigger",
+	TextTriggerCaseSensitive:        "text_trigger_case_sensitive",
+	TimeTriggerInterval:             "time_trigger_interval",
+	TimeTriggerExcludingDays:        "time_trigger_excluding_days",
+	TimeTriggerExcludingHours:       "time_trigger_excluding_hours",
+	LastRun:                         "last_run",
+	NextRun:                         "next_run",
+	Responses:                       "responses",
+	Channels:                        "channels",
+	ChannelsWhitelistMode:           "channels_whitelist_mode",
+	Roles:                           "roles",
+	RolesWhitelistMode:              "roles_whitelist_mode",
+	ContextChannel:                  "context_channel",
+	ReactionTriggerMode:             "reaction_trigger_mode",
+	LastError:                       "last_error",
+	LastErrorTime:                   "last_error_time",
+	RunCount:                        "run_count",
+	ShowErrors:                      "show_errors",
+	Disabled:                        "disabled",
+	DateUpdated:                     "date_updated",
+	Categories:                      "categories",
+	CategoriesWhitelistMode:         "categories_whitelist_mode",
+	RegexTrigger:                    "regex_trigger",
+	RegexTriggerCaseSensitive:       "regex_trigger_case_sensitive",
+	Note:                            "note",
+	ThreadsEnabled:                  "threads_enabled",
+	NormalizeUnicode:                "normalize_unicode",
+	TriggerOnEdit:                   "trigger_on_edit",
+	PublicID:                        "public_id",
+	ImportCount:                     "import_count",
+	Public:                          "public",
+	Response:                        "response",
+	InteractionTrigger:              "interaction_trigger",
+	InteractionTriggerCaseSensitive: "interaction_trigger_case_sensitive",
 }
 
 var CustomCommandTableColumns = struct {
-	LocalID                   string
-	GuildID                   string
-	GroupID                   string
-	TriggerType               string
-	TextTrigger               string
-	TextTriggerCaseSensitive  string
-	TimeTriggerInterval       string
-	TimeTriggerExcludingDays  string
-	TimeTriggerExcludingHours string
-	LastRun                   string
-	NextRun                   string
-	Responses                 string
-	Channels                  string
-	ChannelsWhitelistMode     string
-	Roles                     string
-	RolesWhitelistMode        string
-	ContextChannel            string
-	ReactionTriggerMode       string
-	LastError                 string
-	LastErrorTime             string
-	RunCount                  string
-	ShowErrors                string
-	Disabled                  string
-	DateUpdated               string
-	Categories                string
-	CategoriesWhitelistMode   string
-	RegexTrigger              string
-	RegexTriggerCaseSensitive string
-	Note                      string
-	ThreadsEnabled            string
-	NormalizeUnicode          string
-	TriggerOnEdit             string
-	PublicID                  string
-	ImportCount               string
-	Public                    string
+	LocalID                         string
+	GuildID                         string
+	GroupID                         string
+	TriggerType                     string
+	TextTrigger                     string
+	TextTriggerCaseSensitive        string
+	TimeTriggerInterval             string
+	TimeTriggerExcludingDays        string
+	TimeTriggerExcludingHours       string
+	LastRun                         string
+	NextRun                         string
+	Responses                       string
+	Channels                        string
+	ChannelsWhitelistMode           string
+	Roles                           string
+	RolesWhitelistMode              string
+	ContextChannel                  string
+	ReactionTriggerMode             string
+	LastError                       string
+	LastErrorTime                   string
+	RunCount                        string
+	ShowErrors                      string
+	Disabled                        string
+	DateUpdated                     string
+	Categories                      string
+	CategoriesWhitelistMode         string
+	RegexTrigger                    string
+	RegexTriggerCaseSensitive       string
+	Note                            string
+	ThreadsEnabled                  string
+	NormalizeUnicode                string
+	TriggerOnEdit                   string
+	PublicID                        string
+	ImportCount                     string
+	Public                          string
+	Response                        string
+	InteractionTrigger              string
+	InteractionTriggerCaseSensitive string
 }{
-	LocalID:                   "custom_commands.local_id",
-	GuildID:                   "custom_commands.guild_id",
-	GroupID:                   "custom_commands.group_id",
-	TriggerType:               "custom_commands.trigger_type",
-	TextTrigger:               "custom_commands.text_trigger",
-	TextTriggerCaseSensitive:  "custom_commands.text_trigger_case_sensitive",
-	TimeTriggerInterval:       "custom_commands.time_trigger_interval",
-	TimeTriggerExcludingDays:  "custom_commands.time_trigger_excluding_days",
-	TimeTriggerExcludingHours: "custom_commands.time_trigger_excluding_hours",
-	LastRun:                   "custom_commands.last_run",
-	NextRun:                   "custom_commands.next_run",
-	Responses:                 "custom_commands.responses",
-	Channels:                  "custom_commands.channels",
-	ChannelsWhitelistMode:     "custom_commands.channels_whitelist_mode",
-	Roles:                     "custom_commands.roles",
-	RolesWhitelistMode:        "custom_commands.roles_whitelist_mode",
-	ContextChannel:            "custom_commands.context_channel",
-	ReactionTriggerMode:       "custom_commands.reaction_trigger_mode",
-	LastError:                 "custom_commands.last_error",
-	LastErrorTime:             "custom_commands.last_error_time",
-	RunCount:                  "custom_commands.run_count",
-	ShowErrors:                "custom_commands.show_errors",
-	Disabled:                  "custom_commands.disabled",
-	DateUpdated:               "custom_commands.date_updated",
-	Categories:                "custom_commands.categories",
-	CategoriesWhitelistMode:   "custom_commands.categories_whitelist_mode",
-	RegexTrigger:              "custom_commands.regex_trigger",
-	RegexTriggerCaseSensitive: "custom_commands.regex_trigger_case_sensitive",
-	Note:                      "custom_commands.note",
-	ThreadsEnabled:            "custom_commands.threads_enabled",
-	NormalizeUnicode:          "custom_commands.normalize_unicode",
-	TriggerOnEdit:             "custom_commands.trigger_on_edit",
-	PublicID:                  "custom_commands.public_id",
-	ImportCount:               "custom_commands.import_count",
-	Public:                    "custom_commands.public",
+	LocalID:                         "custom_commands.local_id",
+	GuildID:                         "custom_commands.guild_id",
+	GroupID:                         "custom_commands.group_id",
+	TriggerType:                     "custom_commands.trigger_type",
+	TextTrigger:                     "custom_commands.text_trigger",
+	TextTriggerCaseSensitive:        "custom_commands.text_trigger_case_sensitive",
+	TimeTriggerInterval:             "custom_commands.time_trigger_interval",
+	TimeTriggerExcludingDays:        "custom_commands.time_trigger_excluding_days",
+	TimeTriggerExcludingHours:       "custom_commands.time_trigger_excluding_hours",
+	LastRun:                         "custom_commands.last_run",
+	NextRun:                         "custom_commands.next_run",
+	Responses:                       "custom_commands.responses",
+	Channels:                        "custom_commands.channels",
+	ChannelsWhitelistMode:           "custom_commands.channels_whitelist_mode",
+	Roles:                           "custom_commands.roles",
+	RolesWhitelistMode:              "custom_commands.roles_whitelist_mode",
+	ContextChannel:                  "custom_commands.context_channel",
+	ReactionTriggerMode:             "custom_commands.reaction_trigger_mode",
+	LastError:                       "custom_commands.last_error",
+	LastErrorTime:                   "custom_commands.last_error_time",
+	RunCount:                        "custom_commands.run_count",
+	ShowErrors:                      "custom_commands.show_errors",
+	Disabled:                        "custom_commands.disabled",
+	DateUpdated:                     "custom_commands.date_updated",
+	Categories:                      "custom_commands.categories",
+	CategoriesWhitelistMode:         "custom_commands.categories_whitelist_mode",
+	RegexTrigger:                    "custom_commands.regex_trigger",
+	RegexTriggerCaseSensitive:       "custom_commands.regex_trigger_case_sensitive",
+	Note:                            "custom_commands.note",
+	ThreadsEnabled:                  "custom_commands.threads_enabled",
+	NormalizeUnicode:                "custom_commands.normalize_unicode",
+	TriggerOnEdit:                   "custom_commands.trigger_on_edit",
+	PublicID:                        "custom_commands.public_id",
+	ImportCount:                     "custom_commands.import_count",
+	Public:                          "custom_commands.public",
+	Response:                        "custom_commands.response",
+	InteractionTrigger:              "custom_commands.interaction_trigger",
+	InteractionTriggerCaseSensitive: "custom_commands.interaction_trigger_case_sensitive",
 }
 
 // Generated where
@@ -355,77 +370,83 @@ func (w whereHelpernull_String) IsNull() qm.QueryMod    { return qmhelper.WhereI
 func (w whereHelpernull_String) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
 
 var CustomCommandWhere = struct {
-	LocalID                   whereHelperint64
-	GuildID                   whereHelperint64
-	GroupID                   whereHelpernull_Int64
-	TriggerType               whereHelperint
-	TextTrigger               whereHelperstring
-	TextTriggerCaseSensitive  whereHelperbool
-	TimeTriggerInterval       whereHelperint
-	TimeTriggerExcludingDays  whereHelpertypes_Int64Array
-	TimeTriggerExcludingHours whereHelpertypes_Int64Array
-	LastRun                   whereHelpernull_Time
-	NextRun                   whereHelpernull_Time
-	Responses                 whereHelpertypes_StringArray
-	Channels                  whereHelpertypes_Int64Array
-	ChannelsWhitelistMode     whereHelperbool
-	Roles                     whereHelpertypes_Int64Array
-	RolesWhitelistMode        whereHelperbool
-	ContextChannel            whereHelperint64
-	ReactionTriggerMode       whereHelperint16
-	LastError                 whereHelperstring
-	LastErrorTime             whereHelpernull_Time
-	RunCount                  whereHelperint
-	ShowErrors                whereHelperbool
-	Disabled                  whereHelperbool
-	DateUpdated               whereHelpernull_Time
-	Categories                whereHelpertypes_Int64Array
-	CategoriesWhitelistMode   whereHelperbool
-	RegexTrigger              whereHelperstring
-	RegexTriggerCaseSensitive whereHelperbool
-	Note                      whereHelpernull_String
-	ThreadsEnabled            whereHelperbool
-	NormalizeUnicode          whereHelperbool
-	TriggerOnEdit             whereHelperbool
-	PublicID                  whereHelperstring
-	ImportCount               whereHelperint
-	Public                    whereHelperbool
+	LocalID                         whereHelperint64
+	GuildID                         whereHelperint64
+	GroupID                         whereHelpernull_Int64
+	TriggerType                     whereHelperint
+	TextTrigger                     whereHelperstring
+	TextTriggerCaseSensitive        whereHelperbool
+	TimeTriggerInterval             whereHelperint
+	TimeTriggerExcludingDays        whereHelpertypes_Int64Array
+	TimeTriggerExcludingHours       whereHelpertypes_Int64Array
+	LastRun                         whereHelpernull_Time
+	NextRun                         whereHelpernull_Time
+	Responses                       whereHelpertypes_StringArray
+	Channels                        whereHelpertypes_Int64Array
+	ChannelsWhitelistMode           whereHelperbool
+	Roles                           whereHelpertypes_Int64Array
+	RolesWhitelistMode              whereHelperbool
+	ContextChannel                  whereHelperint64
+	ReactionTriggerMode             whereHelperint16
+	LastError                       whereHelperstring
+	LastErrorTime                   whereHelpernull_Time
+	RunCount                        whereHelperint
+	ShowErrors                      whereHelperbool
+	Disabled                        whereHelperbool
+	DateUpdated                     whereHelpernull_Time
+	Categories                      whereHelpertypes_Int64Array
+	CategoriesWhitelistMode         whereHelperbool
+	RegexTrigger                    whereHelperstring
+	RegexTriggerCaseSensitive       whereHelperbool
+	Note                            whereHelpernull_String
+	ThreadsEnabled                  whereHelperbool
+	NormalizeUnicode                whereHelperbool
+	TriggerOnEdit                   whereHelperbool
+	PublicID                        whereHelperstring
+	ImportCount                     whereHelperint
+	Public                          whereHelperbool
+	Response                        whereHelperstring
+	InteractionTrigger              whereHelperstring
+	InteractionTriggerCaseSensitive whereHelperbool
 }{
-	LocalID:                   whereHelperint64{field: "\"custom_commands\".\"local_id\""},
-	GuildID:                   whereHelperint64{field: "\"custom_commands\".\"guild_id\""},
-	GroupID:                   whereHelpernull_Int64{field: "\"custom_commands\".\"group_id\""},
-	TriggerType:               whereHelperint{field: "\"custom_commands\".\"trigger_type\""},
-	TextTrigger:               whereHelperstring{field: "\"custom_commands\".\"text_trigger\""},
-	TextTriggerCaseSensitive:  whereHelperbool{field: "\"custom_commands\".\"text_trigger_case_sensitive\""},
-	TimeTriggerInterval:       whereHelperint{field: "\"custom_commands\".\"time_trigger_interval\""},
-	TimeTriggerExcludingDays:  whereHelpertypes_Int64Array{field: "\"custom_commands\".\"time_trigger_excluding_days\""},
-	TimeTriggerExcludingHours: whereHelpertypes_Int64Array{field: "\"custom_commands\".\"time_trigger_excluding_hours\""},
-	LastRun:                   whereHelpernull_Time{field: "\"custom_commands\".\"last_run\""},
-	NextRun:                   whereHelpernull_Time{field: "\"custom_commands\".\"next_run\""},
-	Responses:                 whereHelpertypes_StringArray{field: "\"custom_commands\".\"responses\""},
-	Channels:                  whereHelpertypes_Int64Array{field: "\"custom_commands\".\"channels\""},
-	ChannelsWhitelistMode:     whereHelperbool{field: "\"custom_commands\".\"channels_whitelist_mode\""},
-	Roles:                     whereHelpertypes_Int64Array{field: "\"custom_commands\".\"roles\""},
-	RolesWhitelistMode:        whereHelperbool{field: "\"custom_commands\".\"roles_whitelist_mode\""},
-	ContextChannel:            whereHelperint64{field: "\"custom_commands\".\"context_channel\""},
-	ReactionTriggerMode:       whereHelperint16{field: "\"custom_commands\".\"reaction_trigger_mode\""},
-	LastError:                 whereHelperstring{field: "\"custom_commands\".\"last_error\""},
-	LastErrorTime:             whereHelpernull_Time{field: "\"custom_commands\".\"last_error_time\""},
-	RunCount:                  whereHelperint{field: "\"custom_commands\".\"run_count\""},
-	ShowErrors:                whereHelperbool{field: "\"custom_commands\".\"show_errors\""},
-	Disabled:                  whereHelperbool{field: "\"custom_commands\".\"disabled\""},
-	DateUpdated:               whereHelpernull_Time{field: "\"custom_commands\".\"date_updated\""},
-	Categories:                whereHelpertypes_Int64Array{field: "\"custom_commands\".\"categories\""},
-	CategoriesWhitelistMode:   whereHelperbool{field: "\"custom_commands\".\"categories_whitelist_mode\""},
-	RegexTrigger:              whereHelperstring{field: "\"custom_commands\".\"regex_trigger\""},
-	RegexTriggerCaseSensitive: whereHelperbool{field: "\"custom_commands\".\"regex_trigger_case_sensitive\""},
-	Note:                      whereHelpernull_String{field: "\"custom_commands\".\"note\""},
-	ThreadsEnabled:            whereHelperbool{field: "\"custom_commands\".\"threads_enabled\""},
-	NormalizeUnicode:          whereHelperbool{field: "\"custom_commands\".\"normalize_unicode\""},
-	TriggerOnEdit:             whereHelperbool{field: "\"custom_commands\".\"trigger_on_edit\""},
-	PublicID:                  whereHelperstring{field: "\"custom_commands\".\"public_id\""},
-	ImportCount:               whereHelperint{field: "\"custom_commands\".\"import_count\""},
-	Public:                    whereHelperbool{field: "\"custom_commands\".\"public\""},
+	LocalID:                         whereHelperint64{field: "\"custom_commands\".\"local_id\""},
+	GuildID:                         whereHelperint64{field: "\"custom_commands\".\"guild_id\""},
+	GroupID:                         whereHelpernull_Int64{field: "\"custom_commands\".\"group_id\""},
+	TriggerType:                     whereHelperint{field: "\"custom_commands\".\"trigger_type\""},
+	TextTrigger:                     whereHelperstring{field: "\"custom_commands\".\"text_trigger\""},
+	TextTriggerCaseSensitive:        whereHelperbool{field: "\"custom_commands\".\"text_trigger_case_sensitive\""},
+	TimeTriggerInterval:             whereHelperint{field: "\"custom_commands\".\"time_trigger_interval\""},
+	TimeTriggerExcludingDays:        whereHelpertypes_Int64Array{field: "\"custom_commands\".\"time_trigger_excluding_days\""},
+	TimeTriggerExcludingHours:       whereHelpertypes_Int64Array{field: "\"custom_commands\".\"time_trigger_excluding_hours\""},
+	LastRun:                         whereHelpernull_Time{field: "\"custom_commands\".\"last_run\""},
+	NextRun:                         whereHelpernull_Time{field: "\"custom_commands\".\"next_run\""},
+	Responses:                       whereHelpertypes_StringArray{field: "\"custom_commands\".\"responses\""},
+	Channels:                        whereHelpertypes_Int64Array{field: "\"custom_commands\".\"channels\""},
+	ChannelsWhitelistMode:           whereHelperbool{field: "\"custom_commands\".\"channels_whitelist_mode\""},
+	Roles:                           whereHelpertypes_Int64Array{field: "\"custom_commands\".\"roles\""},
+	RolesWhitelistMode:              whereHelperbool{field: "\"custom_commands\".\"roles_whitelist_mode\""},
+	ContextChannel:                  whereHelperint64{field: "\"custom_commands\".\"context_channel\""},
+	ReactionTriggerMode:             whereHelperint16{field: "\"custom_commands\".\"reaction_trigger_mode\""},
+	LastError:                       whereHelperstring{field: "\"custom_commands\".\"last_error\""},
+	LastErrorTime:                   whereHelpernull_Time{field: "\"custom_commands\".\"last_error_time\""},
+	RunCount:                        whereHelperint{field: "\"custom_commands\".\"run_count\""},
+	ShowErrors:                      whereHelperbool{field: "\"custom_commands\".\"show_errors\""},
+	Disabled:                        whereHelperbool{field: "\"custom_commands\".\"disabled\""},
+	DateUpdated:                     whereHelpernull_Time{field: "\"custom_commands\".\"date_updated\""},
+	Categories:                      whereHelpertypes_Int64Array{field: "\"custom_commands\".\"categories\""},
+	CategoriesWhitelistMode:         whereHelperbool{field: "\"custom_commands\".\"categories_whitelist_mode\""},
+	RegexTrigger:                    whereHelperstring{field: "\"custom_commands\".\"regex_trigger\""},
+	RegexTriggerCaseSensitive:       whereHelperbool{field: "\"custom_commands\".\"regex_trigger_case_sensitive\""},
+	Note:                            whereHelpernull_String{field: "\"custom_commands\".\"note\""},
+	ThreadsEnabled:                  whereHelperbool{field: "\"custom_commands\".\"threads_enabled\""},
+	NormalizeUnicode:                whereHelperbool{field: "\"custom_commands\".\"normalize_unicode\""},
+	TriggerOnEdit:                   whereHelperbool{field: "\"custom_commands\".\"trigger_on_edit\""},
+	PublicID:                        whereHelperstring{field: "\"custom_commands\".\"public_id\""},
+	ImportCount:                     whereHelperint{field: "\"custom_commands\".\"import_count\""},
+	Public:                          whereHelperbool{field: "\"custom_commands\".\"public\""},
+	Response:                        whereHelperstring{field: "\"custom_commands\".\"response\""},
+	InteractionTrigger:              whereHelperstring{field: "\"custom_commands\".\"interaction_trigger\""},
+	InteractionTriggerCaseSensitive: whereHelperbool{field: "\"custom_commands\".\"interaction_trigger_case_sensitive\""},
 }
 
 // CustomCommandRels is where relationship names are stored.
@@ -456,9 +477,9 @@ func (r *customCommandR) GetGroup() *CustomCommandGroup {
 type customCommandL struct{}
 
 var (
-	customCommandAllColumns            = []string{"local_id", "guild_id", "group_id", "trigger_type", "text_trigger", "text_trigger_case_sensitive", "time_trigger_interval", "time_trigger_excluding_days", "time_trigger_excluding_hours", "last_run", "next_run", "responses", "channels", "channels_whitelist_mode", "roles", "roles_whitelist_mode", "context_channel", "reaction_trigger_mode", "last_error", "last_error_time", "run_count", "show_errors", "disabled", "date_updated", "categories", "categories_whitelist_mode", "regex_trigger", "regex_trigger_case_sensitive", "note", "threads_enabled", "normalize_unicode", "trigger_on_edit", "public_id", "import_count", "public"}
+	customCommandAllColumns            = []string{"local_id", "guild_id", "group_id", "trigger_type", "text_trigger", "text_trigger_case_sensitive", "time_trigger_interval", "time_trigger_excluding_days", "time_trigger_excluding_hours", "last_run", "next_run", "responses", "channels", "channels_whitelist_mode", "roles", "roles_whitelist_mode", "context_channel", "reaction_trigger_mode", "last_error", "last_error_time", "run_count", "show_errors", "disabled", "date_updated", "categories", "categories_whitelist_mode", "regex_trigger", "regex_trigger_case_sensitive", "note", "threads_enabled", "normalize_unicode", "trigger_on_edit", "public_id", "import_count", "public", "response", "interaction_trigger", "interaction_trigger_case_sensitive"}
 	customCommandColumnsWithoutDefault = []string{"local_id", "guild_id", "trigger_type", "text_trigger", "text_trigger_case_sensitive", "time_trigger_interval", "time_trigger_excluding_days", "time_trigger_excluding_hours", "responses", "channels_whitelist_mode", "roles_whitelist_mode"}
-	customCommandColumnsWithDefault    = []string{"group_id", "last_run", "next_run", "channels", "roles", "context_channel", "reaction_trigger_mode", "last_error", "last_error_time", "run_count", "show_errors", "disabled", "date_updated", "categories", "categories_whitelist_mode", "regex_trigger", "regex_trigger_case_sensitive", "note", "threads_enabled", "normalize_unicode", "trigger_on_edit", "public_id", "import_count", "public"}
+	customCommandColumnsWithDefault    = []string{"group_id", "last_run", "next_run", "channels", "roles", "context_channel", "reaction_trigger_mode", "last_error", "last_error_time", "run_count", "show_errors", "disabled", "date_updated", "categories", "categories_whitelist_mode", "regex_trigger", "regex_trigger_case_sensitive", "note", "threads_enabled", "normalize_unicode", "trigger_on_edit", "public_id", "import_count", "public", "response", "interaction_trigger", "interaction_trigger_case_sensitive"}
 	customCommandPrimaryKeyColumns     = []string{"guild_id", "local_id"}
 	customCommandGeneratedColumns      = []string{}
 )

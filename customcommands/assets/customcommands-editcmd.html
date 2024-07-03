@@ -59,6 +59,8 @@
                             <span class="cc-text-trigger-span">{{.CC.TextTrigger}}</span>
                             {{else if eq .CC.TriggerType 1 2 3 4}}:
                             <span class="cc-text-trigger-span">{{or .CC.RegexTrigger .CC.TextTrigger}}</span>
+                            {{else if eq .CC.TriggerType 7 8}}:
+                            <span class="cc-text-trigger-span">{{or .CC.InteractionTrigger .CC.TextTrigger}}</span>
                             {{else if and (ne .CC.TriggerType 6) (ne .CC.TriggerType 10)}}:
                             Every
                             {{call .GetCCInterval .CC}}
@@ -114,6 +116,10 @@
                                                     {{if eq (call .GetCCIntervalType .CC) 0}}selected{{end}}>
                                                     Minute interval
                                                 </option>
+                                                 <option value="component" {{if eq .CC.TriggerType 7}} selected{{end}}>
+                                                    Message Component</option>
+                                                <option value="modal" {{if eq .CC.TriggerType 8}} selected{{end}}>
+                                                    Modal Submission</option>
                                             </select>
                                         </div>
                                     </div>
@@ -148,6 +154,13 @@
                                         </p>
                                         <p id="trigger-desc-interval_minutes">
                                             The command will run at a minute interval, for example every 10 minutes.
+                                        </p>
+                                        <p id="trigger-desc-component">
+                                            The command will run when a component's (a button or a select menu) whose
+                                            custom ID matches the given regexp is used.
+                                        </p>
+                                        <p id="trigger-desc-modal">
+                                            The command will run when a modal's custom ID matches the given regexp is submitted.
                                         </p>
                                     </div>
                                 </div>
@@ -184,7 +197,7 @@
                                 <div class="row">
                                     <div class="col-sm-12">
                                         <div class="form-group">
-                                            <label>Trigger (<span class="trigger-length-counter">{{or (toRune .CC.RegexTrigger|len) (toRune .CC.TextTrigger|len)}}</span>/256)</label>
+                                            <label>Regex Trigger (<span class="trigger-length-counter">{{or (toRune .CC.RegexTrigger|len) (toRune .CC.TextTrigger|len)}}</span>/256)</label>
                                             <input type="text" class="pagst-trigger form-control" name="regex_trigger" placeholder="void"
                                                 value="{{or .CC.RegexTrigger .CC.TextTrigger}}" oninput="onTriggerChanged(this)">
                                         </div>
@@ -200,11 +213,31 @@
                                              {{if .IsGuildPremium -}}
                                             <tr>
                                                 <td colspan="2">
-                                                    {{checkbox "trigger_on_edit" "trigger_on_edit" "Trigger on edits?" .CC.TriggerOnEdit}}
+                                                    {{checkbox "regex_trigger_on_edit" "regex_trigger_on_edit" "Trigger on edits?" .CC.TriggerOnEdit}}
                                                 </td>
                                             </tr>
                                             {{- end}}
                                         </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="cc-interaction-trigger-details" class="hidden col-sm-8">
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <div class="form-group">
+                                            <label>Component CustomID Regexp (<span class="trigger-length-counter">{{or (toRune .CC.InteractionTrigger|len) (toRune .CC.TextTrigger|len)}}</span>/256)</label>
+                                            <div class="input-group mb-2">
+                                                <input type="text" class="pagst-trigger form-control" name="interaction_trigger" placeholder="void"
+                                                value="{{or .CC.InteractionTrigger .CC.TextTrigger}}" oninput="onTriggerChanged(this)">
+                                            </div>
+                                            <table class="mb-3">
+                                                <tr>
+                                                    <td style="padding-right:42px">
+                                                        {{checkbox "interaction_case_sensitive" "interaction_case_sensitive" "Case Sensitive" .CC.InteractionTriggerCaseSensitive}}
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -721,6 +754,11 @@
             t === "exact";
     }
 
+    function isInteractionTrigger(t) {
+        return t === "modal" ||
+        t === "component"
+    }
+
     function triggerTypeChanged() {
         const existingCategoriesWarning =$("#require-no-categories-warning");
         const existingChannelsWarning = $("#require-no-channels-warning");
@@ -747,6 +785,7 @@
 
             $("#cc-text-trigger-details").addClass("hidden");
             $("#cc-regex-trigger-details").addClass("hidden");
+            $("#cc-interaction-trigger-details").addClass("hidden");
             $("#cc-extra-settings").addClass("hidden");
 
             $("#cc-reaction-trigger-details").addClass("hidden")
@@ -767,6 +806,7 @@
             $("#cc-time-trigger-details").addClass("hidden");
             $("#cc-text-trigger-details").addClass("hidden");
             $("#cc-regex-trigger-details").addClass("hidden");
+            $("#cc-interaction-trigger-details").addClass("hidden");
 
             $("#interval-cc-run-now").addClass("hidden")
 
@@ -783,6 +823,7 @@
             $("#cc-extra-settings").removeClass("hidden");
 
             $("#cc-regex-trigger-details").addClass("hidden");
+            $("#cc-interaction-trigger-details").addClass("hidden");
 
             $("#cc-reaction-trigger-details").addClass("hidden")
             $("#cc-time-trigger-details").addClass("hidden");
@@ -792,16 +833,16 @@
             $("#trigger-warning").attr("hidden", true);
             $("#require-no-channels-warning").removeClass("hidden");
             $("#require-no-roles-warning").removeClass("hidden");
-            // $("#trigger-warning").text("No trigger set, this command will only be able to be called from other commands")
             $("#time-trigger-no-channel-warning").addClass("hidden");
 
         } else if (isRegexTrigger(dropdown.val())) {
-            // Other message triggers
+            // Other regexp triggers
 
             $("#cc-regex-trigger-details").removeClass("hidden");
             $("#cc-extra-settings").removeClass("hidden");
 
             $("#cc-text-trigger-details").addClass("hidden");
+            $("#cc-interaction-trigger-details").addClass("hidden");
 
             $("#cc-reaction-trigger-details").addClass("hidden")
             $("#cc-time-trigger-details").addClass("hidden");
@@ -811,14 +852,30 @@
             $("#trigger-warning").attr("hidden", true);
             $("#require-no-channels-warning").removeClass("hidden");
             $("#require-no-roles-warning").removeClass("hidden");
-            // $("#trigger-warning").text("No trigger set, this command will only be able to be called from other commands")
             $("#time-trigger-no-channel-warning").addClass("hidden");
 
+        } else if (isInteractionTrigger(dropdown.val())) {
+            $("#cc-interaction-trigger-details").removeClass("hidden");
+            $("#cc-extra-settings").removeClass("hidden");
+
+            $("#cc-text-trigger-details").addClass("hidden");
+            $("#cc-regex-trigger-details").addClass("hidden");
+
+            $("#cc-reaction-trigger-details").addClass("hidden")
+            $("#cc-time-trigger-details").addClass("hidden");
+
+            $("#interval-cc-run-now").addClass("hidden")
+
+            $("#trigger-warning").attr("hidden", true);
+            $("#require-no-channels-warning").removeClass("hidden");
+            $("#require-no-roles-warning").removeClass("hidden");
+            $("#time-trigger-no-channel-warning").addClass("hidden");
         } else {
             // No automatic trigger
 
             $("#cc-text-trigger-details").addClass("hidden");
             $("#cc-regex-trigger-details").addClass("hidden");
+            $("#cc-interaction-trigger-details").addClass("hidden");
             $("#cc-extra-settings").addClass("hidden");
             $("#cc-reaction-trigger-details").addClass("hidden")
             $("#cc-time-trigger-details").addClass("hidden");

@@ -80,13 +80,13 @@ func (c *Context) tmplSendDM(s ...interface{}) (string, error) {
 		msgSend.Embeds = t
 	case *discordgo.MessageSend:
 		msgSend = t
-		if (len(msgSend.Embeds) == 0 && strings.TrimSpace(msgSend.Content) == "") && (msgSend.File == nil) {
+		if (len(msgSend.Embeds) == 0 && strings.TrimSpace(msgSend.Content) == "") && (msgSend.File == nil) && (len(msgSend.Components) == 0) {
 			return "", errors.New("message to send is empty")
 		}
 	default:
 		msgSend.Content = fmt.Sprint(s...)
 	}
-	msgSend.Components = []discordgo.MessageComponent{
+	serverInfo := []discordgo.MessageComponent{
 		discordgo.ActionsRow{
 			Components: []discordgo.MessageComponent{
 				discordgo.Button{
@@ -98,6 +98,10 @@ func (c *Context) tmplSendDM(s ...interface{}) (string, error) {
 			},
 		},
 	}
+	if len(msgSend.Components) >= 5 {
+		msgSend.Components = msgSend.Components[:4]
+	}
+	msgSend.Components = append(serverInfo, msgSend.Components...)
 
 	channel, err := common.BotSession.UserChannelCreate(c.MS.User.ID)
 	if err != nil {
@@ -409,12 +413,15 @@ func (c *Context) tmplSendMessage(filterSpecialMentions bool, returnID bool) fun
 			return ""
 		}
 
+		sendType := sendMessageGuildChannel
 		cid := c.ChannelArg(channel)
 		if cid == 0 {
 			return ""
 		}
 
-		isDM := cid != c.ChannelArgNoDM(channel)
+		if cid != c.ChannelArgNoDM(channel) {
+			sendType = sendMessageDM
+		}
 
 		var m *discordgo.Message
 		msgSend := &discordgo.MessageSend{
@@ -430,6 +437,7 @@ func (c *Context) tmplSendMessage(filterSpecialMentions bool, returnID bool) fun
 		case *discordgo.MessageEmbed:
 			msgSend.Embeds = []*discordgo.MessageEmbed{typedMsg}
 		case []*discordgo.MessageEmbed:
+			msgSend.Embeds = typedMsg
 		case *discordgo.MessageSend:
 			msgSend = typedMsg
 			copyAllowedMentions := typedMsg.AllowedMentions
@@ -461,8 +469,8 @@ func (c *Context) tmplSendMessage(filterSpecialMentions bool, returnID bool) fun
 			msgSend.Content = ToString(msg)
 		}
 
-		if isDM {
-			msgSend.Components = []discordgo.MessageComponent{
+		if sendType == sendMessageDM {
+			serverInfo := []discordgo.MessageComponent{
 				discordgo.ActionsRow{
 					Components: []discordgo.MessageComponent{
 						discordgo.Button{
@@ -474,6 +482,10 @@ func (c *Context) tmplSendMessage(filterSpecialMentions bool, returnID bool) fun
 					},
 				},
 			}
+			if len(msgSend.Components) >= 5 {
+				msgSend.Components = msgSend.Components[:4]
+			}
+			msgSend.Components = append(serverInfo, msgSend.Components...)
 		}
 
 		m, err = common.BotSession.ChannelMessageSendComplex(cid, msgSend)
@@ -534,6 +546,7 @@ func (c *Context) tmplEditMessage(filterSpecialMentions bool) func(channel inter
 
 			msgEdit.Content = typedMsg.Content
 			msgEdit.Embeds = typedMsg.Embeds
+			msgEdit.Components = typedMsg.Components
 			msgEdit.AllowedMentions = typedMsg.AllowedMentions
 		default:
 			temp := fmt.Sprint(msg)

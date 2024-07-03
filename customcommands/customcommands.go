@@ -74,6 +74,8 @@ const (
 	CommandTriggerExact      CommandTriggerType = 4
 	CommandTriggerInterval   CommandTriggerType = 5
 	CommandTriggerReaction   CommandTriggerType = 6
+	CommandTriggerComponent  CommandTriggerType = 7
+	CommandTriggerModal      CommandTriggerType = 8
 )
 
 var (
@@ -86,6 +88,8 @@ var (
 		CommandTriggerExact,
 		CommandTriggerInterval,
 		CommandTriggerReaction,
+		CommandTriggerComponent,
+		CommandTriggerModal,
 	}
 
 	triggerStrings = map[CommandTriggerType]string{
@@ -97,6 +101,8 @@ var (
 		CommandTriggerExact:      "Exact",
 		CommandTriggerInterval:   "Interval",
 		CommandTriggerReaction:   "Reaction",
+		CommandTriggerComponent:  "Component",
+		CommandTriggerModal:      "Modal",
 	}
 
 	embedTriggerStrings = map[CommandTriggerType]string{
@@ -108,6 +114,8 @@ var (
 		CommandTriggerExact:      "exac",
 		CommandTriggerInterval:   "intv",
 		CommandTriggerReaction:   "reac",
+		CommandTriggerComponent:  "cmpt",
+		CommandTriggerModal:      "modl",
 	}
 )
 
@@ -126,16 +134,18 @@ func (t CommandTriggerType) EmbedString() string {
 }
 
 type CustomCommand struct {
-	TriggerType        CommandTriggerType `json:"trigger_type"`
-	TriggerTypeForm    string             `json:"-" schema:"type"`
-	Trigger            string             `json:"trigger" schema:"trigger" valid:",0,256"`
-	RegexTrigger       string             `json:"regex_trigger" schema:"regex_trigger" valid:",0,256"`
-	Responses          []string           `json:"responses" schema:"responses" valid:"template,20000"`
-	CaseSensitive      bool               `json:"case_sensitive" schema:"case_sensitive"`
-	RegexCaseSensitive bool               `json:"regex_case_sensitive" schema:"regex_case_sensitive"`
-	ID                 int64              `json:"id"`
-	Note               string             `json:"note" schema:"note" valid:",0,256"`
-	Disabled           bool               `json:"disabled" schema:"disabled"`
+	TriggerType              CommandTriggerType `json:"trigger_type"`
+	TriggerTypeForm          string             `json:"-" schema:"type"`
+	Trigger                  string             `json:"trigger" schema:"trigger" valid:",0,256"`
+	RegexTrigger             string             `json:"regex_trigger" schema:"regex_trigger" valid:",0,256"`
+	InteractionTrigger       string             `json:"interaction_trigger" schema:"interaction_trigger" valid:",0,256"`
+	Responses                []string           `json:"responses" schema:"responses" valid:"template,20000"`
+	CaseSensitive            bool               `json:"case_sensitive" schema:"case_sensitive"`
+	RegexCaseSensitive       bool               `json:"regex_case_sensitive" schema:"regex_case_sensitive"`
+	InteractionCaseSensitive bool               `json:"interaction_case_sensitive" schema:"interaction_case_sensitive"`
+	ID                       int64              `json:"id"`
+	Note                     string             `json:"note" schema:"note" valid:",0,256"`
+	Disabled                 bool               `json:"disabled" schema:"disabled"`
 
 	Public   bool   `json:"public" schema:"public"`
 	PublicID string `json:"public_id" schema:"public_id"`
@@ -240,11 +250,13 @@ func (cc *CustomCommand) Validate(tmpl web.TemplateData, guild_id int64) (ok boo
 
 func (cc *CustomCommand) ToDBModel() *models.CustomCommand {
 	pqCommand := &models.CustomCommand{
-		TriggerType:               int(cc.TriggerType),
-		RegexTrigger:              cc.RegexTrigger,
-		RegexTriggerCaseSensitive: cc.RegexCaseSensitive,
-		TextTrigger:               cc.Trigger,
-		TextTriggerCaseSensitive:  cc.CaseSensitive,
+		TriggerType:                     int(cc.TriggerType),
+		InteractionTrigger:              cc.InteractionTrigger,
+		InteractionTriggerCaseSensitive: cc.InteractionCaseSensitive,
+		RegexTrigger:                    cc.RegexTrigger,
+		RegexTriggerCaseSensitive:       cc.RegexCaseSensitive,
+		TextTrigger:                     cc.Trigger,
+		TextTriggerCaseSensitive:        cc.CaseSensitive,
 
 		Public:   cc.Public,
 		PublicID: cc.PublicID,
