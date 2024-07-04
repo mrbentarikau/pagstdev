@@ -15,12 +15,16 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/jinzhu/gorm"
 	"github.com/mediocregopher/radix/v3"
 	"github.com/mrbentarikau/pagst/common"
 	"github.com/mrbentarikau/pagst/common/cplogs"
 	"github.com/mrbentarikau/pagst/lib/discordgo"
 	"github.com/mrbentarikau/pagst/web"
+	"github.com/mrbentarikau/pagst/youtube/models"
+
+	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+
 	"goji.io"
 	"goji.io/pat"
 )
@@ -98,26 +102,33 @@ const DefaultAnnounceMessage = `**{{.ChannelName}}** just uploaded a new video!
 
 func (p *Plugin) HandleYoutube(w http.ResponseWriter, r *http.Request) (web.TemplateData, error) {
 	ctx := r.Context()
-	ag, templateData := web.GetBaseCPContextData(ctx)
+	activeGuild, templateData := web.GetBaseCPContextData(ctx)
 
-	var subs []*ChannelSubscription
-	err := common.GORM.Where("guild_id = ?", ag.ID).Order("id desc").Find(&subs).Error
-	if err != nil && err != gorm.ErrRecordNotFound {
+	subs, err := models.YoutubeChannelSubscriptions(
+		models.YoutubeChannelSubscriptionWhere.GuildID.EQ(discordgo.StrID(activeGuild.ID)),
+		qm.OrderBy("id DESC"),
+	).AllG(ctx)
+	if err != nil && err != sql.ErrNoRows {
 		return templateData, err
 	}
 
 	templateData["YoutubeAnnounceMsg"] = DefaultAnnounceMessage
 	templateData["AnnounceEnabled"] = false
 
-	var announceMsg YoutubeAnnouncements
-	err = common.GORM.Model(&YoutubeAnnouncements{}).Where("guild_id = ?", ag.ID).First(&announceMsg).Error
-	if err == nil && announceMsg.Announcement != "" {
-		templateData["YoutubeAnnounceMsg"] = announceMsg.Announcement
-		templateData["AnnounceEnabled"] = announceMsg.Enabled
+	announcement, err := models.FindYoutubeAnnouncementG(ctx, activeGuild.ID)
+	if err != nil {
+		announcement = &models.YoutubeAnnouncement{
+			GuildID:      activeGuild.ID,
+			Announcement: "{{.ChannelName}} published a new video! {{.URL}}",
+			Enabled:      false,
+		}
+	} else {
+		templateData["YoutubeAnnounceMsg"] = announcement.Announcement
+		templateData["AnnounceEnabled"] = announcement.Enabled
 	}
 
 	templateData["Subs"] = subs
-	templateData["VisibleURL"] = "/manage/" + discordgo.StrID(ag.ID) + "/youtube"
+	templateData["VisibleURL"] = "/manage/" + discordgo.StrID(activeGuild.ID) + "/youtube"
 
 	return templateData, nil
 }
@@ -133,11 +144,10 @@ func (p *Plugin) HandleNew(w http.ResponseWriter, r *http.Request) (web.Template
 	ctx := r.Context()
 	activeGuild, templateData := web.GetBaseCPContextData(ctx)
 
-	// limit it to max 25 feeds
-	var count int
-	common.GORM.Model(&ChannelSubscription{}).Where("guild_id = ?", activeGuild.ID).Count(&count)
-
-	if count >= MaxFeedsForContext(ctx) {
+	count, _ := models.YoutubeChannelSubscriptions(
+		models.YoutubeChannelSubscriptionWhere.GuildID.EQ(discordgo.StrID(activeGuild.ID)),
+	).CountG(ctx)
+	if int(count) >= MaxFeedsForContext(ctx) {
 		return templateData.AddAlerts(web.ErrorAlert(fmt.Sprintf("Max %d YouTube feeds allowed (%d for premium servers)", GuildMaxFeeds, GuildMaxFeedsPremium))), nil
 	}
 
@@ -204,11 +214,13 @@ func BaseEditHandler(inner web.ControllerHandlerFunc) web.ControllerHandlerFunc 
 		ctx := r.Context()
 		activeGuild, templateData := web.GetBaseCPContextData(ctx)
 
-		id := pat.Param(r, "item")
+		id, err := strconv.Atoi(pat.Param(r, "item"))
+		if err != nil {
+			return templateData.AddAlerts(web.ErrorAlert("Invalid feed ID")), err
+		}
 
 		// Get the actual watch item from the config
-		var sub ChannelSubscription
-		err := common.GORM.Model(&ChannelSubscription{}).Where("id = ?", id).First(&sub).Error
+		sub, err := models.FindYoutubeChannelSubscriptionG(ctx, id)
 		if err != nil {
 			return templateData.AddAlerts(web.ErrorAlert("Failed retrieving that feed item")), err
 		}
@@ -217,7 +229,7 @@ func BaseEditHandler(inner web.ControllerHandlerFunc) web.ControllerHandlerFunc 
 			return templateData.AddAlerts(web.ErrorAlert("This appears to belong somewhere else...")), nil
 		}
 
-		ctx = context.WithValue(ctx, ContextKeySub, &sub)
+		ctx = context.WithValue(ctx, ContextKeySub, sub)
 
 		return inner(w, r.WithContext(ctx))
 	}
@@ -225,15 +237,17 @@ func BaseEditHandler(inner web.ControllerHandlerFunc) web.ControllerHandlerFunc 
 
 func (p *Plugin) HandleAnnouncement(w http.ResponseWriter, r *http.Request) (templateData web.TemplateData, err error) {
 	ctx := r.Context()
-	guild, templateData := web.GetBaseCPContextData(ctx)
-	data := ctx.Value(common.ContextKeyParsedForm).(*Form)
+	activeGuild, templateData := web.GetBaseCPContextData(ctx)
+	form := ctx.Value(common.ContextKeyParsedForm).(*Form)
 
-	var announceMsg YoutubeAnnouncements
-	announceMsg.GuildID = guild.ID
-	announceMsg.Announcement = data.YoutubeAnnounceMsg
-	announceMsg.Enabled = data.AnnounceEnabled
-
-	err = common.GORM.Model(&YoutubeAnnouncements{}).Where("guild_id = ?", guild.ID).Save(&announceMsg).Error
+	announcement := &models.YoutubeAnnouncement{
+		GuildID:      activeGuild.ID,
+		Announcement: form.YoutubeAnnounceMsg,
+		Enabled:      form.AnnounceEnabled,
+	}
+	err = announcement.UpsertG(ctx, true, []string{"guild_id"},
+		boil.Whitelist("announcement", "enabled"), /* updateColumns */
+		boil.Whitelist("guild_id", "announcement", "enabled") /* insertColumns */)
 	if err != nil {
 		return templateData, err
 	}
@@ -245,54 +259,49 @@ func (p *Plugin) HandleAnnouncement(w http.ResponseWriter, r *http.Request) (tem
 
 func (p *Plugin) HandleEdit(w http.ResponseWriter, r *http.Request) (templateData web.TemplateData, err error) {
 	ctx := r.Context()
-	_, templateData = web.GetBaseCPContextData(ctx)
+	activeGuild, templateData := web.GetBaseCPContextData(ctx)
 
-	sub := ctx.Value(ContextKeySub).(*ChannelSubscription)
-	data := ctx.Value(common.ContextKeyParsedForm).(*Form)
+	updatedSub := ctx.Value(ContextKeySub).(*models.YoutubeChannelSubscription)
+	form := ctx.Value(common.ContextKeyParsedForm).(*Form)
 
-	sub.MentionEveryone = data.MentionEveryone
-	sub.PublishLivestream = data.PublishLivestream
-	sub.PublishShorts = sql.NullBool{Valid: true, Bool: data.PublishShorts}
-	sub.ChannelID = discordgo.StrID(data.DiscordChannel)
-	sub.MentionRole = discordgo.StrID(data.MentionRole)
-	if data.DiscordChannel == 0 {
-		sub.Enabled = sql.NullBool{Bool: false, Valid: false}
-	} else {
-		sub.Enabled = sql.NullBool{Valid: true, Bool: data.Enabled}
-	}
+	updatedSub.MentionEveryone = form.MentionEveryone
+	updatedSub.MentionRole = discordgo.StrID(form.MentionRole)
+	updatedSub.PublishLivestream = form.PublishLivestream
+	updatedSub.PublishShorts = form.PublishShorts
+	updatedSub.ChannelID = discordgo.StrID(form.DiscordChannel)
+	updatedSub.Enabled = form.Enabled
 
-	count := 0
-	common.GORM.Model(&ChannelSubscription{}).Where("guild_id = ? and enabled = ?", sub.GuildID, sql.NullBool{Bool: true, Valid: true}).Count(&count)
-	if count >= MaxFeedsForContext(ctx) {
-		var currFeed ChannelSubscription
-		err := common.GORM.Model(&ChannelSubscription{}).Where("id = ?", sub.ID).First(&currFeed)
+	numEnabled, _ := models.YoutubeChannelSubscriptions(
+		models.YoutubeChannelSubscriptionWhere.GuildID.EQ(discordgo.StrID(activeGuild.ID)),
+		models.YoutubeChannelSubscriptionWhere.Enabled.EQ(true),
+	).CountG(ctx)
+	if int(numEnabled) >= MaxFeedsForContext(ctx) {
+		curSub, err := models.FindYoutubeChannelSubscriptionG(ctx, updatedSub.ID)
 		if err != nil {
-			logger.WithError(err.Error).Errorf("Failed getting feed %d", sub.ID)
+			logger.WithError(err).Errorf("Failed getting feed %d", updatedSub.ID)
 		}
-		if !currFeed.Enabled.Bool && sub.Enabled.Bool {
-			return templateData.AddAlerts(web.ErrorAlert(fmt.Sprintf("Max %d enabled YouTube feeds allowed (%d for premium servers)", GuildMaxFeeds, GuildMaxFeedsPremium))), nil
+		if !curSub.Enabled && updatedSub.Enabled {
+			return templateData.AddAlerts(web.ErrorAlert(fmt.Sprintf("Max %d enabled youtube feeds allowed (%d for premium servers)", GuildMaxFeeds, GuildMaxFeedsPremium))), nil
 		}
 	}
 
-	err = common.GORM.Save(sub).Error
+	_, err = updatedSub.UpdateG(ctx, boil.Infer())
 	if err == nil {
-		go cplogs.RetryAddEntry(web.NewLogEntryFromContext(r.Context(), panelLogKeyUpdatedFeed, &cplogs.Param{Type: cplogs.ParamTypeString, Value: sub.YoutubeChannelName}))
+		go cplogs.RetryAddEntry(web.NewLogEntryFromContext(r.Context(), panelLogKeyUpdatedFeed, &cplogs.Param{Type: cplogs.ParamTypeString, Value: updatedSub.YoutubeChannelName}))
 	}
-	return
+	return templateData, err
 }
 
 func (p *Plugin) HandleRemove(w http.ResponseWriter, r *http.Request) (templateData web.TemplateData, err error) {
 	ctx := r.Context()
 	_, templateData = web.GetBaseCPContextData(ctx)
 
-	sub := ctx.Value(ContextKeySub).(*ChannelSubscription)
-	err = common.GORM.Delete(sub).Error
+	sub := ctx.Value(ContextKeySub).(*models.YoutubeChannelSubscription)
+	_, err = sub.DeleteG(ctx)
 	if err != nil {
 		return
 	}
-
 	go cplogs.RetryAddEntry(web.NewLogEntryFromContext(r.Context(), panelLogKeyRemovedFeed, &cplogs.Param{Type: cplogs.ParamTypeString, Value: sub.YoutubeChannelName}))
-
 	p.MaybeRemoveChannelWatch(sub.YoutubeChannelID)
 	return
 }
@@ -384,13 +393,14 @@ func (p *Plugin) ValidateSubscription(w http.ResponseWriter, r *http.Request, qu
 var _ web.PluginWithServerHomeWidget = (*Plugin)(nil)
 
 func (p *Plugin) LoadServerHomeWidget(w http.ResponseWriter, r *http.Request) (web.TemplateData, error) {
-	ag, templateData := web.GetBaseCPContextData(r.Context())
+	activeGuild, templateData := web.GetBaseCPContextData(r.Context())
 
 	templateData["WidgetTitle"] = "Youtube feeds"
 	templateData["SettingsPath"] = "/youtube"
 
-	var numFeeds int64
-	result := common.GORM.Model(&ChannelSubscription{}).Where("guild_id = ?", ag.ID).Count(&numFeeds)
+	numFeeds, err := models.YoutubeChannelSubscriptions(
+		models.YoutubeChannelSubscriptionWhere.GuildID.EQ(discordgo.StrID(activeGuild.ID)),
+	).CountG(r.Context())
 	if numFeeds > 0 {
 		templateData["WidgetEnabled"] = true
 	} else {
@@ -400,5 +410,5 @@ func (p *Plugin) LoadServerHomeWidget(w http.ResponseWriter, r *http.Request) (w
 	const format = `<p>Active Youtube feeds: <code>%d</code></p>`
 	templateData["WidgetBody"] = template.HTML(fmt.Sprintf(format, numFeeds))
 
-	return templateData, result.Error
+	return templateData, err
 }

@@ -169,7 +169,7 @@
                     <tbody>
                         {{range $k,$v := .Dot.Subs}}
                         {{ $k = add $k 1}}
-                        <tr class="{{if not $v.Enabled.Bool}}feed-item-disabled{{end}}">
+                        <tr class="{{if not $v.Enabled}}feed-item-disabled{{end}}">
                             <td>
                                 {{printf "%03d" $k}}
                             </td>
@@ -192,13 +192,13 @@
                                 {{checkbox "MentionEveryone" (joinStr "" "mention-everyone-" $v.ID) `@everyone` $v.MentionEveryone (joinStr "" `form="sub-item-` $v.ID `"`)}}
                             </td>
                             <td>
-                                {{checkbox "PublishShorts" (joinStr "" "publish-shorts-" $v.ID) `Publish Shorts` $v.PublishShorts.Bool (joinStr "" `form="sub-item-` $v.ID `"`)}}
+                                {{checkbox "PublishShorts" (joinStr "" "publish-shorts-" $v.ID) `Publish Shorts` $v.PublishShorts (joinStr "" `form="sub-item-` $v.ID `"`)}}
                             </td>
                             <td>
                                 {{checkbox "PublishLivestream" (joinStr "" "publish-livestream-" $v.ID) `Publish Lives` $v.PublishLivestream (joinStr "" `form="sub-item-` $v.ID `"`)}}
                             </td>
                             <td>
-                                {{checkbox "Enabled" (joinStr "" "feed-enabled-" $v.ID) `Feed enabled` $v.Enabled.Bool (joinStr "" `form="sub-item-` $v.ID `"`)}}
+                                {{checkbox "Enabled" (joinStr "" "feed-enabled-" $v.ID) `Feed enabled` $v.Enabled (joinStr "" `form="sub-item-` $v.ID `"`)}}
                             </td>
                             {{if $dot.WriteAccess}}
                             <td>

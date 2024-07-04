@@ -20,12 +20,12 @@ import (
 	"github.com/mrbentarikau/pagst/feeds"
 	"github.com/mrbentarikau/pagst/lib/discordgo"
 	"github.com/mrbentarikau/pagst/web/discorddata"
+	"github.com/mrbentarikau/pagst/youtube/models"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 
 	"github.com/mediocregopher/radix/v3"
 	"github.com/prometheus/client_golang/prometheus"
 
-	// "golang.org/x/text/cases"
-	// "golang.org/x/text/language"
 	"google.golang.org/api/option"
 	"google.golang.org/api/youtube/v3"
 )
@@ -196,7 +196,7 @@ func (p *Plugin) syncWebSubs() {
 	}))
 }
 
-func (p *Plugin) sendNewVidMessage(sub *ChannelSubscription, ytVideo *youtube.Video) {
+func (p *Plugin) sendNewVidMessage(sub *models.YoutubeChannelSubscription, ytVideo *youtube.Video) {
 	var content string
 
 	mentionRole := sub.MentionRole
@@ -250,18 +250,23 @@ func (p *Plugin) sendNewVidMessage(sub *ChannelSubscription, ytVideo *youtube.Vi
 	ctx.Data["VideoDurationSeconds"] = int(math.Round(videoDuration.Seconds()))
 	ctx.Data["VideoThumbnail"] = fmt.Sprintf("https://img.youtube.com/vi/%s/maxresdefault.jpg", ytVideo.Id)
 
-	var dbAnnounceMsg YoutubeAnnouncements
 	var announceMsg AnnouncementMessage
 
-	err = common.GORM.Model(&YoutubeAnnouncements{}).Where("guild_id = ?", parsedGuild).First(&dbAnnounceMsg).Error
-	if err == nil {
-		announceMsg.Enabled = dbAnnounceMsg.Enabled
-		announceMsg.AnnounceMsg = dbAnnounceMsg.Announcement
+	announcement, err := models.FindYoutubeAnnouncementG(context.Background(), parsedGuild)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			logger.WithError(err).Debugf("Custom announcement doesn't exist for guild_id %d", parsedGuild)
+		} else {
+			logger.WithError(err).Errorf("Failed fetching custom announcement for guild_id %d", parsedGuild)
+		}
+	} else {
+		announceMsg.Enabled = announcement.Enabled
+		announceMsg.AnnounceMsg = announcement.Announcement
 	}
 
 	var publishAnnouncement bool
 
-	if announceMsg.Enabled {
+	if announceMsg.Enabled && len(announceMsg.AnnounceMsg) > 0 {
 		content, err = ctx.Execute(announceMsg.AnnounceMsg)
 		if err != nil {
 			logger.WithError(err).WithField("guild", parsedGuild).Warn("Failed executing template on sendNewVidMessage")
@@ -335,9 +340,10 @@ var (
 	ErrIDNotFound = errors.New("ID not found")
 )
 
-func SubsForChannel(channel string) (result []*ChannelSubscription, err error) {
-	err = common.GORM.Where("youtube_channel_id = ?", channel).Find(&result).Error
-	return
+func SubsForChannel(channel string) (models.YoutubeChannelSubscriptionSlice, error) {
+	return models.YoutubeChannelSubscriptions(
+		models.YoutubeChannelSubscriptionWhere.YoutubeChannelID.EQ(channel),
+	).AllG(context.Background())
 }
 
 var (
@@ -477,21 +483,16 @@ func (p *Plugin) parseYtVideoID(parse string) (id ytChannelID, err error) {
 	}
 }
 
-func (p *Plugin) AddFeed(guildID, discordChannelID int64, ytChannel *youtube.Channel, mentionEveryone bool, mentionRole int64, publishShorts bool, publishLivestream bool) (*ChannelSubscription, error) {
+func (p *Plugin) AddFeed(guildID, discordChannelID int64, ytChannel *youtube.Channel, mentionEveryone bool, mentionRole int64, publishShorts bool, publishLivestream bool) (*models.YoutubeChannelSubscription, error) {
 
-	feedEnabled := true
-	if discordChannelID == 0 {
-		feedEnabled = false
-	}
-
-	sub := &ChannelSubscription{
+	sub := &models.YoutubeChannelSubscription{
 		GuildID:           discordgo.StrID(guildID),
 		ChannelID:         discordgo.StrID(discordChannelID),
 		MentionEveryone:   mentionEveryone,
 		MentionRole:       discordgo.StrID(mentionRole),
-		PublishShorts:     sql.NullBool{Valid: true, Bool: publishShorts},
 		PublishLivestream: publishLivestream,
-		Enabled:           sql.NullBool{Valid: true, Bool: feedEnabled},
+		PublishShorts:     publishShorts,
+		Enabled:           true,
 	}
 
 	sub.YoutubeChannelName = ytChannel.Snippet.Title
@@ -503,7 +504,7 @@ func (p *Plugin) AddFeed(guildID, discordChannelID int64, ytChannel *youtube.Cha
 	}
 	defer common.UnlockRedisKey(RedisChannelsLockKey)
 
-	err = common.GORM.Create(&sub).Error
+	err = sub.InsertG(context.Background(), boil.Infer())
 	if err != nil {
 		return nil, err
 	}
@@ -520,8 +521,9 @@ func (p *Plugin) MaybeRemoveChannelWatch(channel string) {
 	}
 	defer common.UnlockRedisKey(RedisChannelsLockKey)
 
-	var count int
-	err = common.GORM.Model(&ChannelSubscription{}).Where("youtube_channel_id = ?", channel).Count(&count).Error
+	count, err := models.YoutubeChannelSubscriptions(
+		models.YoutubeChannelSubscriptionWhere.YoutubeChannelID.EQ(channel),
+	).CountG(context.Background())
 	if err != nil || count > 0 {
 		if err != nil {
 			logger.WithError(err).WithField("yt_channel", channel).Error("Failed getting sub count")
@@ -636,7 +638,7 @@ func (p *Plugin) CheckVideo(parsedVideo XMLFeed) error {
 	return p.postVideo(subs, parsedPublishedTime, item, channelID)
 }
 
-func (p *Plugin) postVideo(subs []*ChannelSubscription, publishedAt time.Time, video *youtube.Video, channelID string) error {
+func (p *Plugin) postVideo(subs models.YoutubeChannelSubscriptionSlice, publishedAt time.Time, video *youtube.Video, channelID string) error {
 	// add video to list of published videos
 	err := common.RedisPool.Do(radix.FlatCmd(nil, "ZADD", RedisKeyPublishedVideoList, publishedAt.Unix(), video.Id))
 	if err != nil {
@@ -651,13 +653,13 @@ func (p *Plugin) postVideo(subs []*ChannelSubscription, publishedAt time.Time, v
 	isShorts := false
 
 	for _, sub := range subs {
-		if sub.Enabled.Bool {
+		if sub.Enabled {
 			if isLivestream && !sub.PublishLivestream {
 				continue
 			}
 
 			//no need to check for shorts for a livestream
-			if !isLivestream && !sub.PublishShorts.Bool {
+			if !isLivestream && !sub.PublishShorts {
 				//check if a video is a short only when seeing the first shorts disabled subscription
 				//and cache in "isShorts" to reduce requests to YouTube to check for shorts.
 				if !isShortsCheckDone {
@@ -677,9 +679,10 @@ func (p *Plugin) postVideo(subs []*ChannelSubscription, publishedAt time.Time, v
 	return nil
 }
 
-func (p *Plugin) getRemoveSubs(channelID string) ([]*ChannelSubscription, error) {
-	var subs []*ChannelSubscription
-	err := common.GORM.Where("youtube_channel_id = ?", channelID).Find(&subs).Error
+func (p *Plugin) getRemoveSubs(channelID string) (models.YoutubeChannelSubscriptionSlice, error) {
+	subs, err := models.YoutubeChannelSubscriptions(
+		models.YoutubeChannelSubscriptionWhere.YoutubeChannelID.EQ(channelID),
+	).AllG(context.Background())
 	if err != nil {
 		return subs, err
 	}

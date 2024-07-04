@@ -2,7 +2,6 @@ package youtube
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"io"
 	"net/http"
@@ -12,9 +11,14 @@ import (
 	"github.com/mrbentarikau/pagst/common"
 	"github.com/mrbentarikau/pagst/common/config"
 	"github.com/mrbentarikau/pagst/common/mqueue"
+	"github.com/mrbentarikau/pagst/lib/discordgo"
 	"github.com/mrbentarikau/pagst/premium"
+	"github.com/mrbentarikau/pagst/youtube/models"
+
 	"google.golang.org/api/youtube/v3"
 )
+
+//go:generate sqlboiler --no-hooks psql
 
 const (
 	GuildMaxFeeds        = 50
@@ -53,8 +57,6 @@ func (p *Plugin) PluginInfo() *common.PluginInfo {
 func RegisterPlugin() {
 	p := &Plugin{}
 
-	common.GORM.AutoMigrate(ChannelSubscription{}, YoutubeAnnouncements{})
-
 	mqueue.RegisterSource("youtube", p)
 
 	err := p.SetupClient()
@@ -63,34 +65,13 @@ func RegisterPlugin() {
 		return
 	}
 	common.RegisterPlugin(p)
+
+	common.InitSchemas("youtube", DBSchemas...)
 }
 
 type AnnouncementMessage struct {
 	Enabled     bool
 	AnnounceMsg string `json:"yt_announce_msg" valid:"template,2000"`
-}
-
-type ChannelSubscription struct {
-	common.SmallModel
-	GuildID            string
-	ChannelID          string
-	YoutubeChannelID   string
-	YoutubeChannelName string
-	MentionEveryone    bool
-	MentionRole        string
-	PublishShorts      sql.NullBool `gorm:"default:true"`
-	PublishLivestream  bool
-	Enabled            sql.NullBool `sql:"DEFAULT:true"`
-}
-
-func (c *ChannelSubscription) TableName() string {
-	return "youtube_channel_subscriptions"
-}
-
-type YoutubeAnnouncements struct {
-	GuildID      int64 `gorm:"primary_key" sql:"AUTO_INCREMENT:false"`
-	Announcement string
-	Enabled      bool `sql:"DEFAULT:false"`
 }
 
 var _ mqueue.PluginWithSourceDisabler = (*Plugin)(nil)
@@ -101,24 +82,28 @@ func (p *Plugin) DisableFeed(elem *mqueue.QueuedElement, err error) {
 }
 
 func (p *Plugin) DisableChannelFeeds(channelID int64) error {
-	err := common.GORM.Model(&ChannelSubscription{}).Where("channel_id = ?", channelID).Updates(ChannelSubscription{Enabled: sql.NullBool{Bool: false, Valid: false}}).Error
+	numDisabled, err := models.YoutubeChannelSubscriptions(
+		models.YoutubeChannelSubscriptionWhere.ChannelID.EQ(discordgo.StrID(channelID)),
+	).UpdateAllG(context.Background(), models.M{"enabled": false})
 	if err != nil {
-		logger.WithError(err).Errorf("failed removing non-existant channel for channel_id %d", channelID)
+		logger.WithError(err).WithField("channel", channelID).Error("failed removing feeds in nonexistent channel")
 		return err
-	} else {
-		logger.WithField("channel", channelID).Info("Disabled youtube feed to non-existant channel")
 	}
+
+	logger.WithField("channel", channelID).Infof("disabled %d feeds in nonexistent channel", numDisabled)
 	return nil
 }
 
 func (p *Plugin) DisableGuildFeeds(guildID int64) error {
-	err := common.GORM.Model(&ChannelSubscription{}).Where("guild_id = ?", guildID).Updates(ChannelSubscription{Enabled: sql.NullBool{Bool: false, Valid: false}}).Error
+	numDisabled, err := models.YoutubeChannelSubscriptions(
+		models.YoutubeChannelSubscriptionWhere.GuildID.EQ(discordgo.StrID(guildID)),
+	).UpdateAllG(context.Background(), models.M{"enabled": false})
 	if err != nil {
-		logger.WithError(err).Errorf("failed removing non-existant guild for guild_id %d", guildID)
+		logger.WithError(err).WithField("guild", guildID).Error("failed removing feeds in nonexistent guild")
 		return err
-	} else {
-		logger.WithField("guild", guildID).Info("Disabled youtube feed to non-existant guild")
 	}
+
+	logger.WithField("guild", guildID).Infof("disabled %d feeds in nonexistent guild", numDisabled)
 	return nil
 }
 
@@ -140,7 +125,7 @@ func (p *Plugin) WebSubSubscribe(ytChannelID string) error {
 
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		body, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("go bad status code: %d (%s) %s", resp.StatusCode, resp.Status, string(body))
+		return fmt.Errorf("bad status code: %d (%s) %s", resp.StatusCode, resp.Status, string(body))
 	}
 
 	logger.Info("Websub: Subscribed to channel ", ytChannelID)
@@ -163,10 +148,10 @@ func (p *Plugin) WebSubUnsubscribe(ytChannelID string) error {
 	}
 
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		return fmt.Errorf("go bad status code: %d (%s)", resp.StatusCode, resp.Status)
+		return fmt.Errorf("bad status code: %d (%s)", resp.StatusCode, resp.Status)
 	}
 
-	logger.Info("Websub: UnSubscribed to channel ", ytChannelID)
+	logger.Info("Websub: Unsubscribed from channel ", ytChannelID)
 
 	return nil
 }
