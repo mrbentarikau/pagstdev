@@ -1,18 +1,26 @@
 package notifications
 
 import (
+	"context"
+	"database/sql"
 	"fmt"
 	"math/rand"
 	"strings"
+	"time"
 
 	"emperror.dev/errors"
 	"github.com/mrbentarikau/pagst/analytics"
 	"github.com/mrbentarikau/pagst/bot"
 	"github.com/mrbentarikau/pagst/bot/eventsystem"
 	"github.com/mrbentarikau/pagst/common"
+	"github.com/mrbentarikau/pagst/common/pubsub"
 	"github.com/mrbentarikau/pagst/common/templates"
 	"github.com/mrbentarikau/pagst/lib/discordgo"
 	"github.com/mrbentarikau/pagst/lib/dstate"
+	"github.com/mrbentarikau/pagst/notifications/models"
+
+	"github.com/karlseguin/ccache"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 var _ bot.BotInitHandler = (*Plugin)(nil)
@@ -21,12 +29,81 @@ func (p *Plugin) BotInit() {
 	eventsystem.AddHandlerAsyncLast(p, HandleGuildMemberAdd, eventsystem.EventGuildMemberAdd)
 	eventsystem.AddHandlerAsyncLast(p, HandleGuildMemberRemove, eventsystem.EventGuildMemberRemove)
 	eventsystem.AddHandlerFirst(p, HandleChannelUpdate, eventsystem.EventChannelUpdate)
+
+	pubsub.AddHandler("invalidate_notifications_config_cache", handleInvalidateConfigCache, nil)
+}
+
+var configCache = ccache.New(ccache.Configure().MaxSize(15000))
+
+func SaveConfig(config *Config) error {
+	err := config.ToModel().UpsertG(context.Background(), true, []string{"guild_id"}, boil.Infer(), boil.Infer())
+	if err != nil {
+		return err
+	}
+	pubsub.Publish("invalidate_notifications_config_cache", config.GuildID, nil)
+	return nil
+}
+
+func GetCachedConfigOrDefault(guildID int64) (*Config, error) {
+	const cacheDuration = 10 * time.Minute
+
+	item, err := configCache.Fetch(cacheKey(guildID), cacheDuration, func() (interface{}, error) {
+		return GetConfig(guildID)
+	})
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return &Config{
+				JoinServerMsgs: []string{"<@{{.User.ID}}> Joined!"},
+				LeaveMsgs:      []string{"**{{.User.Username}}** Left... :'("},
+			}, nil
+		}
+		return nil, err
+	}
+	return item.Value().(*Config), nil
+}
+
+func handleInvalidateConfigCache(evt *pubsub.Event) {
+	configCache.Delete(cacheKey(evt.TargetGuildInt))
+}
+
+func cacheKey(guildID int64) string {
+	return discordgo.StrID(guildID)
+}
+
+func GetConfig(guildID int64) (*Config, error) {
+	const maxRetries = 1000
+
+	currentRetries := 0
+	for {
+		conf, err := models.FindGeneralNotificationConfigG(context.Background(), guildID)
+		if err == nil {
+			if currentRetries > 1 {
+				logger.Info("Fetched config after ", currentRetries, " retries")
+			}
+			return configFromModel(conf), nil
+		}
+
+		if err == sql.ErrNoRows {
+			return nil, err
+		}
+
+		if strings.Contains(err.Error(), "sorry, too many clients already") {
+			time.Sleep(time.Millisecond * 10 * time.Duration(rand.Intn(10)))
+			currentRetries++
+			if currentRetries > maxRetries {
+				return nil, err
+			}
+			continue
+		}
+
+		return nil, err
+	}
 }
 
 func HandleGuildMemberAdd(evtData *eventsystem.EventData) (retry bool, err error) {
 	evt := evtData.GuildMemberAdd()
 
-	config, err := GetConfig(evt.GuildID)
+	config, err := GetCachedConfigOrDefault(evt.GuildID)
 	if err != nil {
 		return true, errors.WithStackIf(err)
 	}
@@ -69,7 +146,7 @@ func HandleGuildMemberAdd(evtData *eventsystem.EventData) (retry bool, err error
 	}
 
 	if config.JoinServerEnabled && len(config.JoinServerMsgs) > 0 {
-		channel := gs.GetChannel(config.JoinServerChannelInt())
+		channel := gs.GetChannel(config.JoinServerChannel)
 		if channel == nil {
 			return
 		}
@@ -88,7 +165,7 @@ func HandleGuildMemberAdd(evtData *eventsystem.EventData) (retry bool, err error
 func HandleGuildMemberRemove(evt *eventsystem.EventData) (retry bool, err error) {
 	memberRemove := evt.GuildMemberRemove()
 
-	config, err := GetConfig(memberRemove.GuildID)
+	config, err := GetCachedConfigOrDefault(memberRemove.GuildID)
 	if err != nil {
 		return true, errors.WithStackIf(err)
 	}
@@ -102,7 +179,7 @@ func HandleGuildMemberRemove(evt *eventsystem.EventData) (retry bool, err error)
 		return
 	}
 
-	channel := gs.GetChannel(config.LeaveChannelInt())
+	channel := gs.GetChannel(config.LeaveChannel)
 	if channel == nil {
 		return
 	}
@@ -230,7 +307,7 @@ func HandleChannelUpdate(evt *eventsystem.EventData) (retry bool, err error) {
 		return
 	}
 
-	config, err := GetConfig(cu.GuildID)
+	config, err := GetCachedConfigOrDefault(cu.GuildID)
 	if err != nil {
 		return true, errors.WithStackIf(err)
 	}
@@ -240,8 +317,8 @@ func HandleChannelUpdate(evt *eventsystem.EventData) (retry bool, err error) {
 	}
 
 	topicChannel := cu.Channel.ID
-	if config.TopicChannelInt() != 0 {
-		c := gs.GetChannel(config.TopicChannelInt())
+	if config.TopicChannel != 0 {
+		c := gs.GetChannel(config.TopicChannel)
 		if c != nil {
 			topicChannel = c.ID
 		}

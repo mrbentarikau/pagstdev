@@ -173,3 +173,7 @@ func (r *retryableLogger) Printf(format string, args ...interface{}) {
 func StrID(id int64) string {
 	return strconv.FormatInt(id, 10)
 }
+
+func ParseID(s string) (int64, error) {
+	return strconv.ParseInt(s, 10, 64)
+}

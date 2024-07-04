@@ -7,10 +7,9 @@ import (
 	"net/http"
 
 	"github.com/mrbentarikau/pagst/common"
-	"github.com/mrbentarikau/pagst/common/configstore"
 	"github.com/mrbentarikau/pagst/common/cplogs"
-	"github.com/mrbentarikau/pagst/web"
 	"github.com/mrbentarikau/pagst/lib/discordgo"
+	"github.com/mrbentarikau/pagst/web"
 	"goji.io/pat"
 )
 
@@ -45,7 +44,7 @@ func HandleNotificationsGet(w http.ResponseWriter, r *http.Request) interface{} 
 	if ok {
 		templateData["NotifyConfig"] = formConfig
 	} else {
-		conf, err := GetConfig(activeGuild.ID)
+		conf, err := GetCachedConfigOrDefault(activeGuild.ID)
 		if err != nil {
 			web.CtxLogger(r.Context()).WithError(err).Error("failed retrieving config")
 		}
@@ -65,7 +64,7 @@ func HandleNotificationsPost(w http.ResponseWriter, r *http.Request) (web.Templa
 
 	newConfig.GuildID = activeGuild.ID
 
-	err := configstore.SQL.SetGuildConfig(ctx, newConfig)
+	err := SaveConfig(newConfig)
 	if err != nil {
 		return templateData, nil
 	}
@@ -83,7 +82,7 @@ func (p *Plugin) LoadServerHomeWidget(w http.ResponseWriter, r *http.Request) (w
 	templateData["WidgetTitle"] = "General notifications"
 	templateData["SettingsPath"] = "/notifications/general"
 
-	config, err := GetConfig(ag.ID)
+	config, err := GetCachedConfigOrDefault(ag.ID)
 	if err != nil {
 		return templateData, err
 	}
