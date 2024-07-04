@@ -2750,6 +2750,19 @@ func (s *Session) WebhookMessage(webhookID int64, token string, messageID int64,
 	return
 }
 
+func (s *Session) WebhookMessageMe(webhookID int64, token, messageID string, options ...RequestOption) (message *Message, err error) {
+	uri := EndpointWebhookMessage(webhookID, token, messageID)
+
+	body, err := s.RequestWithBucketID("GET", uri, nil, nil, EndpointWebhookToken(0, ""), options...)
+	if err != nil {
+		return
+	}
+
+	err = Unmarshal(body, &message)
+
+	return
+}
+
 // WebhookMessageEdit edits a webhook message and returns a new one.
 // webhookID : The ID of a webhook
 // token     : The auth token for the webhook
@@ -3784,6 +3797,74 @@ func (s *Session) EditFollowupMessage(applicationID int64, token string, message
 func (s *Session) DeleteFollowupMessage(applicationID int64, token string, messageID int64, options ...RequestOption) (err error) {
 	_, err = s.RequestWithBucketID("DELETE", EndpointInteractionFollowupMessage(applicationID, token, messageID), nil, nil, EndpointInteractionFollowupMessage(0, "", 0), options...)
 	return
+}
+
+// from bwmarrin
+
+// InteractionRespond creates the response to an interaction.
+// interaction : Interaction instance.
+// resp        : Response message data.
+func (s *Session) InteractionRespond(interaction *Interaction, resp *InteractionResponse, options ...RequestOption) error {
+	endpoint := EndpointInteractionResponse(interaction.ID, interaction.Token)
+
+	if resp.Data != nil && len(resp.Data.Files) > 0 {
+		contentType, body, err := MultipartBodyWithJSON(resp, resp.Data.Files)
+		if err != nil {
+			return err
+		}
+
+		_, err = s.request("POST", endpoint, contentType, body, nil, endpoint, options...)
+		return err
+	}
+
+	_, err := s.RequestWithBucketID("POST", endpoint, *resp, nil, endpoint, options...)
+	return err
+}
+
+// InteractionResponse gets the response to an interaction.
+// interaction : Interaction instance.
+func (s *Session) InteractionResponse(interaction *Interaction, options ...RequestOption) (*Message, error) {
+	return s.WebhookMessageMe(interaction.ApplicationID, interaction.Token, "@original", options...)
+}
+
+// InteractionResponseEdit edits the response to an interaction.
+// interaction : Interaction instance.
+// newresp     : Updated response message data.
+func (s *Session) InteractionResponseEdit(interaction *Interaction, newresp *WebhookEdit, options ...RequestOption) (*Message, error) {
+	return s.WebhookMessageEdit(interaction.ApplicationID, interaction.Token, "@original", newresp, options...)
+}
+
+// InteractionResponseDelete deletes the response to an interaction.
+// interaction : Interaction instance.
+func (s *Session) InteractionResponseDelete(interaction *Interaction, options ...RequestOption) error {
+	endpoint := EndpointInteractionResponseActions(interaction.ApplicationID, interaction.Token)
+
+	_, err := s.RequestWithBucketID("DELETE", endpoint, nil, nil, endpoint, options...)
+
+	return err
+}
+
+// FollowupMessageCreate creates the followup message for an interaction.
+// interaction : Interaction instance.
+// wait        : Waits for server confirmation of message send and ensures that the return struct is populated (it is nil otherwise)
+// data        : Data of the message to send.
+func (s *Session) FollowupMessageCreateBW(interaction *Interaction, wait bool, data *WebhookParams, options ...RequestOption) error {
+	return s.WebhookExecute(interaction.ApplicationID, interaction.Token, wait, data, options...)
+}
+
+// FollowupMessageEdit edits a followup message of an interaction.
+// interaction : Interaction instance.
+// messageID   : The followup message ID.
+// data        : Data to update the message
+func (s *Session) FollowupMessageEdit(interaction *Interaction, messageID string, data *WebhookEdit, options ...RequestOption) (*Message, error) {
+	return s.WebhookMessageEdit(interaction.ApplicationID, interaction.Token, messageID, data, options...)
+}
+
+// FollowupMessageDelete deletes a followup message of an interaction.
+// interaction : Interaction instance.
+// messageID   : The followup message ID.
+func (s *Session) FollowupMessageDelete(interaction *Interaction, messageID string, options ...RequestOption) error {
+	return s.WebhookMessageDelete(interaction.ApplicationID, interaction.Token, messageID, options...)
 }
 
 // ------------------------------------------------------------------------------------------------
