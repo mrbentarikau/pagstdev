@@ -54,7 +54,7 @@ BEGIN
 -- only run if we haven't added the NOT NULL constraint yet
 IF EXISTS(SELECT 1 FROM information_schema.columns WHERE table_name='youtube_channel_subscriptions' AND column_name='publish_livestream' AND is_nullable='yes') THEN
 	UPDATE youtube_channel_subscriptions SET publish_livestream = TRUE WHERE publish_livestream IS NULL;
-	UPDATE youtube_channel_subscriptions SET publish_shorts = TRUE WHERE publish_shorts IS NULL;
+	UPDATE youtube_channel_subscriptions SET publish_shorts = FALSE WHERE publish_shorts IS NULL;
 	UPDATE youtube_channel_subscriptions SET enabled = TRUE WHERE enabled IS NULL;
 	ALTER TABLE youtube_channel_subscriptions ALTER COLUMN publish_livestream SET NOT NULL;
 	ALTER TABLE youtube_channel_subscriptions ALTER COLUMN publish_shorts SET NOT NULL;

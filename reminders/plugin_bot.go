@@ -1,16 +1,18 @@
 package reminders
 
 import (
+	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"math"
 	"math/rand"
-	"strconv"
 	"strings"
 	"time"
-	"unicode/utf8"
 
 	"github.com/mrbentarikau/pagst/bot"
 	"github.com/mrbentarikau/pagst/bot/eventsystem"
+	"github.com/mrbentarikau/pagst/bot/paginatedmessages"
 	"github.com/mrbentarikau/pagst/commands"
 	"github.com/mrbentarikau/pagst/common"
 	"github.com/mrbentarikau/pagst/common/scheduledevents2"
@@ -22,13 +24,12 @@ import (
 	"github.com/mrbentarikau/pagst/lib/when/rules"
 	wcommon "github.com/mrbentarikau/pagst/lib/when/rules/common"
 	"github.com/mrbentarikau/pagst/lib/when/rules/en"
+	"github.com/mrbentarikau/pagst/reminders/models"
 	"github.com/mrbentarikau/pagst/rsvp"
 	"github.com/mrbentarikau/pagst/timezonecompanion"
 	"github.com/mrbentarikau/pagst/timezonecompanion/trules"
 
-	"github.com/jinzhu/gorm"
-
-	"github.com/mrbentarikau/pagst/bot/paginatedmessages"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 var logger = common.GetPluginLogger(&Plugin{})
@@ -42,7 +43,6 @@ func (p *Plugin) AddCommands() {
 }
 
 func (p *Plugin) BotInit() {
-	//eventsystem.AddHandlerAsyncLastLegacy(p, handleInteractionCreate, eventsystem.EventInteractionCreate)
 	eventsystem.AddHandlerAsyncLastLegacy(p, func(evt *eventsystem.EventData) {
 		ic := evt.EvtInterface.(*discordgo.InteractionCreate)
 		if ic.GuildID == 0 {
@@ -51,10 +51,16 @@ func (p *Plugin) BotInit() {
 		go p.handleRemindmeInteractionCreate(ic)
 	}, eventsystem.EventInteractionCreate)
 
-	// scheduledevents.RegisterEventHandler("reminders_check_user", checkUserEvtHandlerLegacy)
 	scheduledevents2.RegisterHandler("reminders_check_user", int64(0), checkUserScheduledEvent)
 	scheduledevents2.RegisterLegacyMigrater("reminders_check_user", migrateLegacyScheduledEvents)
 }
+
+const (
+	MaxReminders = 25
+
+	MaxReminderOffset            = time.Hour * 24 * 366
+	MaxReminderOffsetExceededMsg = "Can be max 1 year from now..."
+)
 
 // Reminder management commands
 var cmds = []*commands.YAGCommand{
@@ -78,13 +84,14 @@ var cmds = []*commands.YAGCommand{
 		DefaultEnabled:            true,
 		RunFunc: func(parsed *dcmd.Data) (interface{}, error) {
 			var reminderMessage string
-			currentReminders, _ := GetUserReminders(parsed.Author.ID)
-			if len(currentReminders) >= 25 {
-				return "You can have a maximum of 25 active reminders, list all your reminders with the `reminders` command in DM, doing it in a server will only show reminders set in the server", nil
+			uid := discordgo.StrID(parsed.Author.ID)
+			count, _ := models.Reminders(models.ReminderWhere.UserID.EQ(uid)).CountG(parsed.Context())
+			if count >= MaxReminders {
+				return fmt.Sprintf("You can have a maximum of %d active reminders; list all your reminders with the `reminders` command in DM, doing it in a server will only show reminders set in the server", MaxReminders), nil
 			}
 
 			if parsed.Author.Bot {
-				return "Cannot create reminder for Bots, you're most likely trying to use execAdmin to create a reminder, use exec", nil
+				return nil, errors.New("cannot create reminder for bots; you're likely trying to use `execAdmin` to create a reminder (use `exec` instead)")
 			}
 
 			fromNow, err := common.ParseDuration(parsed.Args[0].Str())
@@ -139,7 +146,7 @@ var cmds = []*commands.YAGCommand{
 				id = c.Value.(*dstate.ChannelState).ID
 				hasPerms, err := bot.AdminOrPermMS(parsed.GuildData.GS.ID, id, parsed.GuildData.MS, discordgo.PermissionSendMessages|discordgo.PermissionViewChannel)
 				if err != nil {
-					return "Failed checking permissions, please try again or join the support server.", err
+					return "Failed checking permissions; please try again or join the support server.", err
 				}
 
 				nok := commands.CanExecuteInChannel(parsed, id)
@@ -176,27 +183,28 @@ var cmds = []*commands.YAGCommand{
 				pagination = false
 			}
 
-			var currentReminders []*Reminder
-			var inServerString string
-			var err error
+			uid := discordgo.StrID(parsed.Author.ID)
+			qms := []qm.QueryMod{models.ReminderWhere.UserID.EQ(uid)}
 
-			//command was used in DM
-			if parsed.GuildData == nil {
-				currentReminders, err = GetUserReminders(parsed.Author.ID)
-			} else {
-				inServerString = " in this server"
-				currentReminders, err = GetGuildUserReminder(parsed.Author.ID, parsed.GuildData.GS.ID)
+			// if command used in server, only show reminders in that server
+			var inServerSuffix string
+			if inServer := parsed.GuildData != nil; inServer {
+				inServerSuffix = " in this server"
+
+				guildID := parsed.GuildData.GS.ID
+				qms = append(qms, models.ReminderWhere.GuildID.EQ(guildID))
 			}
 
+			currentReminders, err := models.Reminders(qms...).AllG(parsed.Context())
 			if err != nil {
 				return nil, err
 			}
 
-			out := fmt.Sprintf("You have no reminders%s. Create reminders with the `Remindme` command.", inServerString)
+			out := fmt.Sprintf("You have no reminders%s. Create reminders with the `Remindme` command.", inServerSuffix)
 			if !pagination {
 				if len(currentReminders) > 0 {
-					out := fmt.Sprintf("Your reminders%s:\n", inServerString)
-					out += stringReminders(currentReminders, false)
+					out := fmt.Sprintf("Your reminders%s:\n", inServerSuffix)
+					out += DisplayReminders(currentReminders, ModeDisplayUserReminders)
 					out += "\nRemove a reminder with `delreminder/rmreminder (id)` where id is the first number for each reminder above.\nTo clear all reminders, use `delreminder` with the `-a` switch."
 				}
 				return out, nil
@@ -239,15 +247,8 @@ var cmds = []*commands.YAGCommand{
 				pagination = false
 			}
 
-			ok, err := bot.AdminOrPermMS(parsed.GuildData.GS.ID, parsed.ChannelID, parsed.GuildData.MS, discordgo.PermissionManageChannels)
-			if err != nil {
-				return nil, err
-			}
-			if !ok {
-				return "You do not have access to this command (requires manage channel permission)", nil
-			}
-
-			currentReminders, err := GetChannelReminders(parsed.ChannelID)
+			cid := discordgo.StrID(parsed.ChannelID)
+			currentReminders, err := models.Reminders(models.ReminderWhere.ChannelID.EQ(cid)).AllG(parsed.Context())
 			if err != nil {
 				return nil, err
 			}
@@ -256,7 +257,7 @@ var cmds = []*commands.YAGCommand{
 			if !pagination {
 				if len(currentReminders) > 0 {
 					out := "Reminders in this channel:\n"
-					out += stringReminders(currentReminders, true)
+					out += DisplayReminders(currentReminders, ModeDisplayChannelReminders)
 					out += "```Remove a reminder with 'delreminder/rmreminder (id)' where id is the first number for each reminder above```"
 				}
 				return out, nil
@@ -298,36 +299,13 @@ var cmds = []*commands.YAGCommand{
 		DefaultEnabled:            true,
 		RunInDM:                   true,
 		RunFunc: func(parsed *dcmd.Data) (interface{}, error) {
-			var reminder Reminder
-
-			clearAll := parsed.Switch("a").Value != nil && parsed.Switch("a").Value.(bool)
-			if clearAll {
-				var userID int64
-				userIDArg := parsed.Switch("userid").Int64()
-				if userIDArg > 0 && parsed.Author.ID != userIDArg {
-					ok, err := bot.AdminOrPermMS(parsed.GuildData.GS.ID, parsed.GuildData.CS.ID, parsed.GuildData.MS, discordgo.PermissionManageChannels)
-
-					if err != nil {
-						return nil, err
-					}
-
-					if !ok {
-						return "You need manage server permission in the server the reminder is in to delete reminders that are not your own", nil
-					}
-
-					userID = userIDArg
-				} else {
-					userID = parsed.Author.ID
-				}
-
-				db := common.GORM.Where("user_id = ?", userID).Delete(&reminder)
-
-				err := db.Error
+			if clearAll := parsed.Switch("a").Bool(); clearAll {
+				uid := discordgo.StrID(parsed.Author.ID)
+				count, err := models.Reminders(models.ReminderWhere.UserID.EQ(uid)).DeleteAllG(parsed.Context(), false /* hardDelete */)
 				if err != nil {
 					return "Error clearing reminders", err
 				}
 
-				count := db.RowsAffected
 				if count == 0 {
 					return "No reminders to clear", nil
 				}
@@ -338,20 +316,21 @@ var cmds = []*commands.YAGCommand{
 				return "No reminder ID provided", nil
 			}
 
-			err := common.GORM.Where(parsed.Args[0].Int()).First(&reminder).Error
+			reminder, err := models.FindReminderG(parsed.Context(), parsed.Args[0].Int())
 			if err != nil {
-				if err == gorm.ErrRecordNotFound {
-					return "No reminder by that id found", nil
+				if err == sql.ErrNoRows {
+					return "No reminder by that ID found", nil
 				}
 				return "Error retrieving reminder", err
 			}
 
-			// Check perms
+			// check perms
 			if reminder.UserID != discordgo.StrID(parsed.Author.ID) {
 				if reminder.GuildID != parsed.GuildData.GS.ID {
 					return "You can only delete reminders that are not your own in the guild the reminder was originally created", nil
 				}
-				ok, err := bot.AdminOrPermMS(reminder.GuildID, reminder.ChannelIDInt(), parsed.GuildData.MS, discordgo.PermissionManageChannels)
+				cid, _ := discordgo.ParseID(reminder.ChannelID)
+				ok, err := bot.AdminOrPermMS(reminder.GuildID, cid, parsed.GuildData.MS, discordgo.PermissionManageChannels)
 				if err != nil {
 					return nil, err
 				}
@@ -360,77 +339,32 @@ var cmds = []*commands.YAGCommand{
 				}
 			}
 
-			// Do the actual deletion
-			err = common.GORM.Delete(reminder).Error
+			// just deleting from database is enough; we need not delete the
+			// scheduled event since the handler will check database
+			_, err = reminder.DeleteG(parsed.Context(), false /* hardDelete */)
 			if err != nil {
 				return nil, err
 			}
 
-			// Check if we should remove the scheduled event
-			currentReminders, err := GetUserReminders(reminder.UserIDInt())
-			if err != nil {
-				return nil, err
-			}
-
-			delMsg := fmt.Sprintf("Deleted reminder **#%d**: '%s'", reminder.ID, limitString(reminder.Message))
-
-			// If there is another reminder with the same timestamp, do not remove the scheduled event
-			for _, v := range currentReminders {
-				if v.When == reminder.When {
-					return delMsg, nil
-				}
-			}
-
-			return delMsg, nil
+			return fmt.Sprintf("Deleted reminder **#%d**: '%s'", reminder.ID, CutReminderShort(reminder.Message)), nil
 		},
 	},
 }
 
-func stringReminders(reminders []*Reminder, displayUsernames bool) string {
-	out := ""
-	var repeatedReminder string
-	for _, v := range reminders {
-		parsedCID, _ := strconv.ParseInt(v.ChannelID, 10, 64)
-
-		t := time.Unix(v.When, 0)
-		tUnix := t.Unix()
-		timeFromNow := common.HumanizeTime(common.DurationPrecisionMinutes, t)
-
-		if v.Repeat > 0 {
-			repeatedReminder = "- repeated reminder"
-		} else {
-			repeatedReminder = ""
-		}
-		if !displayUsernames {
-			channel := "<#" + discordgo.StrID(parsedCID) + ">"
-			out += fmt.Sprintf("**%d**: %s: '%s' - %s from now (<t:%d:f>) %s\n", v.ID, channel, limitString(v.Message), timeFromNow, tUnix, repeatedReminder)
-		} else {
-			member, _ := bot.GetMember(v.GuildID, v.UserIDInt())
-			username := "Unknown user"
-			if member != nil {
-				username = member.User.Username
-			}
-			out += fmt.Sprintf("**%d**: %s: '%s' - %s from now (<t:%d:f>) %s\n", v.ID, username, limitString(v.Message), timeFromNow, tUnix, repeatedReminder)
-		}
-	}
-	return out
-}
-
 func checkUserScheduledEvent(evt *seventsmodels.ScheduledEvent, data interface{}) (retry bool, err error) {
-	// !important! the evt.GuildID can be 1 in cases where it was migrated from the legacy scheduled event system
+	// IMPORTANT: evt.GuildID can be 1 in cases where it was migrated from the
+	// legacy scheduled event system.
 
-	userID := *data.(*int64)
-
-	reminders, err := GetUserReminders(userID)
+	userID := discordgo.StrID(*data.(*int64))
+	reminders, err := models.Reminders(models.ReminderWhere.UserID.EQ(userID)).AllG(context.Background())
 	if err != nil {
 		return true, err
 	}
 
-	now := time.Now()
-	nowUnix := now.Unix()
-	for _, v := range reminders {
-		if v.When <= nowUnix {
-			err := v.Trigger()
+	nowUnix := time.Now().Unix()
+	for _, r := range reminders {
+		if r.When <= nowUnix {
+			err := TriggerReminder(r)
 			if err != nil {
 				// possibly try again
 				return scheduledevents2.CheckDiscordErrRetry(err), err
@@ -442,27 +376,18 @@ func checkUserScheduledEvent(evt *seventsmodels.ScheduledEvent, data interface{}
 }
 
 func migrateLegacyScheduledEvents(t time.Time, data string) error {
-	split := strings.Split(data, ":")
-	if len(split) < 2 {
+	_, userID, ok := strings.Cut(data, ":")
+	if !ok {
 		logger.Error("invalid check user scheduled event: ", data)
 		return nil
 	}
 
-	parsed, _ := strconv.ParseInt(split[1], 10, 64)
+	parsed, _ := discordgo.ParseID(userID)
 
 	return scheduledevents2.ScheduleEvent("reminders_check_user", 1, t, parsed)
 }
 
-func limitString(s string) string {
-	if utf8.RuneCountInString(s) < 50 {
-		return s
-	}
-
-	runes := []rune(s)
-	return string(runes[:47]) + "..."
-}
-
-func embedCreator(currentReminders []*Reminder, i, ml, flag int, parsed *dcmd.Data) *discordgo.MessageEmbed {
+func embedCreator(currentReminders models.ReminderSlice, i, ml, flag int, parsed *dcmd.Data) *discordgo.MessageEmbed {
 	member := parsed.GuildData.MS
 	embedTitle := []string{"Your reminders:", "Reminders in this channel:"}
 	embedDescription := []string{"Remove a reminder with `delreminder/rmreminder (id)` where id is the first number for each reminder above.\nTo clear all reminders, use `delreminder` with the `-a` switch.", "Remove a reminder with `delreminder/rmreminder (id)` where id is the first number for each reminder above."}
@@ -478,9 +403,10 @@ func embedCreator(currentReminders []*Reminder, i, ml, flag int, parsed *dcmd.Da
 
 	for k, v := range currentReminders[i*ml:] {
 		var username string
+		userID, _ := discordgo.ParseID(v.UserID)
 		if k < ml {
 			if flag > 0 {
-				remindGuy, _ := bot.GetMember(v.GuildID, v.UserIDInt())
+				remindGuy, _ := bot.GetMember(v.GuildID, userID)
 				username = "Unknown user"
 				if remindGuy != nil {
 					username = remindGuy.User.Username
