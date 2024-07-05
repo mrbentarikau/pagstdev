@@ -39,12 +39,14 @@ ALTER TABLE reminders ALTER COLUMN "when" SET NOT NULL;
 `, `
 ALTER TABLE reminders ALTER COLUMN repeat SET NOT NULL;
 `, `
+-- just fool-proofing against NULL values for legacy installs
 DO $$
 BEGIN
 -- only run if we haven't added the NOT NULL constraint yet
-IF EXISTS(SELECT 1 FROM information_schema.columns WHERE table_name='reminders' AND column_name='app_command') THEN
+IF EXISTS(SELECT 1 FROM information_schema.columns WHERE table_name='reminders' AND column_name='app_command' OR  column_name='disable_mention') THEN
 	UPDATE reminders SET app_command = FALSE WHERE app_command IS NULL;
 	UPDATE reminders SET disable_mention = FALSE WHERE disable_mention IS NULL;
+	UPDATE reminders SET repeat = 0 WHERE repeat IS NULL;
 	ALTER TABLE reminders ALTER COLUMN app_command SET NOT NULL;
 	ALTER TABLE reminders ALTER COLUMN disable_mention SET NOT NULL;
 END IF;
