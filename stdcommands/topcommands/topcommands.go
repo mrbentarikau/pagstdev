@@ -33,9 +33,26 @@ func cmdFuncTopCommands(data *dcmd.Data) (interface{}, error) {
 	within := time.Now().Add(time.Duration(-hours) * time.Hour)
 
 	var results []*TopCommandsResult
-	err := common.GORM.Table(common.LoggedExecutedCommand{}.TableName()).Select("command, COUNT(id)").Where("created_at > ?", within).Group("command").Order("count(id) desc").Scan(&results).Error
+	const q = `
+		SELECT command, COUNT(id)
+		FROM executed_commands
+		WHERE created_at > $1
+		GROUP BY command
+		ORDER BY COUNT(id) DESC;
+		`
+	rows, err := common.PQ.Query(q, within)
 	if err != nil {
 		return nil, err
+	}
+	defer rows.Close()
+
+	for k := 1; rows.Next(); k++ {
+		var r TopCommandsResult
+		err = rows.Scan(&r.Command, &r.Count)
+		if err != nil {
+			return nil, err
+		}
+		results = append(results, &r)
 	}
 
 	var raw bool

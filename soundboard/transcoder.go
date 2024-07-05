@@ -15,6 +15,7 @@ import (
 	"github.com/mrbentarikau/pagst/common/backgroundworkers"
 	"github.com/mrbentarikau/pagst/lib/dca"
 	"github.com/mrbentarikau/pagst/soundboard/models"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 	"goji.io/pat"
 )
 
@@ -119,10 +120,14 @@ func handleQueueItem(item string) error {
 		err = transcodeSound(sound)
 		if err != nil {
 			logger.WithError(err).WithField("sound", sound.ID).Error("Failed transcoding sound")
-			common.GORM.Model(&sound).Update("Status", TranscodingStatusFailedOther)
+
+			sound.Status = int(TranscodingStatusFailedOther)
+			sound.UpdateG(context.Background(), boil.Whitelist("status"))
+
 			os.Remove(SoundFilePath(sound.ID, TranscodingStatusReady))
 		} else {
-			common.GORM.Model(&sound).Update("Status", TranscodingStatusReady)
+			sound.Status = int(TranscodingStatusReady)
+			sound.UpdateG(context.Background(), boil.Whitelist("status"))
 		}
 
 		err = os.Remove(SoundFilePath(sound.ID, TranscodingStatusQueued))
