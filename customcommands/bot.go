@@ -1267,11 +1267,12 @@ func ExecuteCustomCommand(cmd *models.CustomCommand, tmplCtx *templates.Context)
 
 	csCop := tmplCtx.CurrentFrame.CS
 	f := logger.WithFields(logrus.Fields{
-		"trigger":       cmd.TextTrigger,
-		"regex_trigger": cmd.RegexTrigger,
-		"trigger_type":  CommandTriggerType(cmd.TriggerType).String(),
-		"guild":         csCop.GuildID,
-		"channel_name":  csCop.Name,
+		"trigger":             cmd.TextTrigger,
+		"regex_trigger":       cmd.RegexTrigger,
+		"interaction_trigger": cmd.InteractionTrigger,
+		"trigger_type":        CommandTriggerType(cmd.TriggerType).String(),
+		"guild":               csCop.GuildID,
+		"channel_name":        csCop.Name,
 	})
 
 	// do not allow concurrent executions of the same custom command, to prevent most common kinds of abuse
