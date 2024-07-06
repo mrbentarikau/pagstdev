@@ -118,6 +118,8 @@ ALTER TABLE custom_commands ADD COLUMN IF NOT EXISTS note TEXT;
 ALTER TABLE custom_commands ADD COLUMN IF NOT EXISTS public BOOLEAN NOT NULL DEFAULT false;
 `, `
 ALTER TABLE custom_commands ADD COLUMN IF NOT EXISTS response TEXT NOT NULL DEFAULT '';
+`, `
+ALTER TABLE custom_command_groups ADD COLUMN IF NOT EXISTS disabled BOOLEAN NOT NULL DEFAULT false;
 `}
 
 //`, `

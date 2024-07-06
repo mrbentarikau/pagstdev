@@ -329,9 +329,13 @@ func tmplScheduleUniqueCC(ctx *templates.Context) interface{} {
 }
 
 func parseRunCCOptions(ctx *templates.Context, ccID int, channel interface{}, delaySeconds interface{}, data interface{}) (*runCCOpts, error) {
-	cmd, err := models.FindCustomCommandG(context.Background(), ctx.GS.ID, int64(ccID))
+	cmd, err := models.CustomCommands(qm.Where("guild_id = ? AND local_id = ?", ctx.GS.ID, ccID), qm.Load("Group")).OneG(context.Background())
 	if err != nil {
 		return nil, errors.New("couldn't find custom command")
+	}
+
+	if cmd.R.Group != nil && cmd.R.Group.Disabled {
+		return nil, errors.New("custom command group is disabled")
 	}
 
 	channelID := ctx.ChannelArg(channel)
