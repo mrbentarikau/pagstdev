@@ -349,7 +349,7 @@ type ChannelState struct {
 	RateLimitPerUser int                       `json:"rate_limit_per_user"`
 	Flags            discordgo.ChannelFlags    `json:"flags"`
 	OwnerID          int64                     `json:"owner_id,string"`
-	ThreadMetadata   *discordgo.ThreadMetadata `json:"thread_metadata"`
+	ThreadMetadata   *discordgo.ThreadMetadata `json:"thread_metadata,omitempty"`
 
 	PermissionOverwrites []discordgo.PermissionOverwrite `json:"permission_overwrites"`
 
@@ -364,11 +364,6 @@ type ChannelState struct {
 	DefaultThreadRateLimitPerUser int                            `json:"default_thread_rate_limit_per_user"`
 	DefaultSortOrder              *discordgo.ForumSortOrderType  `json:"default_sort_order"`
 	DefaultForumLayout            discordgo.ForumLayout          `json:"default_forum_layout"`
-
-	Archived            bool `json:"archived"`
-	AutoArchiveDuration int  `json:"auto_archive_duration,omitempty"`
-	Locked              bool `json:"locked"`
-	Invitable           bool `json:"invitable"`
 }
 
 func (c *ChannelState) IsDMChannel() bool {

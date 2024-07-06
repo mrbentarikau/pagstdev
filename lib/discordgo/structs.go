@@ -504,19 +504,6 @@ type Channel struct {
 	// The initial RateLimitPerUser to set on newly created threads in a channel.
 	// This field is copied to the thread at creation time and does not live update.
 	DefaultThreadRateLimitPerUser int `json:"default_thread_rate_limit_per_user,omitempty"`
-
-	// Seems pointless, but whatever
-	// whether the thread is archived
-	Archived bool `json:"archived"`
-
-	// the thread will stop showing in the channel list after auto_archive_duration minutes of inactivity, can be set to: 60, 1440, 4320, 10080
-	AutoArchiveDuration int `json:"auto_archive_duration,omitempty"`
-
-	// whether the thread is locked; when a thread is locked, only users with MANAGE_THREADS can unarchive it
-	Locked bool `json:"locked"`
-
-	// whether non-moderators can add other non-moderators to a thread; only available on private threads
-	Invitable bool `json:"invitable"`
 }
 
 func (c *Channel) GetChannelID() int64 {

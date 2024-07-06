@@ -180,11 +180,6 @@ func ChannelStateFromDgo(c *discordgo.Channel) ChannelState {
 		DefaultReactionEmoji:          c.DefaultReactionEmoji,
 		DefaultSortOrder:              c.DefaultSortOrder,
 		DefaultThreadRateLimitPerUser: c.DefaultThreadRateLimitPerUser,
-
-		Archived:            c.Archived,
-		AutoArchiveDuration: c.AutoArchiveDuration,
-		Locked:              c.Locked,
-		Invitable:           c.Invitable,
 	}
 }
 
