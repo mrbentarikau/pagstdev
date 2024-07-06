@@ -709,9 +709,14 @@ func handleDuplicateCommand(w http.ResponseWriter, r *http.Request) (web.Templat
 		return templateData, err
 	}
 
-	cmd, err := models.CustomCommands(qm.Where("guild_id = ? AND local_id = ?", activeGuild.ID, cmdID)).OneG(ctx)
+	cmd, err := models.CustomCommands(qm.Where("guild_id = ? AND local_id = ?", activeGuild.ID, cmdID), qm.Load("Group")).OneG(ctx)
 	if err != nil {
 		return templateData, err
+	}
+
+	if cmd.R.Group != nil && cmd.R.Group.Disabled {
+		templateData.AddAlerts(web.ErrorAlert("This command group is disabled, cannot duplicate in a disabled group."))
+		return templateData, nil
 	}
 
 	groupID := cmd.GroupID.Int64
