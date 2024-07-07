@@ -209,7 +209,7 @@ func TestThreadCreateDelete(t *testing.T) {
 	}
 
 	tracker.HandleEvent(testSession, &discordgo.ThreadCreate{
-		Channel: updt,
+		Channel: &updt,
 	})
 
 	thread := tracker.GetGuild(initialTestGuildID).GetThread(testThreadID)
@@ -222,10 +222,7 @@ func TestThreadCreateDelete(t *testing.T) {
 	}
 
 	tracker.HandleEvent(testSession, &discordgo.ThreadDelete{
-		ID:       updt.ID,
-		GuildID:  updt.GuildID,
-		ParentID: updt.ParentID,
-		Type:     discordgo.ChannelTypeGuildPublicThread,
+		Channel: &updt,
 	})
 
 	thread = tracker.GetGuild(initialTestGuildID).GetThread(testThreadID)
@@ -246,7 +243,7 @@ func TestThreadArchive(t *testing.T) {
 	}
 
 	tracker.HandleEvent(testSession, &discordgo.ThreadCreate{
-		Channel: updt,
+		Channel: &updt,
 	})
 
 	thread := tracker.GetGuild(initialTestGuildID).GetThread(testThreadID)
@@ -262,7 +259,7 @@ func TestThreadArchive(t *testing.T) {
 	cop.ThreadMetadata.Archived = true
 
 	tracker.HandleEvent(testSession, &discordgo.ThreadUpdate{
-		Channel: cop,
+		Channel: &cop,
 	})
 
 	thread = tracker.GetGuild(initialTestGuildID).GetThread(testThreadID)
