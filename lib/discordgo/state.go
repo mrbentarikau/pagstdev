@@ -33,13 +33,15 @@ type State struct {
 	Ready
 
 	// MaxMessageCount represents how many messages per channel the state will store.
-	MaxMessageCount int
-	TrackChannels   bool
-	TrackEmojis     bool
-	TrackMembers    bool
-	TrackRoles      bool
-	TrackVoice      bool
-	TrackPresences  bool
+	MaxMessageCount    int
+	TrackChannels      bool
+	TrackThreads       bool
+	TrackEmojis        bool
+	TrackMembers       bool
+	TrackThreadMembers bool
+	TrackRoles         bool
+	TrackVoice         bool
+	TrackPresences     bool
 
 	guildMap   map[int64]*Guild
 	channelMap map[int64]*Channel
@@ -53,15 +55,17 @@ func NewState() *State {
 			PrivateChannels: []*Channel{},
 			Guilds:          []*Guild{},
 		},
-		TrackChannels:  true,
-		TrackEmojis:    true,
-		TrackMembers:   true,
-		TrackRoles:     true,
-		TrackVoice:     true,
-		TrackPresences: true,
-		guildMap:       make(map[int64]*Guild),
-		channelMap:     make(map[int64]*Channel),
-		memberMap:      make(map[int64]map[int64]*Member),
+		TrackChannels:      true,
+		TrackThreads:       true,
+		TrackEmojis:        true,
+		TrackMembers:       true,
+		TrackThreadMembers: true,
+		TrackRoles:         true,
+		TrackVoice:         true,
+		TrackPresences:     true,
+		guildMap:           make(map[int64]*Guild),
+		channelMap:         make(map[int64]*Channel),
+		memberMap:          make(map[int64]map[int64]*Member),
 	}
 }
 
@@ -176,6 +180,59 @@ func (s *State) Guild(guildID int64) (*Guild, error) {
 	return nil, ErrStateNotFound
 }
 
+func (s *State) presenceAdd(guildID int64, presence *Presence) error {
+	guild, ok := s.guildMap[guildID]
+	if !ok {
+		return ErrStateNotFound
+	}
+
+	for i, p := range guild.Presences {
+		if p.User.ID == presence.User.ID {
+			//guild.Presences[i] = presence
+
+			//Update status
+			guild.Presences[i].Activities = presence.Activities
+			if presence.Status != "" {
+				guild.Presences[i].Status = presence.Status
+			}
+			if presence.ClientStatus.Desktop != "" {
+				guild.Presences[i].ClientStatus.Desktop = presence.ClientStatus.Desktop
+			}
+			if presence.ClientStatus.Mobile != "" {
+				guild.Presences[i].ClientStatus.Mobile = presence.ClientStatus.Mobile
+			}
+			if presence.ClientStatus.Web != "" {
+				guild.Presences[i].ClientStatus.Web = presence.ClientStatus.Web
+			}
+
+			//Update the optionally sent user information
+			//ID Is a mandatory field so you should not need to check if it is empty
+			guild.Presences[i].User.ID = presence.User.ID
+
+			if presence.User.Avatar != "" {
+				guild.Presences[i].User.Avatar = presence.User.Avatar
+			}
+			if presence.User.Discriminator != "" {
+				guild.Presences[i].User.Discriminator = presence.User.Discriminator
+			}
+			if presence.User.Email != "" {
+				guild.Presences[i].User.Email = presence.User.Email
+			}
+			if presence.User.Token != "" {
+				guild.Presences[i].User.Token = presence.User.Token
+			}
+			if presence.User.Username != "" {
+				guild.Presences[i].User.Username = presence.User.Username
+			}
+
+			return nil
+		}
+	}
+
+	guild.Presences = append(guild.Presences, presence)
+	return nil
+}
+
 // PresenceAdd adds a presence to the current world state, or
 // updates it if it already exists.
 func (s *State) PresenceAdd(guildID int64, presence *Presence) error {
@@ -267,6 +324,36 @@ func (s *State) Presence(guildID, userID int64) (*Presence, error) {
 }
 
 // TODO: Consider moving Guild state update methods onto *Guild.
+
+func (s *State) memberAdd(member *Member) error {
+	guild, ok := s.guildMap[member.GuildID]
+	if !ok {
+		return ErrStateNotFound
+	}
+
+	members, ok := s.memberMap[member.GuildID]
+	if !ok {
+		return ErrStateNotFound
+	}
+
+	m, ok := members[member.User.ID]
+	if !ok {
+		members[member.User.ID] = member
+		guild.Members = append(guild.Members, member)
+	} else {
+		// We are about to replace `m` in the state with `member`, but first we need to
+		// make sure we preserve any fields that the `member` doesn't contain from `m`.
+		memberJoinedAt, err := member.JoinedAt.Parse()
+		if err != nil {
+			return ErrStateNotFound
+		}
+		if memberJoinedAt.IsZero() {
+			member.JoinedAt = m.JoinedAt
+		}
+		*m = *member
+	}
+	return nil
+}
 
 // MemberAdd adds a member to the current world state, or
 // updates it if it already exists.
@@ -518,6 +605,99 @@ func (s *State) ChannelRemove(channel *Channel) error {
 	return nil
 }
 
+// ThreadListSync syncs guild threads with provided ones.
+func (s *State) ThreadListSync(tls *ThreadListSync) error {
+	guild, err := s.Guild(tls.GuildID)
+	if err != nil {
+		return err
+	}
+
+	s.Lock()
+	defer s.Unlock()
+
+	// This algorithm filters out archived or
+	// threads which are children of channels in channelIDs
+	// and then it adds all synced threads to guild threads and cache
+	index := 0
+outer:
+	for _, t := range guild.Threads {
+		if !t.ThreadMetadata.Archived && tls.ChannelIDs != nil {
+			for _, v := range tls.ChannelIDs {
+				if t.ParentID == v {
+					delete(s.channelMap, t.ID)
+					continue outer
+				}
+			}
+			guild.Threads[index] = t
+			index++
+		} else {
+			delete(s.channelMap, t.ID)
+		}
+	}
+	guild.Threads = guild.Threads[:index]
+	for _, t := range tls.Threads {
+		s.channelMap[t.ID] = t
+		guild.Threads = append(guild.Threads, t)
+	}
+
+	for _, m := range tls.Members {
+		if c, ok := s.channelMap[m.ID]; ok {
+			c.Member = m
+		}
+	}
+
+	return nil
+}
+
+// ThreadMembersUpdate updates thread members list
+func (s *State) ThreadMembersUpdate(tmu *ThreadMembersUpdate) error {
+	thread, err := s.Channel(tmu.ID)
+	if err != nil {
+		return err
+	}
+	s.Lock()
+	defer s.Unlock()
+
+	for idx, member := range thread.Members {
+		for _, removedMember := range tmu.RemovedMembers {
+			if member.ID == removedMember {
+				thread.Members = append(thread.Members[:idx], thread.Members[idx+1:]...)
+				break
+			}
+		}
+	}
+
+	for _, addedMember := range tmu.AddedMembers {
+		thread.Members = append(thread.Members, addedMember.ThreadMember)
+		if addedMember.Member != nil {
+			err = s.memberAdd(addedMember.Member)
+			if err != nil {
+				return err
+			}
+		}
+		if addedMember.Presence != nil {
+			err = s.presenceAdd(tmu.GuildID, addedMember.Presence)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	thread.MemberCount = tmu.MemberCount
+
+	return nil
+}
+
+// ThreadMemberUpdate sets or updates member data for the current user.
+func (s *State) ThreadMemberUpdate(mu *ThreadMemberUpdate) error {
+	thread, err := s.Channel(mu.ID)
+	if err != nil {
+		return err
+	}
+
+	thread.Member = mu.ThreadMember
+	return nil
+}
+
 /*
 // GuildChannel gets a channel by ID from a guild.
 // This method is Deprecated, use Channel(channelID)
@@ -644,6 +824,9 @@ func (s *State) MessageAdd(message *Message) error {
 			}
 			if message.Author != nil {
 				m.Author = message.Author
+			}
+			if message.Components != nil {
+				m.Components = message.Components
 			}
 
 			return nil
@@ -865,11 +1048,46 @@ func (s *State) OnInterface(se *Session, i interface{}) (err error) {
 		}
 	case *ChannelUpdate:
 		if s.TrackChannels {
+			old, err := s.Channel(t.ID)
+			if err == nil {
+				oldCopy := *old
+				t.BeforeUpdate = &oldCopy
+			}
+
 			err = s.ChannelAdd(t.Channel)
 		}
 	case *ChannelDelete:
 		if s.TrackChannels {
 			err = s.ChannelRemove(t.Channel)
+		}
+	case *ThreadCreate:
+		if s.TrackThreads {
+			err = s.ChannelAdd(t.Channel)
+		}
+	case *ThreadUpdate:
+		if s.TrackThreads {
+			old, err := s.Channel(t.ID)
+			if err == nil {
+				oldCopy := *old
+				t.BeforeUpdate = &oldCopy
+			}
+			err = s.ChannelAdd(t.Channel)
+		}
+	case *ThreadDelete:
+		if s.TrackThreads {
+			err = s.ChannelRemove(t.Channel)
+		}
+	case *ThreadMemberUpdate:
+		if s.TrackThreads {
+			err = s.ThreadMemberUpdate(t)
+		}
+	case *ThreadMembersUpdate:
+		if s.TrackThreadMembers {
+			err = s.ThreadMembersUpdate(t)
+		}
+	case *ThreadListSync:
+		if s.TrackThreads {
+			err = s.ThreadListSync(t)
 		}
 	case *MessageCreate:
 		if s.MaxMessageCount != 0 {

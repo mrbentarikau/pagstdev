@@ -226,10 +226,10 @@ func (tracker *ShardTracker) HandleEvent(s *discordgo.Session, i interface{}) {
 	// Threads
 	case *discordgo.ThreadCreate:
 		// fmt.Println("Got thread open: ", evt.ID)
-		tracker.handleThreadCreateUpdate(&evt.Channel)
+		tracker.handleThreadCreateUpdate(evt.Channel)
 	case *discordgo.ThreadUpdate:
 		// fmt.Println("Got thread update: ", evt.ID)
-		tracker.handleThreadCreateUpdate(&evt.Channel)
+		tracker.handleThreadCreateUpdate(evt.Channel)
 	case *discordgo.ThreadDelete:
 		// fmt.Println("Got thread delete: ", evt.ID)
 		tracker.handleThreadDelete(evt)
@@ -953,7 +953,7 @@ func (shard *ShardTracker) handleThreadListSync(evt *discordgo.ThreadListSync) {
 	// keep old un updated threads
 	newGS.Threads = make([]dstate.ChannelState, len(gs.Threads))
 	for _, v := range gs.Threads {
-		if !containsInt64(evt.Channels, v.ParentID) {
+		if !containsInt64(evt.ChannelIDs, v.ParentID) {
 			newGS.Threads = append(newGS.Threads, v)
 		}
 	}

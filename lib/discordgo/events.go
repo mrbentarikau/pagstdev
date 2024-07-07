@@ -83,6 +83,7 @@ type ChannelCreate struct {
 // ChannelUpdate is the data for a ChannelUpdate event.
 type ChannelUpdate struct {
 	*Channel
+	BeforeUpdate *Channel `json:"-"`
 }
 
 // ChannelDelete is the data for a ChannelDelete event.
@@ -565,42 +566,42 @@ type ApplicationCommandDelete struct {
 
 // thread created, also sent when being added to a private thread
 type ThreadCreate struct {
-	Channel
+	*Channel
+	NewlyCreated bool `json:"newly_created"`
 }
 
 // thread was updated
 type ThreadUpdate struct {
-	Channel
+	*Channel
+	BeforeUpdate *Channel `json:"-"`
 }
 
 // thread was deleted
 type ThreadDelete struct {
-	ID       int64 `json:"id,string"`
-	GuildID  int64 `json:"guild_id,string"`
-	ParentID int64 `json:"parent_id,string"`
-	Type     ChannelType
+	*Channel
 }
 
 // sent when gaining access to a channel, contains all active threads in that channel
 type ThreadListSync struct {
-	GuildID  int64           `json:"guild_id,string"` // snowflake	the id of the guild
-	Channels IDSlice         `json:"channel_ids"`     // array of snowflakes	the parent channel ids whose threads are being synced. If omitted, then threads were synced for the entire guild. This array may contain channel_ids that have no active threads as well, so you know to clear that data.
-	Threads  []*Channel      `json:"threads"`         // array of channel objects	all active threads in the given channels that the current user can access
-	Members  []*ThreadMember `json:"members"`         // array of thread member objects	all thread member objects from the synced threads for the current user, indicating which threads the current user has been added to
+	GuildID    int64           `json:"guild_id,string"` // snowflake	the id of the guild
+	ChannelIDs IDSlice         `json:"channel_ids"`     // array of snowflakes	the parent channel ids whose threads are being synced. If omitted, then threads were synced for the entire guild. This array may contain channel_ids that have no active threads as well, so you know to clear that data.
+	Threads    []*Channel      `json:"threads"`         // array of channel objects	all active threads in the given channels that the current user can access
+	Members    []*ThreadMember `json:"members"`         // array of thread member objects	all thread member objects from the synced threads for the current user, indicating which threads the current user has been added to
 }
 
 // thread member for the current user was updated
 type ThreadMemberUpdate struct {
-	ThreadMember
+	*ThreadMember
+	GuildID string `json:"guild_id"`
 }
 
 // some user(s) were added to or removed from a thread
 type ThreadMembersUpdate struct {
-	ID             int64           `json:"id,string"`          // snowflake	the id of the thread
-	GuildID        int64           `json:"guild_id,string"`    // snowflake	the id of the guild
-	MemberCount    int             `json:"member_count"`       // integer	the approximate number of members in the thread, capped at 50
-	AddedMembers   []*ThreadMember `json:"added_members"`      // array of thread member objects	the users who were added to the thread
-	RemovedMembers IDSlice         `json:"removed_member_ids"` // array of snowflakes	the id of the users who were removed from the thread
+	ID             int64               `json:"id,string"`          // snowflake	the id of the thread
+	GuildID        int64               `json:"guild_id,string"`    // snowflake	the id of the guild
+	MemberCount    int                 `json:"member_count"`       // integer	the approximate number of members in the thread, capped at 50
+	AddedMembers   []AddedThreadMember `json:"added_members"`      // array of thread member objects	the users who were added to the thread
+	RemovedMembers IDSlice             `json:"removed_member_ids"` // array of snowflakes	the id of the users who were removed from the thread
 }
 
 // guild stickers were updated
