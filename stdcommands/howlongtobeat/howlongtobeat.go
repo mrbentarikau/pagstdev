@@ -18,7 +18,7 @@ var (
 	hltbScheme   = "https"
 	hltbHost     = "howlongtobeat.com"
 	hltbURL      = fmt.Sprintf("%s://%s/", hltbScheme, hltbHost)
-	hltbHostPath = "api/search"
+	hltbHostPath = "api/search" + "/4b4cbe570602c88660f7df8ea0cb6b6e"
 	hltbRawQuery = ""
 )
 
