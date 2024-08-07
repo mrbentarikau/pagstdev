@@ -7,13 +7,13 @@ import (
 	"regexp"
 	"strconv"
 
+	"github.com/mediocregopher/radix/v3"
 	"github.com/mrbentarikau/pagst/bot"
 	"github.com/mrbentarikau/pagst/commands"
 	"github.com/mrbentarikau/pagst/common"
 	"github.com/mrbentarikau/pagst/lib/dcmd"
 	"github.com/mrbentarikau/pagst/lib/discordgo"
 	"github.com/mrbentarikau/pagst/stdcommands/util"
-	"github.com/mediocregopher/radix/v3"
 )
 
 var Command = &commands.YAGCommand{
@@ -62,7 +62,7 @@ var Command = &commands.YAGCommand{
 
 		var appID string
 		err := common.RedisPool.Do(radix.Cmd(&appID, "GET", "wolfram_appID:"+strconv.FormatInt(data.GuildData.GS.ID, 10)))
-		if err != nil {
+		if err != nil || appID == "" {
 			return "No Wolfram|Alpha appID", nil
 		}
 

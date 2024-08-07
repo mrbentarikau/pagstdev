@@ -10,17 +10,30 @@ import (
 
 	"github.com/mrbentarikau/pagst/bot/paginatedmessages"
 	"github.com/mrbentarikau/pagst/commands"
+	"github.com/mrbentarikau/pagst/common"
 	"github.com/mrbentarikau/pagst/lib/dcmd"
 	"github.com/mrbentarikau/pagst/lib/discordgo"
+
+	"github.com/mediocregopher/radix/v3"
 )
 
 var (
+	hltbAPIKey   string
 	hltbScheme   = "https"
 	hltbHost     = "howlongtobeat.com"
 	hltbURL      = fmt.Sprintf("%s://%s/", hltbScheme, hltbHost)
-	hltbHostPath = "api/search" + "/ac8bb4dd1834c9056f6f6a0294fdb1b4"
+	hltbHostPath = "api/search/"
 	hltbRawQuery = ""
+	hltbHeaders  = map[string]string{
+		"Content-Type": "application/json",
+		"Accept":       "*/*",
+		"Authority":    hltbURL,
+		"Origin":       hltbURL,
+		"Referer":      hltbURL,
+	}
 )
+
+var logger = common.GetFixedPrefixLogger("hltb_cmd")
 
 // Command var needs a comment for lint :)
 var Command = &commands.YAGCommand{
@@ -51,9 +64,25 @@ var Command = &commands.YAGCommand{
 			paginatedView = true
 		}
 
+		err := common.RedisPool.Do(radix.Cmd(&hltbAPIKey, "GET", "hltb_APIKey"))
+		if err != nil || hltbAPIKey == "" {
+			hltbAPIKey, err = getAPIKey(false)
+			if err != nil {
+				return nil, commands.NewPublicError(err)
+			}
+
+			// that predefined scraping did not work, let's scrape all JS-scripts
+			if hltbAPIKey == "" {
+				hltbAPIKey, err = getAPIKey(true)
+				if err != nil {
+					return nil, commands.NewPublicError(err)
+				}
+			}
+		}
+
 		getData, err := getGameData(gameName)
 		if err != nil {
-			return nil, err
+			return nil, commands.NewPublicError(err)
 		}
 
 		var hltbQuery HowlongToBeat
@@ -69,8 +98,14 @@ var Command = &commands.YAGCommand{
 		parsedData := parseQueryData(hltbQuery.Data, gameName)
 
 		if compactView {
-			compactData := fmt.Sprintf("%s: %s | %s | %s | <%s>",
+			var releaseYear string
+			if parsedData[0].ReleaseWorld != 0 {
+				releaseYear = fmt.Sprintf(" (%d)", parsedData[0].ReleaseWorld)
+			}
+
+			compactData := fmt.Sprintf("%s%s: %s | %s | %s | <%s>",
 				normaliseTitle(hltbQuery.Data[0].GameName),
+				releaseYear,
 				parsedData[0].CompMainHumanize,
 				parsedData[0].CompPlusHumanize,
 				parsedData[0].Comp100Humanize,
@@ -116,6 +151,11 @@ var Command = &commands.YAGCommand{
 }
 
 func embedCreator(hltbData []HowlongToBeatData, i int, paginated bool) *discordgo.MessageEmbed {
+	var releaseYear string
+	if hltbData[i].ReleaseWorld != 0 {
+		releaseYear = fmt.Sprintf(" (%d)", hltbData[i].ReleaseWorld)
+	}
+
 	embed := &discordgo.MessageEmbed{
 		Author: &discordgo.MessageEmbedAuthor{
 			Name:    "HowLongToBeat",
@@ -123,7 +163,7 @@ func embedCreator(hltbData []HowlongToBeatData, i int, paginated bool) *discordg
 			IconURL: "https://howlongtobeat.com/img/icons/favicon-96x96.png",
 		},
 
-		Title: normaliseTitle(hltbData[i].GameName),
+		Title: normaliseTitle(hltbData[i].GameName) + releaseYear,
 		Color: int(rand.Int63n(16777215)),
 		Thumbnail: &discordgo.MessageEmbedThumbnail{
 			URL: hltbData[i].ImageURL,

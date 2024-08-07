@@ -1,11 +1,13 @@
 package howlongtobeat
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -13,13 +15,17 @@ import (
 	"github.com/mrbentarikau/pagst/commands"
 	"github.com/mrbentarikau/pagst/common"
 	"github.com/mrbentarikau/pagst/lib/jarowinkler"
+	"github.com/mrbentarikau/pagst/stdcommands/util"
+
+	"github.com/PuerkitoBio/goquery"
+	"github.com/mediocregopher/radix/v3"
 )
 
-func getGameData(searchTitle string) ([]byte, error) {
+func getGameData(searchTitle string, recursiveRequest ...bool) ([]byte, error) {
 	u := &url.URL{
 		Scheme:   hltbScheme,
 		Host:     hltbHost,
-		Path:     hltbHostPath,
+		Path:     hltbHostPath + hltbAPIKey,
 		RawQuery: hltbRawQuery,
 	}
 
@@ -41,21 +47,46 @@ func getGameData(searchTitle string) ([]byte, error) {
 	}
 
 	r, _ := http.NewRequest("POST", urlStr, strings.NewReader(string(jsonData))) // URL-encoded payload
-	r.Header.Add("Content-Type", "application/json")
-	r.Header.Add("Accept", "*/*")
-	r.Header.Add("Content-Length", strconv.Itoa(len(jsonData)))
-	r.Header.Add("User-Agent", common.ConfBotUserAgent.GetString())
-	r.Header.Add("Authority", hltbURL)
-	r.Header.Add("Origin", hltbURL)
-	r.Header.Add("Referer", hltbURL)
+	r.Header.Set("Content-Length", strconv.Itoa(len(jsonData)))
+	r.Header.Set("User-Agent", common.ConfBotUserAgent.GetString())
+
+	for k, v := range hltbHeaders {
+		r.Header.Set(k, v)
+	}
 
 	resp, err := client.Do(r)
 	if err != nil {
 		return nil, err
 	}
 
+	var recursive bool
+	if len(recursiveRequest) > 0 {
+		recursive = recursiveRequest[0]
+	}
+
 	if resp.StatusCode != 200 {
-		return nil, commands.NewPublicError("Unable to fetch data from howlongtobeat.com, status code:", resp.StatusCode)
+		if resp.StatusCode == 404 && !recursive {
+			hltbAPIKey, err = getAPIKey(false)
+			if err != nil {
+				return nil, err
+			}
+
+			// that predefined scraping did not work, let's scrape all JS-scripts
+			if hltbAPIKey == "" {
+				hltbAPIKey, err = getAPIKey(true)
+				if err != nil {
+					return nil, err
+				}
+			}
+
+			gameData, err := getGameData(searchTitle, true)
+			if err != nil {
+				return nil, err
+			}
+			return gameData, nil
+		} else {
+			return nil, commands.NewPublicError("Unable to fetch data from howlongtobeat.com, status code:", resp.StatusCode)
+		}
 	}
 	r.Body.Close()
 	defer resp.Body.Close()
@@ -85,4 +116,65 @@ func parseQueryData(hltbQuery []HowlongToBeatData, gameName string) []HowlongToB
 	}
 
 	return hltbQuery
+}
+
+func getAPIKey(allScripts bool) (string, error) {
+	headers := hltbHeaders
+	headers["User-Agent"] = common.ConfBotUserAgent.GetString()
+
+	// query the main page of HLTB for full HTML
+	body, err := util.RequestFromAPI(hltbURL, headers)
+	if err != nil {
+		return "", err
+	}
+
+	toReader := bytes.NewReader(body)
+	parseData, err := goquery.NewDocumentFromReader(toReader)
+	if err != nil {
+		return "", err
+	}
+
+	// finding specific JS file from HTML
+	re := regexp.MustCompile(`_app-`)
+
+	var apiKey, apiKeyURL string
+	apiKeyURLSlice := make([]string, 0)
+	parseData.Find("script").Each(func(_ int, sel *goquery.Selection) {
+		attr, exists := sel.Attr("src")
+		if exists && re.FindString(attr) != "" && !allScripts {
+			apiKeyURLSlice = append(apiKeyURLSlice, hltbURL+attr)
+		} else if exists && allScripts && !strings.HasPrefix(attr, "https://cdn.ziffstatic.com") { // let's ignore JS from ziffstatic domain
+			logger.Infof("Parsing all HLTB JS files, count: %d", len(apiKeyURLSlice))
+			apiKeyURLSlice = append(apiKeyURLSlice, hltbURL+attr)
+		}
+	})
+
+	for _, v := range apiKeyURLSlice {
+		apiKeyURL = v
+		// getting contents of that JS file
+		body, err = util.RequestFromAPI(apiKeyURL, headers)
+		if err != nil {
+			continue
+		}
+
+		// finding API key from JS file's contents
+		re = regexp.MustCompile(`"/api/search/"\.concat\("([[:alnum:]]+)"\)`)
+		apiKeySlice := re.FindSubmatch(body)
+		if len(apiKeySlice) >= 1 {
+			apiKey = string(apiKeySlice[1])
+		}
+	}
+
+	if apiKey == "" {
+		return "", fmt.Errorf("key for HLTB API not received, JS-scraping failed for <%s>", apiKeyURL)
+	}
+
+	logger.Infof("Storing new HLTB API Key to Redis: %s", apiKey)
+
+	err = common.RedisPool.Do(radix.Cmd(nil, "SET", "hltb_APIKey", apiKey))
+	if err != nil {
+		return "", err
+	}
+
+	return apiKey, nil
 }
