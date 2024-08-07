@@ -144,11 +144,11 @@ func getAPIKey(allScripts bool) (string, error) {
 		if exists && re.FindString(attr) != "" && !allScripts {
 			apiKeyURLSlice = append(apiKeyURLSlice, hltbURL+attr)
 		} else if exists && allScripts && !strings.HasPrefix(attr, "https://cdn.ziffstatic.com") { // let's ignore JS from ziffstatic domain
-			logger.Infof("Parsing all HLTB JS files, count: %d", len(apiKeyURLSlice))
 			apiKeyURLSlice = append(apiKeyURLSlice, hltbURL+attr)
 		}
 	})
 
+	logger.Infof("Parsing all HLTB JS files, count: %d", len(apiKeyURLSlice))
 	for _, v := range apiKeyURLSlice {
 		apiKeyURL = v
 		// getting contents of that JS file
