@@ -165,8 +165,11 @@ func getAPIKey(allScripts bool) (string, error) {
 		}
 	}
 
-	if apiKey == "" {
-		return "", fmt.Errorf("key for HLTB API not received, JS-scraping failed for <%s>", apiKeyURL)
+	if apiKey == "" && !allScripts {
+		logger.Errorf("Key for HLTB API not received, JS-scraping failed for: %s", apiKeyURL)
+		return "", nil
+	} else if apiKey == "" {
+		return "", fmt.Errorf("key for HLTB API not received, JS-scraping failed for %d js files", len(apiKeyURLSlice))
 	}
 
 	logger.Infof("Storing new HLTB API Key to Redis: %s", apiKey)
