@@ -281,10 +281,10 @@ func embedCreator(itadComplete *ItadComplete, i int, paginated, compact bool) *d
 
 	embed := &discordgo.MessageEmbed{
 		Author: &discordgo.MessageEmbedAuthor{
-			Name:    "IsThereAnyDeal",
-			URL:     fmt.Sprintf("https://isthereanydeal.com/game/%s/info/", itadCSD.Slug),
-			IconURL: "https://d2uym1p5obf9p8.cloudfront.net/images/favicon.png",
-			//IconURL: "https://raw.githubusercontent.com/IsThereAnyDeal/AugmentedSteam/master/src/img/itad.png",
+			Name: "IsThereAnyDeal",
+			URL:  fmt.Sprintf("https://isthereanydeal.com/game/%s/info/", itadCSD.Slug),
+			//IconURL: "https://d2uym1p5obf9p8.cloudfront.net/images/favicon.png",
+			IconURL: "https://raw.githubusercontent.com/IsThereAnyDeal/AugmentedSteam/master/src/img/itad.png",
 		},
 
 		Title:       html.UnescapeString(itadCSD.Title),
