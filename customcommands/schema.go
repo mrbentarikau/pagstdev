@@ -113,6 +113,8 @@ CREATE INDEX IF NOT EXISTS templates_user_database_expires_idx ON templates_user
 `, `
 ALTER TABLE custom_commands ADD COLUMN IF NOT EXISTS trigger_on_edit BOOLEAN NOT NULL DEFAULT false;
 `, `
+ALTER TABLE custom_commands ADD COLUMN IF NOT EXISTS regex_trigger_on_edit BOOLEAN NOT NULL DEFAULT false;
+`, `
 ALTER TABLE custom_commands ADD COLUMN IF NOT EXISTS note TEXT;
 `, `
 ALTER TABLE custom_commands ADD COLUMN IF NOT EXISTS public BOOLEAN NOT NULL DEFAULT false;

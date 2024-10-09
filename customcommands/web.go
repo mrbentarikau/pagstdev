@@ -488,6 +488,7 @@ func handleNewCommand(w http.ResponseWriter, r *http.Request) (web.TemplateData,
 		dbModel.TimeTriggerExcludingHours = importCC.TimeTriggerExcludingHours
 		dbModel.TimeTriggerInterval = importCC.TimeTriggerInterval
 		dbModel.TriggerOnEdit = importCC.TriggerOnEdit && premium.ContextPremium(ctx)
+		dbModel.RegexTriggerOnEdit = importCC.RegexTriggerOnEdit && premium.ContextPremium(ctx)
 		dbModel.TriggerType = importCC.TriggerType
 		templateData.AddAlerts(web.WarningAlert("It is recommended you scan your CC for hardcoded IDs or other server-specific arguments you may want to update"))
 	}
@@ -556,7 +557,7 @@ func handleUpdateCommand(w http.ResponseWriter, r *http.Request) (web.TemplateDa
 		}
 	}
 
-	if !premium.ContextPremium(ctx) && cmd.TriggerOnEdit {
+	if !premium.ContextPremium(ctx) && (cmd.TriggerOnEdit || cmd.RegexTriggerOnEdit) {
 		return templateData.AddAlerts(web.ErrorAlert("`Trigger on edits` is a premium feature, your command wasn't saved, please save again after disabling `Trigger on edits`")), nil
 	}
 

@@ -394,10 +394,17 @@ var cmdListCommands = &commands.YAGCommand{
 			}
 		}
 
+		var ccTriggerOnEdit bool
+		if cc.TriggerType > 0 && cc.TriggerType < 5 {
+			ccTriggerOnEdit = cc.RegexTriggerOnEdit
+		} else if cc.TriggerType == 0 {
+			ccTriggerOnEdit = cc.TriggerOnEdit
+		}
+
 		if ccFile != nil {
 			msg = &discordgo.MessageSend{
 				Content: fmt.Sprintf("%s - %s%s - Group: `%s`\nTrigger on Edit: `%t` - Command Disabled: `%t` - Command Public: %s %s",
-					ccIDWithLink, CommandTriggerType(cc.TriggerType), caseSensitiveTrigger, groupMap[cc.GroupID.Int64], cc.TriggerOnEdit, cc.Disabled, ccPublicLink, restrictions),
+					ccIDWithLink, CommandTriggerType(cc.TriggerType), caseSensitiveTrigger, groupMap[cc.GroupID.Int64], ccTriggerOnEdit, cc.Disabled, ccPublicLink, restrictions),
 				Files: []*discordgo.File{
 					ccFile,
 				},
@@ -417,7 +424,7 @@ var cmdListCommands = &commands.YAGCommand{
 
 		ccResponsesString := strings.Join(cc.Responses, "```\n```")
 		response = fmt.Sprintf("%s - %s%s%s - Group: `%s`\nTrigger on Edit: `%t` - Command Disabled: `%t` - Command Public: %s %s",
-			ccIDWithLink, CommandTriggerType(cc.TriggerType), intervalText, caseSensitiveTrigger, groupMap[cc.GroupID.Int64], cc.TriggerOnEdit, cc.Disabled, ccPublicLink, restrictions)
+			ccIDWithLink, CommandTriggerType(cc.TriggerType), intervalText, caseSensitiveTrigger, groupMap[cc.GroupID.Int64], ccTriggerOnEdit, cc.Disabled, ccPublicLink, restrictions)
 		if raw || utf8.RuneCountInString(ccResponsesString) <= 1850 {
 			response = fmt.Sprintf("%s```%s\n%s", response, highlight, ccResponsesString)
 			return response + "\n```", nil
@@ -461,6 +468,7 @@ func embedCreator(ccs models.CustomCommandSlice, i, ml int, title string, gMap m
 	description += "--------------------------------------------\n"
 	for k, v := range ccs[i*ml:] {
 		var group, textTrigger, regexTrigger, finalTrigger, hashMark string
+
 		group = gMap[v.GroupID.Int64]
 		if group == "Ungrouped" {
 			group = "uG"
@@ -494,12 +502,17 @@ func embedCreator(ccs models.CustomCommandSlice, i, ml int, title string, gMap m
 			regexTrigger = string([]rune(regexTrigger)[:21]) + "_"
 		}
 
+		var ccTriggerOnEdit bool
+
 		if v.TriggerType == 0 {
 			finalTrigger = textTrigger
+			ccTriggerOnEdit = v.TriggerOnEdit
 		} else if v.TriggerType >= 1 && v.TriggerType <= 4 {
 			finalTrigger = regexTrigger
+			ccTriggerOnEdit = v.RegexTriggerOnEdit
 		} else {
 			finalTrigger = ""
+
 		}
 
 		if v.Disabled {
@@ -511,7 +524,7 @@ func embedCreator(ccs models.CustomCommandSlice, i, ml int, title string, gMap m
 		}
 
 		hashMark = "#"
-		if v.TriggerOnEdit {
+		if ccTriggerOnEdit {
 			hashMark = fmt.Sprintf("%c[0;%d;%dm>%[1]c[0m", 0x1b, 0, 33)
 		}
 
@@ -556,19 +569,27 @@ func FindCommands(ccs []*models.CustomCommand, data *dcmd.Data) (foundCCS []*mod
 func StringCommands(ccs []*models.CustomCommand, gMap map[int64]string) string {
 	out := ""
 	for _, cc := range ccs {
+
+		var ccTriggerOnEdit bool
+		if cc.TriggerType > 0 && cc.TriggerType < 5 {
+			ccTriggerOnEdit = cc.RegexTriggerOnEdit
+		} else if cc.TriggerType == 0 {
+			ccTriggerOnEdit = cc.TriggerOnEdit
+		}
+
 		switch {
 		case cc.TriggerType >= 5:
-			out += fmt.Sprintf("`#%3d:` %s - Group: `%s` - onEdit: `%t` - Disabled:  - `%t`\n", cc.LocalID, CommandTriggerType(cc.TriggerType).String(), gMap[cc.GroupID.Int64], cc.TriggerOnEdit, cc.Disabled)
+			out += fmt.Sprintf("`#%3d:` %s - Group: `%s` - onEdit: `%t` - Disabled:  - `%t`\n", cc.LocalID, CommandTriggerType(cc.TriggerType).String(), gMap[cc.GroupID.Int64], ccTriggerOnEdit, cc.Disabled)
 		case cc.TriggerType > 0:
 			if len(cc.RegexTrigger) == 0 {
 				cc.RegexTrigger = "None"
 			}
-			out += fmt.Sprintf("`#%3d:` `%s`: %s - Group: `%s` - onEdit: `%t` - Disabled:  - `%t`\n", cc.LocalID, cc.RegexTrigger, CommandTriggerType(cc.TriggerType).String(), gMap[cc.GroupID.Int64], cc.TriggerOnEdit, cc.Disabled)
+			out += fmt.Sprintf("`#%3d:` `%s`: %s - Group: `%s` - onEdit: `%t` - Disabled:  - `%t`\n", cc.LocalID, cc.RegexTrigger, CommandTriggerType(cc.TriggerType).String(), gMap[cc.GroupID.Int64], ccTriggerOnEdit, cc.Disabled)
 		default:
 			if len(cc.TextTrigger) == 0 {
 				cc.TextTrigger = "None"
 			}
-			out += fmt.Sprintf("`#%3d:` `%s`: %s - Group: `%s` - onEdit: `%t` - Disabled:  - `%t`\n", cc.LocalID, cc.TextTrigger, CommandTriggerType(cc.TriggerType).String(), gMap[cc.GroupID.Int64], cc.TriggerOnEdit, cc.Disabled)
+			out += fmt.Sprintf("`#%3d:` `%s`: %s - Group: `%s` - onEdit: `%t` - Disabled:  - `%t`\n", cc.LocalID, cc.TextTrigger, CommandTriggerType(cc.TriggerType).String(), gMap[cc.GroupID.Int64], ccTriggerOnEdit, cc.Disabled)
 		}
 	}
 
@@ -1006,7 +1027,7 @@ func HandleMessageUpdate(evt *eventsystem.EventData) {
 
 	metricsExecutedCommands.With(prometheus.Labels{"trigger": "message"}).Inc()
 	for _, matched := range matchedCustomCommands {
-		if !matched.CC.TriggerOnEdit {
+		if !matched.CC.TriggerOnEdit || !matched.CC.RegexTriggerOnEdit {
 			continue
 		}
 		err = ExecuteCustomCommandFromMessage(evt.GS, matched.CC, member, cs, matched.Args, matched.Stripped, mu.Message, true)

@@ -63,6 +63,7 @@ type CustomCommand struct {
 	Response                        string            `boil:"response" json:"response" toml:"response" yaml:"response"`
 	InteractionTrigger              string            `boil:"interaction_trigger" json:"interaction_trigger" toml:"interaction_trigger" yaml:"interaction_trigger"`
 	InteractionTriggerCaseSensitive bool              `boil:"interaction_trigger_case_sensitive" json:"interaction_trigger_case_sensitive" toml:"interaction_trigger_case_sensitive" yaml:"interaction_trigger_case_sensitive"`
+	RegexTriggerOnEdit              bool              `boil:"regex_trigger_on_edit" json:"regex_trigger_on_edit" toml:"regex_trigger_on_edit" yaml:"regex_trigger_on_edit"`
 
 	R *customCommandR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L customCommandL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -107,6 +108,7 @@ var CustomCommandColumns = struct {
 	Response                        string
 	InteractionTrigger              string
 	InteractionTriggerCaseSensitive string
+	RegexTriggerOnEdit              string
 }{
 	LocalID:                         "local_id",
 	GuildID:                         "guild_id",
@@ -146,6 +148,7 @@ var CustomCommandColumns = struct {
 	Response:                        "response",
 	InteractionTrigger:              "interaction_trigger",
 	InteractionTriggerCaseSensitive: "interaction_trigger_case_sensitive",
+	RegexTriggerOnEdit:              "regex_trigger_on_edit",
 }
 
 var CustomCommandTableColumns = struct {
@@ -187,6 +190,7 @@ var CustomCommandTableColumns = struct {
 	Response                        string
 	InteractionTrigger              string
 	InteractionTriggerCaseSensitive string
+	RegexTriggerOnEdit              string
 }{
 	LocalID:                         "custom_commands.local_id",
 	GuildID:                         "custom_commands.guild_id",
@@ -226,6 +230,7 @@ var CustomCommandTableColumns = struct {
 	Response:                        "custom_commands.response",
 	InteractionTrigger:              "custom_commands.interaction_trigger",
 	InteractionTriggerCaseSensitive: "custom_commands.interaction_trigger_case_sensitive",
+	RegexTriggerOnEdit:              "custom_commands.regex_trigger_on_edit",
 }
 
 // Generated where
@@ -408,6 +413,7 @@ var CustomCommandWhere = struct {
 	Response                        whereHelperstring
 	InteractionTrigger              whereHelperstring
 	InteractionTriggerCaseSensitive whereHelperbool
+	RegexTriggerOnEdit              whereHelperbool
 }{
 	LocalID:                         whereHelperint64{field: "\"custom_commands\".\"local_id\""},
 	GuildID:                         whereHelperint64{field: "\"custom_commands\".\"guild_id\""},
@@ -447,6 +453,7 @@ var CustomCommandWhere = struct {
 	Response:                        whereHelperstring{field: "\"custom_commands\".\"response\""},
 	InteractionTrigger:              whereHelperstring{field: "\"custom_commands\".\"interaction_trigger\""},
 	InteractionTriggerCaseSensitive: whereHelperbool{field: "\"custom_commands\".\"interaction_trigger_case_sensitive\""},
+	RegexTriggerOnEdit:              whereHelperbool{field: "\"custom_commands\".\"regex_trigger_on_edit\""},
 }
 
 // CustomCommandRels is where relationship names are stored.
@@ -477,9 +484,9 @@ func (r *customCommandR) GetGroup() *CustomCommandGroup {
 type customCommandL struct{}
 
 var (
-	customCommandAllColumns            = []string{"local_id", "guild_id", "group_id", "trigger_type", "text_trigger", "text_trigger_case_sensitive", "time_trigger_interval", "time_trigger_excluding_days", "time_trigger_excluding_hours", "last_run", "next_run", "responses", "channels", "channels_whitelist_mode", "roles", "roles_whitelist_mode", "context_channel", "reaction_trigger_mode", "last_error", "last_error_time", "run_count", "show_errors", "disabled", "date_updated", "categories", "categories_whitelist_mode", "regex_trigger", "regex_trigger_case_sensitive", "note", "threads_enabled", "normalize_unicode", "trigger_on_edit", "public_id", "import_count", "public", "response", "interaction_trigger", "interaction_trigger_case_sensitive"}
+	customCommandAllColumns            = []string{"local_id", "guild_id", "group_id", "trigger_type", "text_trigger", "text_trigger_case_sensitive", "time_trigger_interval", "time_trigger_excluding_days", "time_trigger_excluding_hours", "last_run", "next_run", "responses", "channels", "channels_whitelist_mode", "roles", "roles_whitelist_mode", "context_channel", "reaction_trigger_mode", "last_error", "last_error_time", "run_count", "show_errors", "disabled", "date_updated", "categories", "categories_whitelist_mode", "regex_trigger", "regex_trigger_case_sensitive", "note", "threads_enabled", "normalize_unicode", "trigger_on_edit", "public_id", "import_count", "public", "response", "interaction_trigger", "interaction_trigger_case_sensitive", "regex_trigger_on_edit"}
 	customCommandColumnsWithoutDefault = []string{"local_id", "guild_id", "trigger_type", "text_trigger", "text_trigger_case_sensitive", "time_trigger_interval", "time_trigger_excluding_days", "time_trigger_excluding_hours", "responses", "channels_whitelist_mode", "roles_whitelist_mode"}
-	customCommandColumnsWithDefault    = []string{"group_id", "last_run", "next_run", "channels", "roles", "context_channel", "reaction_trigger_mode", "last_error", "last_error_time", "run_count", "show_errors", "disabled", "date_updated", "categories", "categories_whitelist_mode", "regex_trigger", "regex_trigger_case_sensitive", "note", "threads_enabled", "normalize_unicode", "trigger_on_edit", "public_id", "import_count", "public", "response", "interaction_trigger", "interaction_trigger_case_sensitive"}
+	customCommandColumnsWithDefault    = []string{"group_id", "last_run", "next_run", "channels", "roles", "context_channel", "reaction_trigger_mode", "last_error", "last_error_time", "run_count", "show_errors", "disabled", "date_updated", "categories", "categories_whitelist_mode", "regex_trigger", "regex_trigger_case_sensitive", "note", "threads_enabled", "normalize_unicode", "trigger_on_edit", "public_id", "import_count", "public", "response", "interaction_trigger", "interaction_trigger_case_sensitive", "regex_trigger_on_edit"}
 	customCommandPrimaryKeyColumns     = []string{"guild_id", "local_id"}
 	customCommandGeneratedColumns      = []string{}
 )
