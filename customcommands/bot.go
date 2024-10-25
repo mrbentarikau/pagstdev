@@ -1902,7 +1902,7 @@ func CCTriggerLimitFinder(ctx context.Context, ccmdID, guildID, userID int64) (*
 
 			for _, chanl := range cc.Channels {
 				cs := gs.GetChannel(chanl)
-				if !CmdRunsInCategory(cmd, cs.ParentID) || !CmdRunsInChannel(cmd, cs.ID) {
+				if cs == nil || !CmdRunsInCategory(cmd, cs.ParentID) || !CmdRunsInChannel(cmd, cs.ID) {
 					checkmatch = false
 					continue
 				}
