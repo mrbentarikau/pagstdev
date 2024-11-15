@@ -40,6 +40,7 @@ func getGameData(searchTitle string, recursiveRequest ...bool) ([]byte, error) {
 	jsonQuery.Size = 25
 	jsonQuery.SearchOptions.Games.SortCategory = "popular"
 	jsonQuery.SearchOptions.Games.RangeCategory = "main"
+	jsonQuery.SearchOptions.Users.ID = hltbAPIKey
 
 	jsonData, err := json.Marshal(jsonQuery)
 	if err != nil {
@@ -158,10 +159,11 @@ func getAPIKey(allScripts bool) (string, error) {
 		}
 
 		// finding API key from JS file's contents
-		re = regexp.MustCompile(`"/api/search/"\.concat\("([[:alnum:]]+)"\)`)
+		re = regexp.MustCompile(`"/api/search/"\.concat\("([[:alnum:]]+)"\)\.concat\("([[:alnum:]]+)"\)`)
+		//re = regexp.MustCompile(`users\s*:\s*{\s*id\s*:\s*"([^"]+)"`)
 		apiKeySlice := re.FindSubmatch(body)
-		if len(apiKeySlice) >= 1 {
-			apiKey = string(apiKeySlice[1])
+		if len(apiKeySlice) >= 3 {
+			apiKey = string(apiKeySlice[1]) + string(apiKeySlice[2])
 		}
 	}
 

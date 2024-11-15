@@ -86,6 +86,7 @@ type HowlongToBeatQuery struct {
 			Modifier string `json:"modifier"`
 		} `json:"games"`
 		Users struct {
+			ID           string `json:"id"`
 			SortCategory string `json:"sortCategory"`
 		} `json:"users"`
 		Filter     string `json:"filter"`
