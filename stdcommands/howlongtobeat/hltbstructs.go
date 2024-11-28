@@ -68,6 +68,7 @@ type HowlongToBeatQuery struct {
 	SearchTerms   []string `json:"searchTerms"`
 	SearchPage    int      `json:"searchPage"`
 	Size          int      `json:"size"`
+	UseCache      bool     `json:"useCache"`
 	SearchOptions struct {
 		Games struct {
 			UserID        int    `json:"userId"`
@@ -82,6 +83,7 @@ type HowlongToBeatQuery struct {
 				Perspective string `json:"perspective"`
 				Flow        string `json:"flow"`
 				Genre       string `json:"genre"`
+				SubGenre    string `json:"subGenre"`
 			} `json:"gameplay"`
 			Modifier string `json:"modifier"`
 		} `json:"games"`
@@ -89,6 +91,9 @@ type HowlongToBeatQuery struct {
 			ID           string `json:"id"`
 			SortCategory string `json:"sortCategory"`
 		} `json:"users"`
+		Lists struct {
+			SortCategory string `json:"sortCategory"`
+		}
 		Filter     string `json:"filter"`
 		Sort       int    `json:"sort"`
 		Randomizer int    `json:"randomizer"`
