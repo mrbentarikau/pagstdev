@@ -42,7 +42,7 @@ func getGameData(searchTitle string, recursiveRequest ...bool) ([]byte, error) {
 	jsonQuery.SearchOptions.Games.SortCategory = "popular"
 	jsonQuery.SearchOptions.Games.RangeCategory = "main"
 	jsonQuery.SearchOptions.Games.RangeCategory = "main"
-	jsonQuery.SearchOptions.Games.Gameplay.SubGenre = "  "
+	jsonQuery.SearchOptions.Games.Gameplay.SubGenre = ""
 	jsonQuery.SearchOptions.Users.ID = hltbAPIKey
 
 	jsonData, err := json.Marshal(jsonQuery)
