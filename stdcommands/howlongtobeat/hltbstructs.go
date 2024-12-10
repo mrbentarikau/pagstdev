@@ -84,6 +84,7 @@ type HowlongToBeatQuery struct {
 				Flow        string `json:"flow"`
 				Genre       string `json:"genre"`
 				SubGenre    string `json:"subGenre"`
+				Difficulty  string `json:"difficulty"`
 			} `json:"gameplay"`
 			Modifier string `json:"modifier"`
 		} `json:"games"`
