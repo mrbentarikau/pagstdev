@@ -162,8 +162,8 @@ func getAPIKey(allScripts bool) (string, error) {
 		}
 
 		// finding API key from JS file's contents
-		// "/api/find/" was previously "/api/search"
-		re = regexp.MustCompile(`"/api/find/"\.concat\("([[:alnum:]]+)"\)\.concat\("([[:alnum:]]+)"\)`)
+		// "/api/lookup/" was previously "/api/search" && /api/find
+		re = regexp.MustCompile(`"/api/lookup/"\.concat\("([[:alnum:]]+)"\)\.concat\("([[:alnum:]]+)"\)`)
 		apiKeySlice := re.FindSubmatch(body)
 		// going to look for second possible way for API key
 		if len(apiKeySlice) == 0 {
