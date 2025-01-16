@@ -22,7 +22,7 @@ var (
 	hltbScheme   = "https"
 	hltbHost     = "howlongtobeat.com"
 	hltbURL      = fmt.Sprintf("%s://%s/", hltbScheme, hltbHost)
-	hltbHostPath = "api/lookup/" // was previously api/search || api/find
+	hltbHostPath = "api/s/" // was previously api/lookup || api/search || api/find
 	hltbRawQuery = ""
 	hltbHeaders  = map[string]string{
 		"Content-Type": "application/json",
