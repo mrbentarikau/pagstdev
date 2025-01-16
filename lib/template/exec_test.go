@@ -972,7 +972,6 @@ func TestExecError(t *testing.T) {
 	}
 }
 
-/*
 func TestJSEscaping(t *testing.T) {
 	testCases := []struct {
 		in, exp string
@@ -991,7 +990,6 @@ func TestJSEscaping(t *testing.T) {
 		}
 	}
 }
-*/
 
 // A nice example: walk a binary tree.
 
