@@ -102,13 +102,12 @@ var Command = &commands.YAGCommand{
 				return nil, commands.NewPublicError(err)
 			}
 
-			getData, err := getGameData(gameName)
+			getData, err = getGameData(gameName)
 			if err != nil {
 				return nil, commands.NewPublicError(err)
 			}
 
-			var hltbQuery HowlongToBeat
-			queryErr := json.Unmarshal(getData, &hltbQuery)
+			queryErr = json.Unmarshal(getData, &hltbQuery)
 			if queryErr != nil {
 				return nil, queryErr
 			}
