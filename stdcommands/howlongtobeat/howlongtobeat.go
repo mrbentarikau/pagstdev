@@ -95,6 +95,30 @@ var Command = &commands.YAGCommand{
 			return "No results", nil
 		}
 
+		// let's repeat if API-key is there but expired
+		if hltbQuery.Data[0].CompMain == 0 && hltbQuery.Data[0].ReviewScore == 0 {
+			hltbAPIKey, err = getAPIKey(true)
+			if err != nil {
+				return nil, commands.NewPublicError(err)
+			}
+
+			getData, err := getGameData(gameName)
+			if err != nil {
+				return nil, commands.NewPublicError(err)
+			}
+
+			var hltbQuery HowlongToBeat
+			queryErr := json.Unmarshal(getData, &hltbQuery)
+			if queryErr != nil {
+				return nil, queryErr
+			}
+
+			if len(hltbQuery.Data) == 0 {
+				return "No results", nil
+			}
+
+		}
+
 		parsedData := parseQueryData(hltbQuery.Data, gameName)
 
 		if compactView {
