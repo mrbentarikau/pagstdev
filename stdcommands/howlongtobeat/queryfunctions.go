@@ -21,7 +21,9 @@ import (
 	"github.com/mediocregopher/radix/v3"
 )
 
-func getGameData(searchTitle string, recursiveRequest ...bool) ([]byte, error) {
+func getGameData(searchTitle string, recursiveRequest ...bool) (*HowlongToBeat, error) {
+	var hltbQuery *HowlongToBeat
+
 	u := &url.URL{
 		Scheme:   hltbScheme,
 		Host:     hltbHost,
@@ -83,11 +85,11 @@ func getGameData(searchTitle string, recursiveRequest ...bool) ([]byte, error) {
 				}
 			}
 
-			gameData, err := getGameData(searchTitle, true)
+			hltbQuery, err = getGameData(searchTitle, true)
 			if err != nil {
 				return nil, err
 			}
-			return gameData, nil
+			return hltbQuery, nil
 		} else {
 			return nil, commands.NewPublicError("Unable to fetch data from howlongtobeat.com, status code:", resp.StatusCode)
 		}
@@ -100,7 +102,12 @@ func getGameData(searchTitle string, recursiveRequest ...bool) ([]byte, error) {
 		return nil, err
 	}
 
-	return bytes, nil
+	queryErr := json.Unmarshal(bytes, &hltbQuery)
+	if queryErr != nil {
+		return nil, queryErr
+	}
+
+	return hltbQuery, nil
 }
 
 func parseQueryData(hltbQuery []HowlongToBeatData, gameName string) []HowlongToBeatData {
