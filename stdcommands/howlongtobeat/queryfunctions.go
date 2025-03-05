@@ -72,17 +72,9 @@ func getGameData(searchTitle string, recursiveRequest ...bool) (*HowlongToBeat, 
 
 	if resp.StatusCode != 200 {
 		if resp.StatusCode == 404 && !recursive {
-			hltbAPIKey, err = getAPIKey(false)
+			hltbAPIKey, err = getAPIKey()
 			if err != nil {
 				return nil, err
-			}
-
-			// that predefined scraping did not work, let's scrape all JS-scripts
-			if hltbAPIKey == "" {
-				hltbAPIKey, err = getAPIKey(true)
-				if err != nil {
-					return nil, err
-				}
 			}
 
 			hltbQuery, err = getGameData(searchTitle, true)
@@ -129,7 +121,7 @@ func parseQueryData(hltbQuery []HowlongToBeatData, gameName string) []HowlongToB
 	return hltbQuery
 }
 
-func getAPIKey(allScripts bool) (string, error) {
+func getAPIKey() (string, error) {
 	headers := hltbHeaders
 	headers["User-Agent"] = common.ConfBotUserAgent.GetString()
 
@@ -152,15 +144,28 @@ func getAPIKey(allScripts bool) (string, error) {
 	apiKeyURLSlice := make([]string, 0)
 	parseData.Find("script").Each(func(_ int, sel *goquery.Selection) {
 		attr, exists := sel.Attr("src")
-		if exists && re.FindString(attr) != "" && !allScripts {
-			apiKeyURLSlice = append(apiKeyURLSlice, hltbURL+attr)
-		} else if exists && allScripts && !strings.HasPrefix(attr, "https://cdn.ziffstatic.com") { // let's ignore JS from ziffstatic domain
+		if exists && !strings.HasPrefix(attr, "https://cdn.ziffstatic.com") { // let's ignore JS from ziffstatic domain
 			apiKeyURLSlice = append(apiKeyURLSlice, hltbURL+attr)
 		}
 	})
 
-	logger.Infof("Parsing all HLTB JS files, count: %d", len(apiKeyURLSlice))
+	apiKeyBuf := make([]string, 0)
+	for _, u := range apiKeyURLSlice {
+		if re.FindString(u) != "" {
+			apiKeyURL = u
+		} else {
+			apiKeyBuf = append(apiKeyBuf, u)
+		}
+	}
+
+	apiKeyURLSlice = nil
+	apiKeyURLSlice = append(apiKeyURLSlice, apiKeyURL)
+	apiKeyURLSlice = append(apiKeyURLSlice, apiKeyBuf...)
+
+	var counter int
+	var hltbHostPathBuf string
 	for _, v := range apiKeyURLSlice {
+		counter++
 		apiKeyURL = v
 		// getting contents of that JS file
 		body, err = util.RequestFromAPI(apiKeyURL, headers)
@@ -171,7 +176,7 @@ func getAPIKey(allScripts bool) (string, error) {
 		// finding API key from JS file's contents
 		// "/api/ouch/" was previously "/api/s && /api/lookup && /api/search" && /api/find
 		// trying regex pattern /api/\w+/ to future-proof it...
-		re = regexp.MustCompile(`"/api/\w+/"\.concat\("([[:alnum:]]+)"\)\.concat\("([[:alnum:]]+)"\)`)
+		re = regexp.MustCompile(`"/(api/\w+/)"\.concat\("([[:alnum:]]+)"\)\.concat\("([[:alnum:]]+)"\)`)
 		apiKeySlice := re.FindSubmatch(body)
 		// going to look for second possible way for API key
 		if len(apiKeySlice) == 0 {
@@ -179,14 +184,23 @@ func getAPIKey(allScripts bool) (string, error) {
 			apiKeySlice = re.FindSubmatch(body)
 		}
 
-		if len(apiKeySlice) >= 3 {
-			apiKey = string(apiKeySlice[1]) + string(apiKeySlice[2])
-		} else if len(apiKeySlice) >= 2 {
-			apiKey = string(apiKeySlice[1])
+		if len(apiKeySlice) >= 4 {
+			apiKey = string(apiKeySlice[2]) + string(apiKeySlice[3])
+			hltbHostPathBuf = string(apiKeySlice[1])
+		} else if len(apiKeySlice) >= 3 {
+			apiKey = string(apiKeySlice[2])
+			hltbHostPathBuf = string(apiKeySlice[1])
 		}
+
+		if apiKey != "" {
+			break
+		}
+
 	}
 
-	if apiKey == "" && !allScripts {
+	logger.Infof("Parsed all HLTB JS files, count: %d", counter)
+
+	if apiKey == "" && counter == 1 {
 		logger.Errorf("Key for HLTB API not received, JS-scraping failed for: %s", apiKeyURL)
 		return "", nil
 	} else if apiKey == "" {
@@ -198,6 +212,15 @@ func getAPIKey(allScripts bool) (string, error) {
 	err = common.RedisPool.Do(radix.Cmd(nil, "SET", "hltb_APIKey", apiKey))
 	if err != nil {
 		return "", err
+	}
+
+	if hltbHostPath != hltbHostPathBuf {
+		hltbHostPath = hltbHostPathBuf
+		logger.Infof("Storing new HLTB search endpoint to Redis: %s", hltbHostPath)
+		err = common.RedisPool.Do(radix.Cmd(nil, "SET", "hltb_HostPath", hltbHostPath))
+		if err != nil {
+			return "", err
+		}
 	}
 
 	return apiKey, nil

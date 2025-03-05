@@ -18,10 +18,10 @@ import (
 
 var (
 	hltbAPIKey   string
+	hltbHostPath string // using APIKey path, was previously api/ouch || api/s || api/lookup || api/search || api/find
 	hltbScheme   = "https"
 	hltbHost     = "howlongtobeat.com"
 	hltbURL      = fmt.Sprintf("%s://%s/", hltbScheme, hltbHost)
-	hltbHostPath = "api/ouch/" // was previously apis/s || api/lookup || api/search || api/find
 	hltbRawQuery = ""
 	hltbHeaders  = map[string]string{
 		"Content-Type": "application/json",
@@ -66,25 +66,18 @@ var Command = &commands.YAGCommand{
 		}
 
 		err := common.RedisPool.Do(radix.Cmd(&hltbAPIKey, "GET", "hltb_APIKey"))
-		if err == nil && hltbAPIKey != "" {
+		err2 := common.RedisPool.Do(radix.Cmd(&hltbHostPath, "GET", "hltb_HostPath"))
+		if err == nil && err2 == nil && (hltbAPIKey != "" && hltbHostPath != "") {
 			hltbQuery, err = getGameData(gameName)
 			if err != nil {
 				return nil, commands.NewPublicError(err)
 			}
 		}
 
-		if err != nil || hltbAPIKey == "" || (len(hltbQuery.Data) > 0 && hltbQuery.Data[0].CompMain == 0 && hltbQuery.Data[0].ReviewScore == 0) {
-			hltbAPIKey, err = getAPIKey(false)
+		if err != nil || err2 != nil || hltbAPIKey == "" || hltbHostPath == "" || (hltbQuery != nil && len(hltbQuery.Data) > 0 && hltbQuery.Data[0].CompMain == 0 && hltbQuery.Data[0].ReviewScore == 0) {
+			hltbAPIKey, err = getAPIKey()
 			if err != nil {
 				return nil, commands.NewPublicError(err)
-			}
-
-			// that predefined scraping did not work, let's scrape all JS-scripts
-			if hltbAPIKey == "" {
-				hltbAPIKey, err = getAPIKey(true)
-				if err != nil {
-					return nil, commands.NewPublicError(err)
-				}
 			}
 
 			hltbQuery, err = getGameData(gameName)
@@ -94,8 +87,10 @@ var Command = &commands.YAGCommand{
 
 		}
 
-		if len(hltbQuery.Data) == 0 {
+		if hltbQuery != nil && len(hltbQuery.Data) == 0 {
 			return "No results", nil
+		} else if hltbQuery == nil {
+			return "Unable to request data, code error", nil
 		}
 
 		parsedData := parseQueryData(hltbQuery.Data, gameName)
@@ -117,7 +112,7 @@ var Command = &commands.YAGCommand{
 			return compactData, nil
 		}
 
-		footerText := "howlongtobeat.com"
+		footerText := hltbHost
 		var footerSimilarity string
 		if hltbQuery.Data[0].JaroWinklerSimilarity > 0 {
 			footerSimilarity = fmt.Sprintf("Term similarity: %.2f%%", hltbQuery.Data[0].JaroWinklerSimilarity*100)
@@ -199,7 +194,7 @@ func embedCreator(hltbData []HowlongToBeatData, i int, paginated bool) *discordg
 	}
 
 	if !paginated {
-		embed.Footer = &discordgo.MessageEmbedFooter{Text: "howlongtobeat.com"}
+		embed.Footer = &discordgo.MessageEmbedFooter{Text: hltbHost}
 		embed.Timestamp = time.Now().Format(time.RFC3339)
 	}
 
