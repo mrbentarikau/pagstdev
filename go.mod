@@ -1,6 +1,8 @@
 module github.com/mrbentarikau/pagst
 
-go 1.20
+go 1.23.0
+
+toolchain go1.23.9
 
 require (
 	emperror.dev/errors v0.4.3
@@ -65,7 +67,7 @@ require (
 	github.com/volatiletech/strmangle v0.0.1
 	goji.io v2.0.2+incompatible
 	golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e
-	golang.org/x/text v0.21.0
+	golang.org/x/text v0.23.0
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0
 	google.golang.org/api v0.114.0
 )
@@ -73,9 +75,9 @@ require (
 require (
 	github.com/goccy/go-yaml v1.11.3
 	github.com/n0madic/twitter-scraper v0.0.0-20231104223941-296710769dd8
-	golang.org/x/crypto v0.31.0
+	golang.org/x/crypto v0.36.0
 	golang.org/x/image v0.18.0
-	golang.org/x/net v0.33.0
+	golang.org/x/net v0.38.0
 	golang.org/x/oauth2 v0.9.0
 )
 
@@ -172,7 +174,7 @@ require (
 	go.uber.org/atomic v1.4.0 // indirect
 	go.uber.org/multierr v1.1.0 // indirect
 	golang.org/x/arch v0.3.0 // indirect
-	golang.org/x/sys v0.28.0 // indirect
+	golang.org/x/sys v0.31.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20230410155749-daa745c078e1 // indirect
