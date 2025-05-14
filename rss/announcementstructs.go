@@ -17,7 +17,7 @@ type RSSFeedTemplate struct {
 	Author          *Person          `json:"author,omitempty"` // Deprecated: Use feed.Authors instead
 	Authors         []*Person        `json:"authors,omitempty"`
 	Language        string           `json:"language,omitempty"`
-	Image           *Image           `json:"imasge,omitempty"`
+	Image           *Image           `json:"image,omitempty"`
 	Copyright       string           `json:"copyright,omitempty"`
 	Generator       string           `json:"generator,omitempty"`
 	Categories      []string         `json:"categories,omitempty"`
