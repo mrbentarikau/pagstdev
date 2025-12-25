@@ -78,10 +78,6 @@ func RegisterPlugin() {
 
 	plugin.redditClient = setupClient()
 
-	/*if !common.FeedEnabled(plugin.PluginInfo().Name) {
-		return
-	}*/
-
 	common.RegisterPlugin(plugin)
 	mqueue.RegisterSource("reddit", plugin)
 

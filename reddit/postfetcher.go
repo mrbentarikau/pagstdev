@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"emperror.dev/errors"
+	"github.com/mediocregopher/radix/v3"
 	"github.com/mrbentarikau/pagst/common"
 	greddit "github.com/mrbentarikau/pagst/lib/go-reddit"
-	"github.com/mediocregopher/radix/v3"
 	"github.com/sirupsen/logrus"
 )
 
@@ -79,6 +79,7 @@ func (p *PostFetcher) Run() {
 			continue
 		}
 
+		lastFeedSuccessAt = time.Now()
 		if len(links) < 1 {
 			continue
 		}
