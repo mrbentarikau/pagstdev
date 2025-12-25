@@ -1,8 +1,8 @@
 module github.com/mrbentarikau/pagst
 
-go 1.23.0
+go 1.24.0
 
-toolchain go1.23.9
+toolchain go1.24.11
 
 require (
 	emperror.dev/errors v0.4.3
@@ -54,7 +54,7 @@ require (
 	github.com/russross/blackfriday v1.5.2
 	github.com/shirou/gopsutil v3.21.11+incompatible
 	github.com/shurcooL/github_flavored_markdown v0.0.0-20181002035957-2122de532470
-	github.com/sirupsen/logrus v1.6.0
+	github.com/sirupsen/logrus v1.8.3
 	github.com/stretchr/testify v1.8.3
 	github.com/tidwall/buntdb v1.2.8
 	github.com/tkuchiki/go-timezone v0.2.2
@@ -67,7 +67,7 @@ require (
 	github.com/volatiletech/strmangle v0.0.1
 	goji.io v2.0.2+incompatible
 	golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e
-	golang.org/x/text v0.23.0
+	golang.org/x/text v0.31.0
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0
 	google.golang.org/api v0.114.0
 )
@@ -75,15 +75,14 @@ require (
 require (
 	github.com/goccy/go-yaml v1.11.3
 	github.com/n0madic/twitter-scraper v0.0.0-20231104223941-296710769dd8
-	golang.org/x/crypto v0.36.0
+	golang.org/x/crypto v0.45.0
 	golang.org/x/image v0.18.0
-	golang.org/x/net v0.38.0
-	golang.org/x/oauth2 v0.9.0
+	golang.org/x/net v0.47.0
+	golang.org/x/oauth2 v0.27.0
 )
 
 require (
-	cloud.google.com/go/compute v1.19.1 // indirect
-	cloud.google.com/go/compute/metadata v0.2.3 // indirect
+	cloud.google.com/go/compute/metadata v0.3.0 // indirect
 	github.com/BurntSushi/toml v1.0.0 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver v1.5.0 // indirect
@@ -127,7 +126,6 @@ require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/karlseguin/expect v1.0.1 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.4 // indirect
-	github.com/konsorten/go-windows-terminal-sequences v1.0.3 // indirect
 	github.com/leodido/go-urn v1.2.4 // indirect
 	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
@@ -174,7 +172,7 @@ require (
 	go.uber.org/atomic v1.4.0 // indirect
 	go.uber.org/multierr v1.1.0 // indirect
 	golang.org/x/arch v0.3.0 // indirect
-	golang.org/x/sys v0.31.0 // indirect
+	golang.org/x/sys v0.38.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20230410155749-daa745c078e1 // indirect

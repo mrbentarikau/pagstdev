@@ -161,8 +161,8 @@ func (p *PostHandlerImpl) HandleRedditPosts(links []*reddit.Link) {
 			continue
 		}
 
-		// since := time.Since(time.Unix(int64(v.CreatedUtc), 0))
-		// logger.Debugf("[%5.2fs %6s] /r/%-20s: %s", since.Seconds(), v.ID, v.Subreddit, v.Title)
+		since := time.Since(time.Unix(int64(v.CreatedUtc), 0))
+		logger.Debugf("[%5.2fs %6s] /r/%-20s: %s", since.Seconds(), v.ID, v.Subreddit, v.Title)
 		go p.handlePost(v, 0)
 	}
 }
@@ -198,8 +198,8 @@ func (p *PostHandlerImpl) getConfigs(subreddit string) ([]*models.RedditFeed, er
 
 func (p *PostHandlerImpl) handlePost(post *reddit.Link, filterGuild int64) error {
 
-	// createdSince := time.Since(time.Unix(int64(post.CreatedUtc), 0))
-	// logger.Printf("[%5.1fs] /r/%-15s: %s, %s", createdSince.Seconds(), post.Subreddit, post.Title, post.ID)
+	createdSince := time.Since(time.Unix(int64(post.CreatedUtc), 0))
+	logger.Printf("[%5.1fs] /r/%-15s: %s, %s", createdSince.Seconds(), post.Subreddit, post.Title, post.ID)
 
 	config, err := p.getConfigs(strings.ToLower(post.Subreddit))
 	if err != nil {
