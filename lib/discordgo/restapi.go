@@ -273,7 +273,7 @@ func (s *Session) doRequest(method, urlStr, contentType string, b []byte, extraH
 	case http.StatusBadGateway, http.StatusGatewayTimeout:
 		// Retry sending request if possible
 		err = errors.Errorf("%s Failed (%s)", urlStr, resp.Status)
-		s.log(LogWarning, err.Error())
+		s.log(LogWarning, "%s", err.Error())
 		return nil, true, false, err
 
 	case 429: // TOO MANY REQUESTS - Rate limiting
@@ -500,7 +500,7 @@ func (s *Session) RequestWithoutBucket(method, urlStr, contentType string, b []b
 		}
 	case http.StatusUnauthorized:
 		if strings.Index(s.Token, "Bot ") != 0 {
-			s.log(LogInformational, ErrUnauthorized.Error())
+			s.log(LogInformational, "%s", ErrUnauthorized.Error())
 			err = ErrUnauthorized
 		}
 		fallthrough
