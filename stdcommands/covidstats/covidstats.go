@@ -211,7 +211,7 @@ func getData(query, loc, qtype string) ([]byte, error) {
 func embedCreator(cConts []coronaWorldWideStruct, queryType, whatDay string, i int) *discordgo.MessageEmbed {
 	p := message.NewPrinter(language.English)
 	embed := &discordgo.MessageEmbed{
-		Description: fmt.Sprintf("Showing corona statistics for " + whatDay + ":"),
+		Description: fmt.Sprintf("%s", "Showing corona statistics for "+whatDay+":"),
 		Color:       0x7b0e4e,
 		Fields: []*discordgo.MessageEmbedField{
 			{Name: "Population", Value: p.Sprintf("%d", cConts[i].Population), Inline: true},

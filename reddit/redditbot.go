@@ -55,7 +55,10 @@ func (p *Plugin) StopFeed(wg *sync.WaitGroup) {
 			ff.StopChan <- wg
 		}()
 		fastFeed = nil
+	} else {
+		wg.Done()
 	}
+
 	if slowFeed != nil {
 		wg.Add(1)
 		sf := slowFeed
@@ -63,6 +66,8 @@ func (p *Plugin) StopFeed(wg *sync.WaitGroup) {
 			sf.StopChan <- wg
 		}()
 		slowFeed = nil
+	} else {
+		wg.Done()
 	}
 
 	select {
