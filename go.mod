@@ -10,7 +10,7 @@ require (
 	github.com/Masterminds/go-fileserver v0.0.0-20150404113552-04d61ae6d130
 	github.com/NYTimes/gziphandler v1.1.1
 	github.com/PuerkitoBio/goquery v1.5.1
-	github.com/buger/jsonparser v1.1.1
+	github.com/buger/jsonparser v1.1.2
 	github.com/bwmarrin/snowflake v0.3.0
 	github.com/cenkalti/backoff v2.1.1+incompatible
 	github.com/cyruzin/golang-tmdb v1.5.0
